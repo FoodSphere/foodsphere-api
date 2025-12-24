@@ -1,0 +1,316 @@
+# cookie for frontend, jwt for api
+#
+# # การป้องกัน QR code โต๊ะ
+# - เมื่อลูกค้าสแกน QR code จะเป็นการเปิดโต๊ะ
+# - โต๊ะที่เปิดแล้วจะมี รหัส เหมือนเลขห้องเวลาสร้างเกมเล่นกับเพือน
+# - คนถัดไปที่มาสแกนจะต้องใส่ รหัส เพื่อเข้าร่วมโต๊ะ
+# - คนที่เข้าร่วมโต๊ะแล้ว จะสแกน QR code เดิมเข้าได้โดยไม่ต้องใส่ รหัส เพราะใช้ cookie ในการจำ
+# - คนที่เข้าร่วมโต๊ะแล้ว สามารถสร้าง QR code พิเศษเพื่อให้คนอื่นแสกนได้ คนที่สแกนจะเข้าร่วมโต๊ะได้เลยไม่ต้องใส่ รหัส
+# - รหัสจะถูกสุ่มใหม่ทุกครั้งที่เปิดโต๊ะ ป้องกันลูกค้าเก่า
+
+##################################################
+# @name manager_register
+
+POST {{host}}/auth/master
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+##################################################
+# @name manager_login
+
+POST {{host}}/auth/master/token
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+##################################################
+@jwt = {{manager_login.response.body.$.access_token}}
+##################################################
+# @name check_claims
+
+GET {{host}}/current/client/claims
+Authorization: Bearer {{jwt}}
+
+##################################################
+# @name create_restaurant
+
+POST {{host}}/client/restaurants
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "name": "test_{{restaurantName}}"
+}
+
+##################################################
+@test_restaurant_id = {{create_restaurant.response.body.$.restaurant_id}}
+##################################################
+# @name create_branch
+
+POST {{host}}/client/restaurants/{{test_restaurant_id}}/branches
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "name": "branch 1"
+}
+
+##################################################
+# @name quick_create_restaurant
+
+POST {{host}}/client/restaurants
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "name": "{{restaurantName}}",
+  "display_name": "super restaurant"
+}
+
+##################################################
+@restaurant_id = {{quick_create_restaurant.response.body.$.restaurant_id}}
+##################################################
+# @name get_branches
+
+GET {{host}}/client/restaurants/{{restaurant_id}}/branches
+Authorization: Bearer {{jwt}}
+
+##################################################
+@branch_id = {{get_branches.response.body.$[0].id}}
+##################################################
+# @name create_ingredient_1
+
+POST {{host}}/client/restaurants/{{restaurant_id}}/ingredients
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "name": "carrot",
+  "image_url": "https://www.hhs1.com/hs-fs/hubfs/carrots%20on%20wood.jpg?width=450&name=carrots%20on%20wood.jpg",
+  "unit": "kg"
+}
+
+##################################################
+@ingredient_id_1 = {{create_ingredient_1.response.body.$.id}}
+##################################################
+# @name create_ingredient_2
+
+POST {{host}}/client/restaurants/{{restaurant_id}}/ingredients
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "name": "rice",
+  "unit": "unit"
+}
+
+##################################################
+@ingredientID2 = {{create_ingredient_2.response.body.$.id}}
+##################################################
+# @name create_menu_1
+
+POST {{host}}/client/restaurants/{{restaurant_id}}/menus
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "name": "test_menu_1",
+  "image_url": "",
+  "price": 30,
+  "ingredients": [
+    {
+      "ingredient_id": {{ingredient_id_1}},
+      "amount": 20
+    }
+  ]
+}
+
+##################################################
+@menu_id_1 = {{create_menu_1.response.body.$.id}}
+##################################################
+# @name create_menu_2
+
+POST {{host}}/client/restaurants/{{restaurant_id}}/menus
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "name": "test_menu_2",
+  "price": 40,
+  "ingredients": [
+    {
+      "ingredient_id": {{ingredient_id_1}},
+      "amount": 10
+    },
+    {
+      "ingredient_id": {{ingredientID2}},
+      "amount": 25
+    }
+  ]
+}
+
+##################################################
+@menu_id_2 = {{create_menu_2.response.body.$.id}}
+##################################################
+# @name set_ingredient_1
+
+POST {{host}}/client/restaurants/{{restaurant_id}}/menus/{{menu_id_1}}/ingredients
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "ingredient_id": {{ingredient_id_1}},
+  "amount": 45
+}
+
+##################################################
+# @name set_stock_1
+
+POST {{host}}/client/restaurants/{{restaurant_id}}/branches/{{branch_id}}/stocks
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "ingredient_id": {{ingredient_id_1}},
+  "amount": 700
+}
+
+##################################################
+@menu_id_2 = {{create_menu_2.response.body.$.id}}
+##################################################
+# @name set_stock_2
+
+POST {{host}}/client/restaurants/{{restaurant_id}}/branches/{{branch_id}}/stocks
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "ingredient_id": {{ingredientID2}},
+  "amount": 500
+}
+
+##################################################
+# @name set_stock_3
+
+POST {{host}}/client/restaurants/{{restaurant_id}}/branches/{{branch_id}}/stocks
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "ingredient_id": {{ingredientID2}},
+  "amount": 600
+}
+
+##################################################
+# @name create_table
+
+POST {{host}}/client/restaurants/{{restaurant_id}}/branches/{{branch_id}}/tables
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "name": "A1"
+}
+
+##################################################
+@tableID = {{create_table.response.body.$.id}}
+##################################################
+# @name create_bill
+
+POST {{host}}/client/bills
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "restaurant_id": "{{restaurant_id}}",
+  "branch_id": {{branch_id}},
+  "table_id": {{tableID}},
+  "pax": 3
+}
+
+##################################################
+@billID = {{create_bill.response.body.$.id}}
+##################################################
+# @name get_bill
+
+GET {{host}}/client/bills/{{billID}}
+Authorization: Bearer {{jwt}}
+
+##################################################
+# @name create_order_1
+
+POST {{host}}/client/bills/{{billID}}/orders
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "menu_id": {{menu_id_1}},
+      "quantity": 2
+    },
+    {
+      "menu_id": {{menu_id_2}},
+      "quantity": 1
+    }
+  ]
+}
+
+##################################################
+@orderID1 = {{create_order_1.response.body.$.id}}
+##################################################
+# @name create_order_2
+
+POST {{host}}/client/bills/{{billID}}/orders
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "menu_id": {{menu_id_2}},
+      "quantity": 3
+    }
+  ]
+}
+
+##################################################
+# @name update_order_item
+
+POST {{host}}/client/bills/{{billID}}/orders/{{orderID1}}/items
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+    "menu_id": {{menu_id_2}},
+    "quantity": 5
+}
+
+##################################################
+# @name generate_ordering_portal
+
+POST {{host}}/client/bills/{{billID}}/portals
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+    "max_usage": 5,
+    "valid_duration": "01:00:00"
+}
+
+##################################################
+@ordering_portal_id = {{generate_ordering_portal.response.body.$.id}}
+##################################################
+# @name get_ordering_portals
+
+GET {{host}}/client/bills/{{billID}}/portals?portal_id={{ordering_portal_id}}
+Authorization: Bearer {{jwt}}
+
+##################################################

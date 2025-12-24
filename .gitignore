@@ -1,0 +1,9 @@
+bin
+build
+obj
+ignore
+*.slnx
+
+appsettings.*
+.editorconfig
+.env

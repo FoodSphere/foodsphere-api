@@ -1,0 +1,58 @@
+# scan qr code
+# open link         https://ordering.foodsphere.com/portals/{portal_id}
+# get token from    https://api.foodsphere.com/consumer/self-ordering/portals/{portal_id}
+# redirect          https://ordering.foodsphere.com headers: authentication's token { bill_id: "...", consumer_id: "..." }
+# request to        https://api.foodsphere.com/consumer/self-ordering/current
+# opaque token => meaningless string
+
+@portal_id = 2b0f544f-371e-4048-854b-2265a2c1ab16
+@menu_id_1 = 1
+@menu_id_2 = 2
+##################################################
+# @name get_token
+
+POST {{host}}/auth/self-ordering/token?portal_id={{portal_id}}
+
+##################################################
+@jwt = {{get_token.response.body.$.access_token}}
+##################################################
+# @name list_portal
+
+GET {{host}}/self-ordering/portals
+Authorization: Bearer {{jwt}}
+
+##################################################
+# @name me
+
+GET {{host}}/self-ordering/me
+Authorization: Bearer {{jwt}}
+
+##################################################
+# @name create_order_1
+
+POST {{host}}/self-ordering/orders
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "menu_id": {{menu_id_1}},
+      "quantity": 5
+    },
+    {
+      "menu_id": {{menu_id_2}},
+      "quantity": 5
+    }
+  ]
+}
+
+##################################################
+@order_id_1 = {{create_order_1.response.body.$.id}}
+##################################################
+# @name list_orders
+
+GET {{host}}/self-ordering/orders
+Authorization: Bearer {{jwt}}
+
+##################################################

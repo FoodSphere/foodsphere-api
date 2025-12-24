@@ -1,0 +1,272 @@
+using Microsoft.EntityFrameworkCore;
+using FoodSphere.Data.Models;
+using FoodSphere.Data.DTOs;
+
+namespace FoodSphere.Services;
+
+public class BranchService(AppDbContext context) : BaseService(context)
+{
+    public async Task<Branch> CreateBranch(
+        Guid restaurantId,
+        string name,
+        string? displayName = null
+    ) {
+        var lastId = await _ctx.Set<Branch>()
+            .Where(branch => branch.RestaurantId == restaurantId)
+            .MaxAsync(branch => (int?)branch.Id) ?? 0;
+
+        var branch = new Branch
+        {
+            Id = (short)(lastId + 1),
+            RestaurantId = restaurantId,
+            Name = name,
+            DisplayName = displayName,
+        };
+
+        await _ctx.AddAsync(branch);
+
+        return branch;
+    }
+
+    public async Task<Manager> CreateManager(Guid restaurantId, short branchId, string masterId)
+    {
+        var manager = new Manager
+        {
+            RestaurantId = restaurantId,
+            BranchId = branchId,
+            MasterId = masterId,
+        };
+
+        await _ctx.AddAsync(manager);
+
+        return manager;
+    }
+
+    public async Task UpdateManagerPermissions(Manager manager, List<short> roleIds)
+    {
+
+    }
+
+    public async Task<Table?> GetTable(
+        Guid restaurantId,
+        short branchId,
+        short tableId
+    ) {
+        return await _ctx.FindAsync<Table>(restaurantId, branchId, tableId);
+    }
+
+    public async Task<Table> CreateTable(
+        Branch branch,
+        string? name = null
+    ) {
+        var lastId = await _ctx.Set<Table>()
+            .Where(table => table.RestaurantId == branch.RestaurantId && table.BranchId == branch.Id)
+            .MaxAsync(table => (int?)table.Id) ?? 0;
+
+        var table = new Table
+        {
+            Id = (short)(lastId + 1),
+            Branch = branch,
+            Name = name
+        };
+
+        await _ctx.AddAsync(table);
+
+        return table;
+    }
+
+    public async Task<List<Table>> ListTables(Guid restaurantId, short branchId)
+    {
+        return await _ctx.Set<Table>()
+            .Where(table => table.RestaurantId == restaurantId && table.BranchId == branchId)
+            .ToListAsync();
+    }
+
+    public async Task<List<StaffUser>> ListStaffs(Guid restaurantId, short branchId)
+    {
+        return await _ctx.Set<StaffUser>()
+            .Where(staff => staff.RestaurantId == restaurantId && staff.BranchId == branchId)
+            .ToListAsync();
+    }
+
+    public async Task<List<Manager>> ListManagers(Guid restaurantId, short branchId)
+    {
+        return await _ctx.Set<Manager>()
+            .Where(manager => manager.RestaurantId == restaurantId && manager.BranchId == branchId)
+            .ToListAsync();
+    }
+
+    public async Task<Branch?> GetBranch(Guid restaurantId, short branchId)
+    {
+        return await _ctx.FindAsync<Branch>(restaurantId, branchId);
+    }
+
+    public async Task<StaffPortal?> GetStaffPortal(Guid portal_id)
+    {
+        var portal = await _ctx.FindAsync<StaffPortal>(portal_id);
+
+        if (portal is null || !portal.IsValid())
+        {
+            return null;
+        }
+
+        return portal;
+    }
+
+    public async Task<StaffPortal> CreateStaffPortal(Guid restaurantId, short branchId, short staffId)
+    {
+        var portal = new StaffPortal
+        {
+            RestaurantId = restaurantId,
+            BranchId = branchId,
+            StaffId = staffId,
+        };
+
+        await _ctx.AddAsync(portal);
+
+        return portal;
+    }
+
+    public async Task<StaffPortal> CreateStaffPortal(StaffUser staff)
+    {
+        return await CreateStaffPortal(staff.RestaurantId, staff.BranchId, staff.Id);
+    }
+
+    public async Task<StaffUser> CreateStaff(
+        Branch branch,
+        string name,
+        List<short> roles,
+        string? phone = null
+    ) {
+        var lastId = await _ctx.Set<StaffUser>()
+            .Where(staff => staff.RestaurantId == branch.RestaurantId && staff.BranchId == branch.Id)
+            .MaxAsync(staff => (int?)staff.Id) ?? 0;
+
+        var staff = new StaffUser
+        {
+            Id = (short)(lastId + 1),
+            Branch = branch,
+            Name = name,
+            Phone = phone
+        };
+
+        var rolesModel = await _ctx.Set<Role>()
+            .Where(role => roles.Contains(role.Id))
+            .ToArrayAsync();
+
+        // staff.Roles.AddRange(rolesModel);
+
+        await _ctx.AddAsync(staff);
+
+        return staff;
+    }
+
+    public async Task<StaffUser?> GetStaff(Guid restaurantId, short branchId, short staffId)
+    {
+        return await _ctx.FindAsync<StaffUser>(restaurantId, branchId, staffId);
+    }
+
+    public async Task DeleteStaff(StaffUser staff)
+    {
+        _ctx.Remove(staff);
+    }
+
+    public async Task<List<Branch>> ListBranches(Guid restaurantId)
+    {
+        return await _ctx.Set<Branch>()
+            .Where(branch => branch.RestaurantId == restaurantId)
+            .ToListAsync();
+    }
+
+    public async Task DeleteBranch(Branch branch)
+    {
+        _ctx.Remove(branch);
+    }
+
+    public async Task DeleteTable(Table table)
+    {
+        _ctx.Remove(table);
+    }
+
+    public async Task<Stock?> GetStock(Guid restaurantId, short branchId, short ingredientId)
+    {
+        return await _ctx.FindAsync<Stock>(restaurantId, branchId, ingredientId);
+    }
+
+    public async Task<Stock?> GetStock(Branch branch, short ingredientId)
+    {
+        return await GetStock(branch.RestaurantId, branch.Id, ingredientId);
+    }
+
+    public async Task SetStock(Branch branch, short ingredientId, decimal amount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(amount);
+
+        var item = await GetStock(branch, ingredientId);
+
+        if (item is null)
+        {
+            if (amount == 0)
+            {
+                return;
+            }
+            else
+            {
+                item = new Stock
+                {
+                    RestaurantId = branch.RestaurantId,
+                    BranchId = branch.Id,
+                    IngredientId = ingredientId,
+                    Amount = amount
+                };
+
+                _ctx.Add(item);
+            }
+        }
+        else
+        {
+            item.Amount = amount;
+            // _ctx.Entry(item).State = EntityState.Modified;
+        }
+    }
+
+    public async Task DeleteStock(Stock stock)
+    {
+        _ctx.Remove(stock);
+    }
+
+    public async Task SetContact(Branch branch, ContactDTO contact)
+    {
+        branch.Contact ??= new Contact();
+        branch.Contact.Name = contact?.name;
+        branch.Contact.Email = contact?.email;
+        branch.Contact.Phone = contact?.phone;
+    }
+
+    public async Task DeleteContact(Branch branch)
+    {
+        if (branch.Contact is not null)
+        {
+            _ctx.Remove(branch.Contact);
+        }
+    }
+
+    public async Task<bool> CheckPermissions(Branch branch, MasterUser user, Permission[]? permissions = null)
+    {
+        return await _ctx.Set<Restaurant>()
+            .AnyAsync(r =>
+                r.Id == branch.RestaurantId && (
+                    r.OwnerId == user.Id ||
+                    _ctx.Set<Manager>().Any(m =>
+                        m.RestaurantId == r.Id &&
+                        m.MasterId == user.Id &&
+                        m.BranchId == branch.Id
+            )));
+    }
+
+    public async Task<bool> CheckPermissions(Branch branch, StaffUser user, Permission[]? permissions = null)
+    {
+        return branch.RestaurantId == user.RestaurantId &&
+               branch.Id == user.BranchId;
+    }
+}

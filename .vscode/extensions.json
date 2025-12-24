@@ -1,0 +1,6 @@
+{
+    "recommendations": [
+        "ms-azuretools.vscode-azureresourcegroups",
+        "ms-azuretools.vscode-azure-github-copilot"
+    ]
+}

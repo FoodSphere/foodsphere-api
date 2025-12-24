@@ -1,0 +1,24 @@
+{
+    "rest-client.environmentVariables": {
+        "$shared": {
+            "email": "test@test",
+            "password": "test@test",
+            "restaurantName": "TestRestaurant",
+            "branchName": "main",
+        },
+        "local": {
+            // should sync with launchSettings.json
+            "host": "http://localhost:5266",
+        },
+    },
+    "files.exclude": {
+        "bin": true,
+        "obj": true,
+        "build": true,
+        "Migrations": true,
+        // "*.slnx": true,
+    },
+    "rest-client.previewOption": "exchange",
+    "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
+    "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
+}

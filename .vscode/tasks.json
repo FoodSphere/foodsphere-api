@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "reset database",
+      "dependsOn": [
+        "drop database",
+        "remove migrations",
+        "update migration",
+      ],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "update migration",
+      "dependsOn": [
+        "add new migration",
+        "update database"
+      ],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "drop database",
+      "type": "shell",
+      "command": "dotnet ef database drop --force"
+    },
+    {
+      "label": "remove migrations",
+      "type": "shell",
+
+      "windows": {
+        "command": "if (Test-Path Migrations) { Remove-Item Migrations -Recurse -Force }",
+      }
+    },
+    {
+      "label": "add new migration",
+      "type": "shell",
+      "command": "dotnet ef migrations add $(Get-Date -Format yyyy.MM.dd-HH.mm.ss)"
+    },
+    {
+      "label": "update database",
+      "type": "shell",
+      "command": "dotnet ef database update"
+    }
+  ]
+}
