@@ -40,14 +40,15 @@ else if (builder.Environment.IsProduction())
 }
 else
 {
-    throw new InvalidOperationException("Unsupported environment");
+    throw new InvalidOperationException("unsupported environment");
 }
 
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, dbContextOptions) => dbContextOptions
     .UseLazyLoadingProxies() // navigation properties, Eager vs Explicit vs Lazy
-    .UseNpgsql(builder.Configuration.GetConnectionString("foodsphere"), sqlOptions =>
+    .UseNpgsql(builder.Configuration.GetConnectionString("default"), sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(2);
+        // sqlOptions.UseAdminDatabase(builder.Configuration.GetConnectionString("admin"));
     })
     .UseSeeding(Seeding.Seed(serviceProvider))
     .UseAsyncSeeding(Seeding.SeedAsync(serviceProvider))
@@ -82,7 +83,7 @@ builder.Services.AddScoped<StaffAuthService>();
 builder.Services.AddScoped<ConsumerAuthService>();
 builder.Services.AddScoped<OrderingAuthService>();
 
-builder.Services.AddScoped<IdentityService>();
+// builder.Services.AddScoped<IdentityService>();
 builder.Services.AddScoped<BillService>();
 builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();

@@ -43,8 +43,8 @@ class JweMagicLinkService : IMagicLinkService
 
     public JweMagicLinkService(IConfiguration config)
     {
-        Issuer = config["Domain:api"]!;
-        Audience = config["Domain:ordering"]!;
+        Issuer = config["Domain:api:url"]!;
+        Audience = config["Domain:ordering:url"]!;
 
         SigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(config["MagicLink:encryption_key"]!));

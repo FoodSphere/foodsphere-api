@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodSphereAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251223132543_2025.12.23-20.25.37")]
-    partial class _20251223202537
+    [Migration("20251225045223_2025.12.25-11.52.17")]
+    partial class _20251225115217
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

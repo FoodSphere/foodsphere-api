@@ -3,7 +3,7 @@ build
 obj
 ignore
 *.slnx
+*.sln
 
-appsettings.*
 .editorconfig
 .env

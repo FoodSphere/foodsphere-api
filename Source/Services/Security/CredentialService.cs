@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using DotNetEnv;
 
 namespace FoodSphere.Services;
 
@@ -45,6 +46,7 @@ public class LocalCredentialService : BaseCredentialService
 {
     public LocalCredentialService(ConfigurationManager configurationManager) : base(configurationManager)
     {
+        Env.Load();
     }
 }
 

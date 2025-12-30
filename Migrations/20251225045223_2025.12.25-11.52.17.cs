@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodSphereAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class _20251223202537 : Migration
+    public partial class _20251225115217 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
