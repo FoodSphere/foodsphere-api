@@ -4,10 +4,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodSphereAPI.Migrations
+namespace foodsphereapi.Migrations
 {
     /// <inheritdoc />
-    public partial class _20251225115217 : Migration
+    public partial class _20251230232348 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -6,4 +6,5 @@ ignore
 *.sln
 
 .editorconfig
-.env
+.env*
+!.env.example

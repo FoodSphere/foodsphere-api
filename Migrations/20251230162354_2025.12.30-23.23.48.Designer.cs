@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodSphereAPI.Migrations
+namespace foodsphereapi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251225045223_2025.12.25-11.52.17")]
-    partial class _20251225115217
+    [Migration("20251230162354_2025.12.30-23.23.48")]
+    partial class _20251230232348
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
