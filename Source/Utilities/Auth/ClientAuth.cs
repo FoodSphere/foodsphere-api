@@ -98,9 +98,9 @@ namespace FoodSphere.Configurations
 
             var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
                 .CreateLogger("JwtClientConfiguration");
-            var branchService = context.HttpContext.RequestServices.GetRequiredService<BranchService>();
+            var staffService = context.HttpContext.RequestServices.GetRequiredService<StaffService>();
 
-            var staff = await branchService.GetStaff(
+            var staff = await staffService.GetStaff(
                 Guid.Parse(restaurantId),
                 short.Parse(branchId),
                 short.Parse(userId)
