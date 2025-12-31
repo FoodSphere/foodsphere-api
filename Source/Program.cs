@@ -89,6 +89,7 @@ builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<RestaurantService>();
+builder.Services.AddScoped<StaffService>();
 builder.Services.AddScoped<OrderingService>();
 builder.Services.AddScoped<DashboardService>();
 

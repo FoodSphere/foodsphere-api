@@ -1,8 +1,9 @@
-@login_url =
+@portal_id =
 ##################################################
-# @name staff_login
+# @name staff_token
 
-GET {{login_url}}
+GET {{host}}/auth/staff/token?portal_id={{portal_id}}
 
 ##################################################
-
+@jwt = {{staff_token.response.body.$.access_token}}
+##################################################

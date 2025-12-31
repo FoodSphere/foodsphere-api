@@ -80,23 +80,25 @@ public class StaffPortalResponse
 [Route("client/restaurants/{restaurant_id}/branches/{branch_id}/staffs")]
 public class StaffController(
     ILogger<StaffController> logger,
-    BranchService branchService
+    BranchService branchService,
+    StaffService staffService
 ) : ClientController
 {
     readonly ILogger<StaffController> _logger = logger;
     readonly BranchService _branchService = branchService;
+    readonly StaffService _staffService = staffService;
 
     [HttpPost("{staff_id}/portal")]
     public async Task<ActionResult<StaffPortalResponse>> CreatePortal(Guid restaurant_id, short branch_id, short staff_id)
     {
-        var staff = await _branchService.GetStaff(restaurant_id, branch_id, staff_id);
+        var staff = await _staffService.GetStaff(restaurant_id, branch_id, staff_id);
 
         if (staff is null)
         {
             return NotFound();
         }
 
-        var portal = await _branchService.CreateStaffPortal(staff);
+        var portal = await _staffService.CreateStaffPortal(staff);
 
         return StaffPortalResponse.FromModel(portal);
     }
@@ -111,7 +113,7 @@ public class StaffController(
             return NotFound();
         }
 
-        var staff = await _branchService.CreateStaff(
+        var staff = await _staffService.CreateStaff(
             branch: branch,
             name: body.name,
             roles: body.roles,
@@ -138,7 +140,7 @@ public class StaffController(
     [HttpGet("{staff_id}")]
     public async Task<ActionResult<StaffResponse>> GetStaff(Guid restaurant_id, short branch_id, short staff_id)
     {
-        var staff = await _branchService.GetStaff(restaurant_id, branch_id, staff_id);
+        var staff = await _staffService.GetStaff(restaurant_id, branch_id, staff_id);
 
         if (staff is null)
         {
@@ -151,15 +153,15 @@ public class StaffController(
     [HttpDelete("{staff_id}")]
     public async Task<ActionResult> DeleteStaff(Guid restaurant_id, short branch_id, short staff_id)
     {
-        var staff = await _branchService.GetStaff(restaurant_id, branch_id, staff_id);
+        var staff = await _staffService.GetStaff(restaurant_id, branch_id, staff_id);
 
         if (staff is null)
         {
             return NotFound();
         }
 
-        await _branchService.DeleteStaff(staff);
-        await _branchService.Save();
+        await _staffService.DeleteStaff(staff);
+        await _staffService.Save();
 
         return NoContent();
     }

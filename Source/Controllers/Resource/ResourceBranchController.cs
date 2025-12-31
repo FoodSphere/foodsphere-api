@@ -133,11 +133,13 @@ public class ResourceStockDTO
 [Route("resource/restaurants/{restaurant_id}/branches")]
 public class ResourceBranchController(
     ILogger<ResourceBranchController> logger,
-    BranchService branchService
+    BranchService branchService,
+    StaffService staffService
 ) : AdminController
 {
     readonly ILogger<ResourceBranchController> _logger = logger;
     readonly BranchService _branchService = branchService;
+    readonly StaffService _staffService = staffService;
 
     [HttpPost]
     public async Task<ActionResult<ResourceBranchResponse>> CreateBranch(Guid restaurant_id, ResourceBranchRequest body)
@@ -284,7 +286,7 @@ public class ResourceBranchController(
             return NotFound();
         }
 
-        var staff = await _branchService.CreateStaff(
+        var staff = await _staffService.CreateStaff(
             branch: branch,
             name: body.name,
             roles: body.roles,
@@ -301,7 +303,7 @@ public class ResourceBranchController(
     [HttpGet("{branch_id}/staffs/{staff_id}")]
     public async Task<ActionResult<ResourceStaffResponse>> GetStaff(Guid restaurant_id, short branch_id, short staff_id)
     {
-        var staff = await _branchService.GetStaff(restaurant_id, branch_id, staff_id);
+        var staff = await _staffService.GetStaff(restaurant_id, branch_id, staff_id);
 
         if (staff is null)
         {
@@ -342,15 +344,15 @@ public class ResourceBranchController(
     [HttpDelete("{branch_id}/staffs/{staff_id}")]
     public async Task<ActionResult> DeleteStaff(Guid restaurant_id, short branch_id, short staff_id)
     {
-        var staff = await _branchService.GetStaff(restaurant_id, branch_id, staff_id);
+        var staff = await _staffService.GetStaff(restaurant_id, branch_id, staff_id);
 
         if (staff is null)
         {
             return NotFound();
         }
 
-        await _branchService.DeleteStaff(staff);
-        await _branchService.Save();
+        await _staffService.DeleteStaff(staff);
+        await _staffService.Save();
 
         return NoContent();
     }
