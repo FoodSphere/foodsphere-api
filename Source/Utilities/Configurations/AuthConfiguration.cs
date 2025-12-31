@@ -64,23 +64,20 @@ namespace FoodSphere.Configurations
         public static Action<PolicySchemeOptions> PolicyConfigure()
         {
             return options => {
-                options.ForwardDefaultSelector = ctx =>
-                {
-                    var path = ctx.Request.Path.Value;
+                // options.ForwardDefaultSelector = ctx =>
+                // {
+                //     var path = ctx.Request.Path.Value;
 
-                    if (path is null) {
-                        Console.WriteLine("Request path is null.");
-                        return JwtClientConfiguration.SchemeName;
-                    }
+                //     if (path is null) {
+                //         return JwtClientConfiguration.SchemeName;
+                //     }
 
-                    // path from Controllers.Consumer.SelfOrderingController
-                    if (path.StartsWith("/consumer/ordering")) {
-                        Console.WriteLine("Using ordering scheme.");
-                        return JwtOrderingConfiguration.SchemeName;
-                    }
+                //     if (path.StartsWith("/consumer/ordering")) {
+                //         return JwtOrderingConfiguration.SchemeName;
+                //     }
 
-                    return JwtClientConfiguration.SchemeName;
-                };
+                //     return JwtClientConfiguration.SchemeName;
+                // };
             };
         }
     }

@@ -34,7 +34,10 @@
     {
       "label": "add new migration",
       "type": "shell",
-      "command": "dotnet ef migrations add $(Get-Date -Format yyyy.MM.dd-HH.mm.ss)"
+
+      "windows": {
+        "command": "dotnet ef migrations add $(Get-Date -Format yyyy.MM.dd-HH.mm.ss)"
+      }
     },
     {
       "label": "update database",

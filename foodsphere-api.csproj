@@ -15,6 +15,7 @@
     <PackageReference Include="Azure.Identity" Version="1.17.1" />
     <PackageReference Include="Azure.Security.KeyVault.Keys" Version="4.8.0" />
     <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.8.0" />
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="MessagePack" Version="3.1.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
