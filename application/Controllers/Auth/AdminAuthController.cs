@@ -25,7 +25,7 @@ public class AdminAuthController(
     readonly AdminAuthService _authService = authService;
 
     [HttpPost("token")]
-    public async Task<ActionResult<AdminTokenResponse>> PostAdminToken(AdminTokenRequest body)
+    public async Task<ActionResult<AdminTokenResponse>> GenerateToken(AdminTokenRequest body)
     {
         var token = await _authService.GenerateToken(body.identifier);
 
