@@ -2,9 +2,6 @@ bin
 build
 obj
 ignore
-*.slnx
-*.sln
 
-.editorconfig
 .env*
 !.env.example
