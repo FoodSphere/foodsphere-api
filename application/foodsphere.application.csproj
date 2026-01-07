@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <UserSecretsId>1916dc6a-c19f-4559-914c-deddf27b4f05</UserSecretsId>
     <NoWarn>CS1998</NoWarn>

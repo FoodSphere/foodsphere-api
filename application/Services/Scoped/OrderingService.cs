@@ -60,7 +60,6 @@ public class OrderingService(
         }
 
         portal.Use();
-        await Save();
 
         var billMember = await _billService.AddBillMember(portal.BillId, consumerId);
         var token = await _orderingAuthService.GenerateToken(billMember);

@@ -46,7 +46,7 @@ public class LocalCredentialService : BaseCredentialService
 {
     public LocalCredentialService(ConfigurationManager configurationManager) : base(configurationManager)
     {
-        Env.Load(".env.development");
+        Env.Load("../.env.development");
         configurationManager.AddEnvironmentVariables();
     }
 }

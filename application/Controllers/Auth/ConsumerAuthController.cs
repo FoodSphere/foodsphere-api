@@ -22,7 +22,7 @@ public class ConsumerAuthController(
     readonly ConsumerAuthService _authService = authService;
 
     // [HttpPost("token")]
-    // public async Task<ActionResult<ConsumerTokenResponse>> PostConsumerToken(ConsumerTokenRequest body)
+    // public async Task<ActionResult<ConsumerTokenResponse>> GenerateToken(ConsumerTokenRequest body)
     // {
     //     var token = await _authService.GenerateToken();
 

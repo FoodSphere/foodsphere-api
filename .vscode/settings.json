@@ -12,9 +12,9 @@
         },
     },
     "files.exclude": {
-        "bin": true,
-        "obj": true,
-        "build": true,
+        "**/bin": true,
+        "**/obj": true,
+        "**/build": true,
         "Migrations": true,
         // "*.slnx": true,
     },
