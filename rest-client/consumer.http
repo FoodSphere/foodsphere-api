@@ -4,6 +4,14 @@
 # redirect          https://ordering.foodsphere.com headers: authentication's token { bill_id: "...", consumer_id: "..." }
 # request to        https://api.foodsphere.com/consumer/self-ordering/current
 # opaque token => meaningless string
+#
+# # การป้องกัน QR code โต๊ะ
+# - เมื่อลูกค้าสแกน QR code จะเป็นการเปิดโต๊ะ
+# - โต๊ะที่เปิดแล้วจะมี รหัส เหมือนเลขห้องเวลาสร้างเกมเล่นกับเพือน
+# - คนถัดไปที่มาสแกนจะต้องใส่ รหัส เพื่อเข้าร่วมโต๊ะ
+# - คนที่เข้าร่วมโต๊ะแล้ว จะสแกน QR code เดิมเข้าได้โดยไม่ต้องใส่ รหัส เพราะใช้ cookie ในการจำ
+# - คนที่เข้าร่วมโต๊ะแล้ว สามารถสร้าง QR code พิเศษเพื่อให้คนอื่นแสกนได้ คนที่สแกนจะเข้าร่วมโต๊ะได้เลยไม่ต้องใส่ รหัส
+# - รหัสจะถูกสุ่มใหม่ทุกครั้งที่เปิดโต๊ะ ป้องกันลูกค้าเก่า
 
 @portal_id = 2b0f544f-371e-4048-854b-2265a2c1ab16
 @menu_id_1 = 1
