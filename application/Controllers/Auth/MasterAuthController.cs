@@ -33,7 +33,7 @@ public class MasterAuthController(
     /// </summary>
     [HttpPost()]
     public async Task<Results<
-        Ok,
+        Created,
         ValidationProblem
     >> Register(RegisterRequest body)
     {
@@ -59,7 +59,7 @@ public class MasterAuthController(
 
         await SendConfirmationEmailAsync(user, body.email);
 
-        return TypedResults.Ok();
+        return TypedResults.Created();
     }
 
     [HttpPost("token")]
