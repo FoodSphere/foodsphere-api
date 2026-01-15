@@ -16,9 +16,9 @@
         "**/obj": true,
         "**/build": true,
         "Migrations": true,
-        // "*.slnx": true,
     },
     "rest-client.previewOption": "exchange",
     "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
     "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
+    "dotnet.defaultSolution": "foodsphere.slnx",
 }
