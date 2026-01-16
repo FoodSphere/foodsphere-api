@@ -21,7 +21,7 @@ public static class SwaggerConfiguration
 
             options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement()
             {
-                [new OpenApiSecuritySchemeReference("bearer", doc)] = []
+                [new OpenApiSecuritySchemeReference("Bearer", doc)] = [] // name must match the SecurityDefinition scheme
             });
 
             var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";

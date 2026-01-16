@@ -56,5 +56,10 @@ public class MasterControllerTests(SharedAppFixture fixture) : SharedAppTestsBas
         var response = await _client.PostAsJsonAsync("/auth/master/token", requestBody, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var responseBody = await response.Content.ReadFromJsonAsync<Data.DTOs.TokenResponse>(TestContext.Current.CancellationToken);
+
+        responseBody.Should().NotBeNull();
+        responseBody.access_token.Should().NotBeNullOrEmpty();
     }
 }
