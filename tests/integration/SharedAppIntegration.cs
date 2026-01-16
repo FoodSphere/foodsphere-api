@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
 using Testcontainers.PostgreSql;
+using DotNetEnv;
 
 [assembly: AssemblyFixture(typeof(FoodSphere.Tests.Integration.SharedAppFixture))]
 
@@ -18,7 +20,13 @@ public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Development");
+        // builder.UseEnvironment("Development");
+        builder.ConfigureAppConfiguration((context, configBuilder) =>
+        {
+            Env.Load(".env.test");
+            configBuilder.AddEnvironmentVariables();
+        });
+
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<DbContextOptions<AppDbContext>>();
