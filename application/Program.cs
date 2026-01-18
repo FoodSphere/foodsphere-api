@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 if (builder.Environment.IsDevelopment())
 {
+    // should we use Testcontainers in dev?
     Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
     credentialService = new LocalCredentialService(builder.Configuration);
     builder.Services.AddFoodSphereOptions(builder.Configuration);
@@ -104,7 +105,7 @@ builder.Services.AddTransient<
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddProblemDetails(); // RFC 7807
+// builder.Services.AddProblemDetails(); // RFC 9457, Result.Problem()
 // builder.Services.AddHealthChecks()
 //     .AddCheck<HealthCheck>("custom_health_check")
 //     ;
