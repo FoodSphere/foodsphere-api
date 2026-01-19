@@ -28,7 +28,11 @@
       "type": "shell",
 
       "windows": {
-        "command": "if (Test-Path Migrations) { Remove-Item Migrations -Recurse -Force }",
+        "command": "if (Test-Path application/Migrations) { Remove-Item application/Migrations -Recurse -Force }"
+      },
+      "linux": {
+        "command": "rm -rf application/Migrations"
+        // if [ -d application/Migrations ]; then rm -rf application/Migrations; fi
       }
     },
     {
@@ -37,6 +41,9 @@
 
       "windows": {
         "command": "dotnet ef migrations add $(Get-Date -Format yyyy.MM.dd-HH.mm.ss)"
+      },
+      "linux": {
+        "command": "dotnet ef migrations add $(date +\"%Y.%m.%d-%H.%M.%S\")"
       }
     },
     {
