@@ -5,11 +5,14 @@ using FoodSphere.Data.DTOs;
 
 namespace FoodSphere.Controllers.Client;
 
-public class RestaurantRequest
+public class QuickRestaurantRequest
 {
     public ContactDTO? contact { get; set; }
     public required string name { get; set; }
     public string? display_name { get; set; }
+    public string? address { get; set; }
+    public DateTime? opening_time { get; set; }
+    public DateTime? closing_time { get; set; }
 }
 
 public class RestaurantResponse
@@ -38,21 +41,32 @@ public class RestaurantResponse
     }
 }
 
-public class QuickCreateResponse
+public class QuickRestaurantResponse
 {
     public Guid restaurant_id { get; set; }
+    public ContactDTO restaurant_contact { get; set; } = null!;
     public required string restaurant_name { get; set; }
+    public string? restaurant_display_name { get; set; }
+
     public short branch_id { get; set; }
     public string? branch_name { get; set; }
+    public string? branch_address { get; set; }
+    public DateTime? branch_opening_time { get; set; }
+    public DateTime? branch_closing_time { get; set; }
 
-    public static QuickCreateResponse FromModel(Restaurant restaurant, Branch branch)
+    public static QuickRestaurantResponse FromModel(Restaurant restaurant, Branch branch)
     {
-        return new QuickCreateResponse
+        return new QuickRestaurantResponse
         {
             restaurant_id = restaurant.Id,
+            restaurant_contact = ContactDTO.FromModel(restaurant.Contact)!,
             restaurant_name = restaurant.Name,
+            restaurant_display_name = restaurant.DisplayName,
             branch_id = branch.Id,
             branch_name = branch.Name,
+            branch_address = branch.Address,
+            branch_opening_time = branch.OpeningTime,
+            branch_closing_time = branch.ClosingTime,
         };
     }
 }
@@ -70,7 +84,7 @@ public class RestaurantController(
     readonly BranchService _branchService = branchService;
 
     [HttpPost]
-    public async Task<ActionResult<QuickCreateResponse>> CreateRestaurant(RestaurantRequest body)
+    public async Task<ActionResult<QuickRestaurantResponse>> CreateRestaurant(QuickRestaurantRequest body)
     {
         var restaurant = await _restaurantService.CreateRestaurant(
             ownerId: MasterUser.Id,
@@ -94,7 +108,7 @@ public class RestaurantController(
             nameof(Resource.ResourceRestaurantController.GetRestaurant),
             GetContollerName(nameof(Resource.ResourceRestaurantController)),
             new { restaurant_id = restaurant.Id },
-            QuickCreateResponse.FromModel(restaurant, branch)
+            QuickRestaurantResponse.FromModel(restaurant, branch)
         );
     }
 
