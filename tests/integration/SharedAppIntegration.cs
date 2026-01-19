@@ -12,7 +12,6 @@ using DotNetEnv;
 
 namespace FoodSphere.Tests.Integration;
 
-// mock external dependencies
 // https://github.com/TDMR87/IntegrationTestsInDotnet
 public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
@@ -25,6 +24,11 @@ public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
             Env.Load(".env.test");
             configBuilder.AddEnvironmentVariables();
         });
+
+        // override service registrations, mock external dependencies
+        // builder.ConfigureTestServices(services =>
+        // {
+        // });
 
         builder.UseEnvironment("Development");
         Environment.SetEnvironmentVariable("ConnectionStrings:default", _dbContainer.GetConnectionString());
@@ -51,9 +55,9 @@ public abstract class SharedAppTestsBase(SharedAppFixture Factory)
     protected readonly HttpClient _client = Factory.CreateClient();
     protected IServiceScope CreateScope() => Factory.Services.CreateScope();
 
-    protected TestSeedingBuilder CreateTestDataBuilder(IServiceScope? scope = null)
+    protected TestSeedingBuilder CreateSeedingBuilder(IServiceScope? scope = null, CancellationToken? cancellationToken = null)
     {
-        return new(scope ?? CreateScope(), disposeScope: scope is null);
+        return new(scope ?? CreateScope(), disposeScope: scope is null, cancellationToken ?? TestContext.Current.CancellationToken);
     }
 
     protected void SetJwtToken(string token)
