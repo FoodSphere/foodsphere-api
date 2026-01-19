@@ -1,65 +1,50 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using FoodSphere.Data.Models;
 
 namespace FoodSphere.Tests.Integration;
 
-public class MasterControllerTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
+public class MasterApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
 {
-    async Task<MasterUser> SeedMasterAsync()
-    {
-        using var scope = CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<MasterUser>>();
-
-        var unique = GetUniqueName();
-        var user = new MasterUser()
-        {
-            UserName = $"{unique}@foodsphere.com",
-            Email = $"{unique}@foodsphere.com",
-        };
-
-        var result = await userManager.CreateAsync(user, "Password123!");
-
-        return user;
-    }
-
     [Fact]
-    public async Task Register_As_Master_Should_Succeed()
+    public async Task Post_MasterUser_Should_Succeed()
     {
-        var unique = GetUniqueName();
+        var unique = TestSeedingGenerator.GetUniqueString();
         // mock email service?
 
         var requestBody = new Data.DTOs.RegisterRequest
         {
-            email = $"{unique}@foodsphere.com",
+            email = $"TEST:{unique}@{TestSeedingGenerator.GetDomain()}",
             password = "Password123!",
         };
 
         var response = await _client.PostAsJsonAsync("/auth/master", requestBody, TestContext.Current.CancellationToken);
-
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // var responseBody = await response.Content.ReadFromJsonAsync<>(JsonSerializerOptions, TestContext.Current.CancellationToken);
+        // responseBody.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task Login_As_Master_Should_Succeed()
+    public async Task Post_MasterUser_Token_Should_Succeed()
     {
-        var user = await SeedMasterAsync();
+        using var builder = CreateSeedingBuilder();
 
-        var requestBody = new Data.DTOs.RegisterRequest
+        var masterUser = await builder.SeedMasterUserAsync();
+
+        await builder.CommitAsync();
+        var requestBody = new Data.DTOs.TokenRequest
         {
-            email = $"{user.Email}",
-            password = "Password123!",
+            email = masterUser.Email,
+            password = masterUser.Password,
         };
 
         var response = await _client.PostAsJsonAsync("/auth/master/token", requestBody, TestContext.Current.CancellationToken);
-
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<Data.DTOs.TokenResponse>(TestContext.Current.CancellationToken);
-
+        var responseBody = await response.Content.ReadFromJsonAsync<Data.DTOs.TokenResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
+
         responseBody.access_token.Should().NotBeNullOrEmpty();
+        // check token validity?
     }
 }

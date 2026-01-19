@@ -17,28 +17,25 @@ public static class TestSeedingGenerator
     static readonly string[] unit = ["kg", "g", "lb", "oz", "l", "ml", "cup", "tbsp", "tsp", "piece"];
 
     public static string GetUniqueString() => Guid.NewGuid().ToString();
+
     public static string GetUnit() => unit[Random.Shared.Next(unit.Length)];
+
     public static string GetDomain() => "foodsphere.com";
 
     public static decimal GetAmount() => Math.Round((decimal)(Random.Shared.NextDouble() * 10), 2);
 
-    public static string GetPhone()
+    public static string GetPhone() => string.Create(10, 0, (span, _) =>
     {
-        var sb = new StringBuilder(15);
-
-        // use Enumerable?
-        for (var i = 0; i < sb.MaxCapacity; i++)
+        for (var i = 0; i < span.Length; i++)
         {
-            sb.Append(Random.Shared.Next(10));
+            span[i] = (char)('0' + Random.Shared.Next(10));
         }
-
-        return sb.ToString();
-    }
+    });
 }
 
-public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false) : IDisposable
+public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false, CancellationToken cancellationToken = default) : IDisposable
 {
-    public async Task<int> CommitAsync(CancellationToken cancellationToken = default)
+    public async Task<int> CommitAsync()
     {
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
@@ -54,9 +51,8 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false) 
         }
     }
 
-    public async Task<TestUserData> SeedMasterAsync(
-        CancellationToken cancellationToken = default
-    ) {
+    public async Task<TestUserData> SeedMasterUserAsync()
+    {
         var unique = TestSeedingGenerator.GetUniqueString();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<MasterUser>>();
 
@@ -78,10 +74,8 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false) 
         );
     }
 
-    public async Task<Restaurant> SeedRestaurantAsync(
-        string ownerId,
-        CancellationToken cancellationToken = default
-    ) {
+    public async Task<Restaurant> SeedRestaurantAsync(string ownerId)
+    {
         var unique = TestSeedingGenerator.GetUniqueString();
         var restaurantService = scope.ServiceProvider.GetRequiredService<RestaurantService>();
 
@@ -95,10 +89,8 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false) 
         return restaurant;
     }
 
-    public async Task<Menu> SeedMenuAsync(
-        Guid restaurantId,
-        CancellationToken cancellationToken = default
-    ) {
+    public async Task<Menu> SeedMenuAsync(Guid restaurantId)
+    {
         var unique = TestSeedingGenerator.GetUniqueString();
         var menuService = scope.ServiceProvider.GetRequiredService<MenuService>();
 
@@ -115,10 +107,8 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false) 
         return menu;
     }
 
-    public async Task<Ingredient> SeedIngredientAsync(
-        Guid restaurantId,
-        CancellationToken cancellationToken = default
-    ) {
+    public async Task<Ingredient> SeedIngredientAsync(Guid restaurantId)
+    {
         var unique = TestSeedingGenerator.GetUniqueString();
         var ingredientService = scope.ServiceProvider.GetRequiredService<MenuService>();
 
@@ -134,10 +124,8 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false) 
         return ingredient;
     }
 
-    public async Task<Branch> SeedBranchAsync(
-        Guid restaurantId,
-        CancellationToken cancellationToken = default
-    ) {
+    public async Task<Branch> SeedBranchAsync(Guid restaurantId)
+    {
         var unique = TestSeedingGenerator.GetUniqueString();
         var branchService = scope.ServiceProvider.GetRequiredService<BranchService>();
 
@@ -154,11 +142,8 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false) 
         return branch;
     }
 
-    public async Task<Table> SeedTableAsync(
-        Guid restaurantId,
-        short branchId,
-        CancellationToken cancellationToken = default
-    ) {
+    public async Task<Table> SeedTableAsync(Guid restaurantId, short branchId)
+    {
         var unique = TestSeedingGenerator.GetUniqueString();
         var tableService = scope.ServiceProvider.GetRequiredService<BranchService>();
 
