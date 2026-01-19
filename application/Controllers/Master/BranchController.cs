@@ -14,8 +14,8 @@ public class BranchRequest
     public required string name { get; set; }
     public string? display_name { get; set; }
     public string? address { get; set; }
-    public DateTime? opening_time { get; set; }
-    public DateTime? closing_time { get; set; }
+    public TimeOnly? opening_time { get; set; }
+    public TimeOnly? closing_time { get; set; }
 }
 
 public class BranchResponse //: IDTO<Branch, BranchResponse>
@@ -32,8 +32,8 @@ public class BranchResponse //: IDTO<Branch, BranchResponse>
     public string? name { get; set; }
     public string? display_name { get; set; }
     public string? address { get; set; }
-    public DateTime? opening_time { get; set; }
-    public DateTime? closing_time { get; set; }
+    public TimeOnly? opening_time { get; set; }
+    public TimeOnly? closing_time { get; set; }
 
     public static BranchResponse FromModel(Branch model)
     {

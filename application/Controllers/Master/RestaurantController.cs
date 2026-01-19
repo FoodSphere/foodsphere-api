@@ -11,8 +11,8 @@ public class QuickRestaurantRequest
     public required string name { get; set; }
     public string? display_name { get; set; }
     public string? address { get; set; }
-    public DateTime? opening_time { get; set; }
-    public DateTime? closing_time { get; set; }
+    public TimeOnly? opening_time { get; set; }
+    public TimeOnly? closing_time { get; set; }
 }
 
 public class RestaurantResponse
@@ -51,8 +51,8 @@ public class QuickRestaurantResponse
     public short branch_id { get; set; }
     public string? branch_name { get; set; }
     public string? branch_address { get; set; }
-    public DateTime? branch_opening_time { get; set; }
-    public DateTime? branch_closing_time { get; set; }
+    public TimeOnly? branch_opening_time { get; set; }
+    public TimeOnly? branch_closing_time { get; set; }
 
     public static QuickRestaurantResponse FromModel(Restaurant restaurant, Branch branch)
     {

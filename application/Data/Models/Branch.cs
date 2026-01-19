@@ -23,8 +23,8 @@ namespace FoodSphere.Data.Models
         public required string Name { get; set; }
         public string? DisplayName { get; set; }
         public string? Address { get; set; }
-        public DateTime? OpeningTime { get; set; }
-        public DateTime? ClosingTime { get; set; }
+        public TimeOnly? OpeningTime { get; set; }
+        public TimeOnly? ClosingTime { get; set; }
     }
 
     [PrimaryKey(nameof(RestaurantId), nameof(BranchId), nameof(MasterId))]
