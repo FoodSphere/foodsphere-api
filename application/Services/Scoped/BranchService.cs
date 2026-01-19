@@ -9,7 +9,11 @@ public class BranchService(AppDbContext context) : BaseService(context)
     public async Task<Branch> CreateBranch(
         Guid restaurantId,
         string name,
-        string? displayName = null
+        string? displayName = null,
+        string? address = null,
+        DateTime? openingTime = null,
+        DateTime? closingTime = null,
+        CancellationToken cancellationToken = default
     ) {
         var lastId = await _ctx.Set<Branch>()
             .Where(branch => branch.RestaurantId == restaurantId)
@@ -21,9 +25,12 @@ public class BranchService(AppDbContext context) : BaseService(context)
             RestaurantId = restaurantId,
             Name = name,
             DisplayName = displayName,
+            Address = address,
+            OpeningTime = openingTime,
+            ClosingTime = closingTime,
         };
 
-        await _ctx.AddAsync(branch);
+        await _ctx.AddAsync(branch, cancellationToken);
 
         return branch;
     }
@@ -59,18 +66,32 @@ public class BranchService(AppDbContext context) : BaseService(context)
         Branch branch,
         string? name = null
     ) {
+        return await CreateTable(
+            restaurantId: branch.RestaurantId,
+            branchId: branch.Id,
+            name: name
+        );
+    }
+
+    public async Task<Table> CreateTable(
+        Guid restaurantId,
+        short branchId,
+        string? name = null,
+        CancellationToken cancellationToken = default
+    ) {
         var lastId = await _ctx.Set<Table>()
-            .Where(table => table.RestaurantId == branch.RestaurantId && table.BranchId == branch.Id)
-            .MaxAsync(table => (int?)table.Id) ?? 0;
+            .Where(table => table.RestaurantId == restaurantId && table.BranchId == branchId)
+            .MaxAsync(table => (int?)table.Id, cancellationToken) ?? 0;
 
         var table = new Table
         {
             Id = (short)(lastId + 1),
-            Branch = branch,
+            RestaurantId = restaurantId,
+            BranchId = branchId,
             Name = name
         };
 
-        await _ctx.AddAsync(table);
+        await _ctx.AddAsync(table, cancellationToken);
 
         return table;
     }
