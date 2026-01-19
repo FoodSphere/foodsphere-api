@@ -11,8 +11,8 @@ public class BranchService(AppDbContext context) : BaseService(context)
         string name,
         string? displayName = null,
         string? address = null,
-        DateTime? openingTime = null,
-        DateTime? closingTime = null,
+        TimeOnly? openingTime = null,
+        TimeOnly? closingTime = null,
         CancellationToken cancellationToken = default
     ) {
         var lastId = await _ctx.Set<Branch>()
