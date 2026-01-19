@@ -32,12 +32,10 @@
     <Using Include="Xunit" />
     <Using Include="FluentAssertions" />
     <ProjectReference Include="../../application/foodsphere.application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update=".env.test">
+    <Compile Include="../TestSeeding.cs" />
+    <Content Update=".env.test">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 
 </Project>

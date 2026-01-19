@@ -11,11 +11,12 @@ public class MenuService(AppDbContext context) : BaseService(context)
         int price,
         string? displayName = null,
         string? description = null,
-        string? imageUrl = null
+        string? imageUrl = null,
+        CancellationToken cancellationToken = default
     ) {
         var lastId = await _ctx.Set<Menu>()
             .Where(menu => menu.RestaurantId == restaurantId)
-            .MaxAsync(menu => (int?)menu.Id) ?? 0;
+            .MaxAsync(menu => (int?)menu.Id, cancellationToken) ?? 0;
 
         var menu = new Menu
         {
@@ -28,7 +29,7 @@ public class MenuService(AppDbContext context) : BaseService(context)
             ImageUrl = imageUrl
         };
 
-        await _ctx.AddAsync(menu);
+        await _ctx.AddAsync(menu, cancellationToken);
 
         return menu;
     }
@@ -38,11 +39,12 @@ public class MenuService(AppDbContext context) : BaseService(context)
         string name,
         string? description = null,
         string? imageUrl = null,
-        string? unit = null
+        string? unit = null,
+        CancellationToken cancellationToken = default
     ) {
         var lastId = await _ctx.Set<Ingredient>()
             .Where(ingredient => ingredient.RestaurantId == restaurantId)
-            .MaxAsync(ingredient => (int?)ingredient.Id) ?? 0;
+            .MaxAsync(ingredient => (int?)ingredient.Id, cancellationToken) ?? 0;
 
         var ingredient = new Ingredient
         {
@@ -54,7 +56,7 @@ public class MenuService(AppDbContext context) : BaseService(context)
             Unit = unit
         };
 
-        await _ctx.AddAsync(ingredient);
+        await _ctx.AddAsync(ingredient, cancellationToken);
 
         return ingredient;
     }

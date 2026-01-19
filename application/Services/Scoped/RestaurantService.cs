@@ -9,7 +9,8 @@ public class RestaurantService(AppDbContext context) : BaseService(context)
     public async Task<Restaurant> CreateRestaurant(
         string ownerId,
         string name,
-        string? displayName = null
+        string? displayName = null,
+        CancellationToken cancellationToken = default
     ) {
         var restaurant = new Restaurant
         {
@@ -19,7 +20,7 @@ public class RestaurantService(AppDbContext context) : BaseService(context)
             DisplayName = displayName,
         };
 
-        await _ctx.AddAsync(restaurant);
+        await _ctx.AddAsync(restaurant, cancellationToken);
 
         return restaurant;
     }

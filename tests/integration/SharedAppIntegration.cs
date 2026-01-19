@@ -1,9 +1,9 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Configuration;
 using Testcontainers.PostgreSql;
 using DotNetEnv;
@@ -20,23 +20,14 @@ public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // builder.UseEnvironment("Development");
         builder.ConfigureAppConfiguration((context, configBuilder) =>
         {
             Env.Load(".env.test");
             configBuilder.AddEnvironmentVariables();
         });
 
-        builder.ConfigureTestServices(services =>
-        {
-            services.RemoveAll<DbContextOptions<AppDbContext>>();
-            services.AddDbContext<AppDbContext>((serviceProvider, dbContextOptions) => dbContextOptions
-                .UseLazyLoadingProxies()
-                .UseNpgsql(_dbContainer.GetConnectionString())
-                .UseSeeding(Seeding.Seed(serviceProvider))
-                .UseAsyncSeeding(Seeding.SeedAsync(serviceProvider))
-            );
-        });
+        builder.UseEnvironment("Development");
+        Environment.SetEnvironmentVariable("ConnectionStrings:default", _dbContainer.GetConnectionString());
     }
 
     async ValueTask IAsyncLifetime.InitializeAsync()
@@ -60,24 +51,19 @@ public abstract class SharedAppTestsBase(SharedAppFixture Factory)
     protected readonly HttpClient _client = Factory.CreateClient();
     protected IServiceScope CreateScope() => Factory.Services.CreateScope();
 
-    public void SetJwtToken(string token)
+    protected TestSeedingBuilder CreateTestDataBuilder(IServiceScope? scope = null)
+    {
+        return new(scope ?? CreateScope(), disposeScope: scope is null);
+    }
+
+    protected void SetJwtToken(string token)
     {
         _client.DefaultRequestHeaders.Authorization = new("Bearer", token);
     }
 
-    public static string GetUniqueName()
+    protected static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
-        return "test_" + Guid.NewGuid().ToString();
-    }
-
-    // protected static readonly JsonSerializerOptions JsonSerializerOptions = new()
-    // {
-    //     // Fail deserialization if members do not match.
-    //     // This will prevent us from receiving wrong data from an API response
-    //     // and regarding it as successfull result.
-    //     UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-
-    //     // Ignore case when deserializing JSON to support PascalCase and camelCase
-    //     PropertyNameCaseInsensitive = true
-    // };
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        PropertyNameCaseInsensitive = true
+    };
 }
