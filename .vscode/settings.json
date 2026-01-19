@@ -1,8 +1,8 @@
 {
     "rest-client.environmentVariables": {
         "$shared": {
-            "email": "test@test",
-            "password": "test@test",
+            "email": "test.email@foodsphere.com",
+            "password": "testpassword",
             "restaurantName": "TestRestaurant",
             "branchName": "main",
         },
