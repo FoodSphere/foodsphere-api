@@ -28,6 +28,7 @@
     <Using Include="FluentAssertions" />
     <ProjectReference Include="../../application/foodsphere.application.csproj" />
     <Compile Include="../TestSeeding.cs" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

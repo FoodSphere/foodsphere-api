@@ -33,9 +33,8 @@
     <Using Include="FluentAssertions" />
     <ProjectReference Include="../../application/foodsphere.application.csproj" />
     <Compile Include="../TestSeeding.cs" />
-    <Content Include="../../.env.development" Link=".env.development">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="../../.env.development" Link=".env.development" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

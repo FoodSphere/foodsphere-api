@@ -29,6 +29,7 @@
     <Using Include="Xunit" />
     <Using Include="FluentAssertions" />
     <ProjectReference Include="../../application/foodsphere.application.csproj" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
