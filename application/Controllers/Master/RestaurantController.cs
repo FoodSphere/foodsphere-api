@@ -99,7 +99,10 @@ public class RestaurantController(
 
         var branch = await _branchService.CreateBranch(
             restaurantId: restaurant.Id,
-            name: "main"
+            name: "main",
+            address: body.address,
+            openingTime: body.opening_time,
+            closingTime: body.closing_time
         );
 
         await _branchService.Save();
