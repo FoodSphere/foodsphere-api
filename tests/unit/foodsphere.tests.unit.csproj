@@ -28,8 +28,10 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="FluentAssertions" />
+    <Using Include="Moq" />
     <ProjectReference Include="../../application/foodsphere.application.csproj" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../TestSeeding.cs" />
   </ItemGroup>
 
 </Project>
