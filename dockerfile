@@ -9,7 +9,7 @@ RUN dotnet restore application/foodsphere.application.csproj
 COPY . .
 RUN dotnet publish application/foodsphere.application.csproj -c release -o /publish/application --no-restore /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 as runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 COPY --from=build /publish/application .

@@ -26,6 +26,7 @@ if (builder.Environment.IsDevelopment())
 }
 else if (builder.Environment.IsProduction())
 {
+    // this will validate on startup, but AzureCredentialService() need this option now
     builder.Services.AddOptions<KeyVaultOption>()
         .Bind(builder.Configuration.GetSection(KeyVaultOption.SectionName))
         .ValidateDataAnnotations()
