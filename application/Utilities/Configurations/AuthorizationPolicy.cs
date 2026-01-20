@@ -160,9 +160,9 @@ namespace FoodSphere.Utilities
     public class ClientRequirement : IAuthorizationRequirement
     {
         [Key(0)]
-        public PermissionType[] Permissions { get; set; } = [];
-        [Key(1)]
         public UserType? UserType { get; set; } = null;
+        [Key(1)]
+        public PermissionType[] Permissions { get; set; } = [];
     }
 
     public class ClientHandler(ILogger<ClientHandler> logger) : AuthorizationHandler<ClientRequirement>
@@ -173,8 +173,19 @@ namespace FoodSphere.Utilities
             AuthorizationHandlerContext context,
             ClientRequirement requirement
         ) {
+            // authentication middleware failed -> [IsAuthenticated == false]
+            // request still proceeds to this (authorization middleware)
+            if (context.User.Identity?.IsAuthenticated != true)
+            {
+                // multiple policy requirements -> all handlers are running
+                // .RequireAuthenticatedUser() handle rejection (DenyAnonymousAuthorizationRequirement)
+                return;
+            }
+
             if (requirement.UserType is not null)
             {
+                // confidently thrown exception here, because
+                // UserTypeClaimType already checked in JwtClientConfiguration.OnTokenValidated()
                 var userTypeClaim = context.User.FindFirstValue(AppClaimType.UserTypeClaimType) ?? throw new InvalidOperationException();
                 var userType = Enum.Parse<UserType>(userTypeClaim);
 
@@ -187,8 +198,7 @@ namespace FoodSphere.Utilities
                 }
             }
 
-            // but we must know branch before check permissions?
-
+            // but we must known which restaurant/branch before check permissions?
             context.Succeed(requirement);
         }
     }

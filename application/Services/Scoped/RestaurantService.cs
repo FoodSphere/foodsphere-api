@@ -12,7 +12,7 @@ public class RestaurantService(AppDbContext context) : BaseService(context)
         string? displayName = null,
         CancellationToken cancellationToken = default
     ) {
-        var restaurant = new Restaurant
+        var restaurant = new Restaurant()
         {
             OwnerId = ownerId,
             Contact = new Contact(),
@@ -20,6 +20,9 @@ public class RestaurantService(AppDbContext context) : BaseService(context)
             DisplayName = displayName,
         };
 
+        // we don't have to `_ctx.Add(contact)`,
+        // because the contact was set in restaurant
+        // before the restaurant is added to DbContext
         await _ctx.AddAsync(restaurant, cancellationToken);
 
         return restaurant;
