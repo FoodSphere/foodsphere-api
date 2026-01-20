@@ -16,8 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 if (builder.Environment.IsDevelopment())
 {
-    // should we use Testcontainers in dev?
-    Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+    // Testcontainers in dev -> too slow?
     credentialService = new LocalCredentialService(builder.Configuration);
     builder.Services.AddFoodSphereOptions(builder.Configuration);
     builder.Services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
@@ -35,7 +34,7 @@ else if (builder.Environment.IsProduction())
     credentialService = new AzureCredentialService(builder.Configuration);
     builder.Services.AddFoodSphereOptions(builder.Configuration);
 
-    // Azure Key Vault vs Db, If the app is spread across multiple machines: https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/configuration/overview
+    // Azure Key Vault vs Db, if the app is spread across multiple machines: https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/configuration/overview
     builder.Services.AddDataProtection();
         // .PersistKeysToDbContext<AppDbContext>();
 }
@@ -44,16 +43,22 @@ else
     throw new InvalidOperationException("unsupported environment");
 }
 
-builder.Services.AddDbContext<AppDbContext>((serviceProvider, dbContextOptions) => dbContextOptions
-    .UseLazyLoadingProxies() // navigation properties, Eager vs Explicit vs Lazy
-    .UseNpgsql(builder.Configuration.GetConnectionString("default"), sqlOptions =>
+builder.Services.AddDbContext<AppDbContext>((serviceProvider, optionsBuilder) => {
+    optionsBuilder.UseLazyLoadingProxies(); // navigation properties, Eager vs Explicit vs Lazy
+    optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("default"), sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(2);
         // sqlOptions.UseAdminDatabase(builder.Configuration.GetConnectionString("admin"));
-    })
-    .UseSeeding(Seeding.Seed(serviceProvider))
-    .UseAsyncSeeding(Seeding.SeedAsync(serviceProvider))
-);
+    });
+    optionsBuilder.UseSeeding(Seeding.Seed(serviceProvider));
+    optionsBuilder.UseAsyncSeeding(Seeding.SeedAsync(serviceProvider));
+
+    if (builder.Environment.IsDevelopment())
+    {
+        Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+        optionsBuilder.EnableSensitiveDataLogging();
+    }
+});
 
 // https://github.com/dotnet/aspnetcore/blob/8f657272b6a9092f58df84c0123729919a693fbe/src/Identity/Extensions.Core/src/IdentityServiceCollectionExtensions.cs#L23
 // services.TryAddScoped<UserManager<TUser>>(); register by AddIdentityCore:

@@ -146,7 +146,10 @@ public class BranchController(
         var branch = await _branchService.CreateBranch(
             restaurantId: restaurant_id,
             name: body.name,
-            displayName: body.display_name
+            displayName: body.display_name,
+            address: body.address,
+            openingTime: body.opening_time,
+            closingTime: body.closing_time
         );
 
         if (body.contact is not null)

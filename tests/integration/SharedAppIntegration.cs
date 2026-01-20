@@ -2,11 +2,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
 using Testcontainers.PostgreSql;
-using DotNetEnv;
+using FoodSphere.Services;
+using FoodSphere.Data.Models;
 
 [assembly: AssemblyFixture(typeof(FoodSphere.Tests.Integration.SharedAppFixture))]
 
@@ -19,19 +20,15 @@ public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((context, configBuilder) =>
-        {
-            Env.Load(".env.test");
-            configBuilder.AddEnvironmentVariables();
-        });
-
-        // override service registrations, mock external dependencies
-        // builder.ConfigureTestServices(services =>
-        // {
-        // });
-
         builder.UseEnvironment("Development");
-        Environment.SetEnvironmentVariable("ConnectionStrings:default", _dbContainer.GetConnectionString());
+        Environment.SetEnvironmentVariable("ConnectionStrings:default",
+            _dbContainer.GetConnectionString() + ";Include Error Detail=true"
+        );
+
+        builder.ConfigureTestServices(services =>
+        {
+            // override service registrations, mock external dependencies
+        });
     }
 
     async ValueTask IAsyncLifetime.InitializeAsync()
@@ -60,8 +57,13 @@ public abstract class SharedAppTestsBase(SharedAppFixture Factory)
         return new(scope ?? CreateScope(), disposeScope: scope is null, cancellationToken ?? TestContext.Current.CancellationToken);
     }
 
-    protected void SetJwtToken(string token)
+    protected async Task Authenticate(MasterUser user)
     {
+        using var scope = CreateScope();
+        var authService = scope.ServiceProvider.GetRequiredService<MasterAuthService>();
+
+        var token = await authService.GenerateToken(user);
+
         _client.DefaultRequestHeaders.Authorization = new("Bearer", token);
     }
 
