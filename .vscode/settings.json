@@ -3,11 +3,10 @@
         "$shared": {
             "email": "test.email@foodsphere.com",
             "password": "testpassword",
-            "restaurantName": "TestRestaurant",
-            "branchName": "main",
+            "restaurant_name": "TestRestaurant",
         },
         "local": {
-            // should sync with launchSettings.json
+            // should be sync with launchSettings.json
             "host": "http://localhost:5266",
         },
     },
@@ -15,9 +14,14 @@
         "**/bin": true,
         "**/obj": true,
         "**/build": true,
+        "**/publish": true,
+        "**/out": true,
         "Migrations": true,
     },
     "rest-client.previewOption": "exchange",
+    "githubPullRequests.remotes": [
+        "main"
+    ],
     "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
     "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
     "dotnet.defaultSolution": "foodsphere.slnx",
