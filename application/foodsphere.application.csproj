@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="../.env.development" Link=".env.development" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../.env.development" Link=".env.development" CopyToOutputDirectory="PreserveNewest" Condition="Exists('../.env.development')" />
   </ItemGroup>
 
 </Project>

@@ -39,7 +39,7 @@ Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
 {
-  "name": "test_{{restaurantName}}"
+  "name": "test_{{restaurant_name}}"
 }
 
 ##################################################
@@ -63,7 +63,7 @@ Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
 {
-  "name": "{{restaurantName}}",
+  "name": "{{restaurant_name}}",
   "display_name": "super restaurant"
 }
 
