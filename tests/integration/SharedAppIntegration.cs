@@ -16,7 +16,9 @@ namespace FoodSphere.Tests.Integration;
 // https://github.com/TDMR87/IntegrationTestsInDotnet
 public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18-alpine").Build();
+    readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18-alpine")
+        .WithReuse(true)
+        .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
