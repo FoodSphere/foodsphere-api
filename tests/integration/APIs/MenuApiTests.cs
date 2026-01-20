@@ -11,7 +11,7 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateSeedingBuilder();
 
-        var masterUser = await builder.SeedMasterUserAsync();
+        var (masterUser, _) = await builder.SeedMasterUserAsync();
         var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
 
         List<Controllers.Client.MenuIngredientDTO> ingredients = [];
@@ -30,16 +30,19 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         await builder.CommitAsync();
         var requestBody = new Controllers.Client.MenuRequest
         {
-            name = $"TEST:menu-name:{unique}",
-            display_name = $"TEST:menu-display_name:{unique}",
-            description = $"TEST:menu-description:{unique}",
+            name = $"TEST.menu-name.{unique}",
+            display_name = $"TEST.menu-display_name.{unique}",
+            description = $"TEST.menu-description.{unique}",
             image_url = $"http://foodsphere.com/img/{unique}.png",
             price = Random.Shared.Next(300),
             ingredients = ingredients,
         };
 
+        await Authenticate(masterUser);
+
         var response = await _client.PostAsJsonAsync($"client/restaurants/{restaurant.Id}/menus", requestBody, TestContext.Current.CancellationToken);
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.Created, content);
 
         var responseBody = await response.Content.ReadFromJsonAsync<Controllers.Client.MenuResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
@@ -64,14 +67,16 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
     {
         using var builder = CreateSeedingBuilder();
 
-        var masterUser = await builder.SeedMasterUserAsync();
+        var (masterUser, _) = await builder.SeedMasterUserAsync();
         var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
         var menu = await builder.SeedMenuAsync(restaurant.Id);
 
         await builder.CommitAsync();
+        await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"client/restaurants/{restaurant.Id}/menus/{menu.Id}", TestContext.Current.CancellationToken);
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, content);
 
         var responseBody = await response.Content.ReadFromJsonAsync<Controllers.Client.MenuResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
