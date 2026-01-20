@@ -17,7 +17,7 @@ public class BranchService(AppDbContext context) : BaseService(context)
     ) {
         var lastId = await _ctx.Set<Branch>()
             .Where(branch => branch.RestaurantId == restaurantId)
-            .MaxAsync(branch => (int?)branch.Id) ?? 0;
+            .MaxAsync(branch => (int?)branch.Id, cancellationToken) ?? 0;
 
         var branch = new Branch
         {
@@ -188,7 +188,12 @@ public class BranchService(AppDbContext context) : BaseService(context)
 
     public async Task SetContact(Branch branch, ContactDTO contact)
     {
-        branch.Contact ??= new Contact();
+        if (branch.Contact is null)
+        {
+            branch.Contact = new Contact();
+            await _ctx.AddAsync(branch.Contact);
+        }
+
         branch.Contact.Name = contact?.name;
         branch.Contact.Email = contact?.email;
         branch.Contact.Phone = contact?.phone;

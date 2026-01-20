@@ -42,9 +42,23 @@ public class MenuService(AppDbContext context) : BaseService(context)
         string? unit = null,
         CancellationToken cancellationToken = default
     ) {
-        var lastId = await _ctx.Set<Ingredient>()
-            .Where(ingredient => ingredient.RestaurantId == restaurantId)
-            .MaxAsync(ingredient => (int?)ingredient.Id, cancellationToken) ?? 0;
+        int lastId;
+        var hasPendingAdds = _ctx.ChangeTracker.Entries<Ingredient>()
+            .Any(e => e.State == EntityState.Added && e.Entity.RestaurantId == restaurantId);
+
+        if (hasPendingAdds)
+        {
+            lastId = _ctx.Set<Ingredient>().Local
+                .Where(ingredient => ingredient.RestaurantId == restaurantId)
+                .Max(ingredient => (int?)ingredient.Id) ?? 0;
+        }
+        else
+        {
+            lastId = await _ctx.Set<Ingredient>()
+                .Where(ingredient => ingredient.RestaurantId == restaurantId)
+                .Select(ingredient => (int?)ingredient.Id)
+                .MaxAsync(cancellationToken) ?? 0;
+        }
 
         var ingredient = new Ingredient
         {

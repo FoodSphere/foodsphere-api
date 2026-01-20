@@ -75,6 +75,19 @@ public class IngredientController(
         );
     }
 
+    [HttpGet("{ingredient_id}")]
+    public async Task<ActionResult<IngredientResponse>> GetIngredient(Guid restaurant_id, short ingredient_id)
+    {
+        var ingredient = await _menuService.GetIngredient(restaurant_id, ingredient_id);
+
+        if (ingredient is null)
+        {
+            return NotFound();
+        }
+
+        return IngredientResponse.FromModel(ingredient);
+    }
+
     [HttpPut("{ingredient_id}")]
     public async Task<ActionResult> UpdateIngredient(Guid restaurant_id, short ingredient_id, IngredientRequest body)
     {
