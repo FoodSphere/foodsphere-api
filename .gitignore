@@ -1,7 +1,9 @@
 bin
-build
 obj
+build
+publish
+out
+
 ignore
 
-.env*
-!.env.example
+.env.development
