@@ -33,7 +33,7 @@
     <Using Include="FluentAssertions" />
     <ProjectReference Include="../../application/foodsphere.application.csproj" />
     <Compile Include="../TestSeeding.cs" />
-    <Content Update=".env.test">
+    <Content Include="../../.env.development" Link=".env.development">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

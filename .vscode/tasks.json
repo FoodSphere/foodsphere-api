@@ -21,7 +21,7 @@
     {
       "label": "drop database",
       "type": "shell",
-      "command": "dotnet ef database drop --force"
+      "command": "dotnet ef database drop --force --project application/foodsphere.application.csproj"
     },
     {
       "label": "remove migrations",
@@ -40,16 +40,16 @@
       "type": "shell",
 
       "windows": {
-        "command": "dotnet ef migrations add $(Get-Date -Format yyyy.MM.dd-HH.mm.ss)"
+        "command": "dotnet ef migrations add $(Get-Date -Format yyyy.MM.dd-HH.mm.ss) --project application/foodsphere.application.csproj"
       },
       "linux": {
-        "command": "dotnet ef migrations add $(date +\"%Y.%m.%d-%H.%M.%S\")"
+        "command": "dotnet ef migrations add $(date +\"%Y.%m.%d-%H.%M.%S\") --project application/foodsphere.application.csproj"
       }
     },
     {
       "label": "update database",
       "type": "shell",
-      "command": "dotnet ef database update"
+      "command": "dotnet ef database update --project application/foodsphere.application.csproj"
     }
   ]
 }

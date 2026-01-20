@@ -27,6 +27,7 @@
     <Using Include="Xunit" />
     <Using Include="FluentAssertions" />
     <ProjectReference Include="../../application/foodsphere.application.csproj" />
+    <Compile Include="../TestSeeding.cs" />
   </ItemGroup>
 
 </Project>
