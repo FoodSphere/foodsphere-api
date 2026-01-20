@@ -11,27 +11,30 @@ public class BranchApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateSeedingBuilder();
 
-        var masterUser = await builder.SeedMasterUserAsync();
+        var (masterUser, _) = await builder.SeedMasterUserAsync();
         var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
 
         await builder.CommitAsync();
         var requestBody = new Controllers.Client.BranchRequest
         {
-            name = $"TEST:branch-name:{unique}",
-            display_name = $"TEST:branch-display_name:{unique}",
-            address = $"TEST:branch-address:{unique}",
+            name = $"TEST.branch-name.{unique}",
+            display_name = $"TEST.branch-display_name.{unique}",
+            address = $"TEST.branch-address.{unique}",
             opening_time = new TimeOnly(Random.Shared.Next(0, 12), Random.Shared.Next(0, 2) * 30),
             closing_time = new TimeOnly(Random.Shared.Next(12, 24), Random.Shared.Next(0, 2) * 30),
             contact = new()
             {
-                name = $"TEST:branch-contact-name:{unique}",
+                name = $"TEST.branch-contact-name.{unique}",
                 email = $"{unique}@{TestSeedingGenerator.GetDomain()}",
                 phone = TestSeedingGenerator.GetPhone(),
             },
         };
 
+        await Authenticate(masterUser);
+
         var response = await _client.PostAsJsonAsync($"client/restaurants/{restaurant.Id}/branches", requestBody, TestContext.Current.CancellationToken);
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.Created, content);
 
         var responseBody = await response.Content.ReadFromJsonAsync<Controllers.Client.BranchResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
@@ -55,14 +58,16 @@ public class BranchApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
     {
         using var builder = CreateSeedingBuilder();
 
-        var masterUser = await builder.SeedMasterUserAsync();
+        var (masterUser, _) = await builder.SeedMasterUserAsync();
         var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
         var branch = await builder.SeedBranchAsync(restaurant.Id);
 
         await builder.CommitAsync();
+        await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"client/restaurants/{restaurant.Id}/branches/{branch.Id}", TestContext.Current.CancellationToken);
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, content);
 
         var responseBody = await response.Content.ReadFromJsonAsync<Controllers.Client.BranchResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();

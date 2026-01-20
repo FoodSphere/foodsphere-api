@@ -11,20 +11,23 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateSeedingBuilder();
 
-        var masterUser = await builder.SeedMasterUserAsync();
+        var (masterUser, _) = await builder.SeedMasterUserAsync();
         var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
 
         await builder.CommitAsync();
         var requestBody = new Controllers.Client.IngredientRequest
         {
-            name = $"TEST:ingredient-name:{unique}",
-            description = $"TEST:ingredient-description:{unique}",
+            name = $"TEST.ingredient-name.{unique}",
+            description = $"TEST.ingredient-description.{unique}",
             image_url = $"http://foodsphere.com/img/{unique}.png",
             unit = TestSeedingGenerator.GetUnit()
         };
 
+        await Authenticate(masterUser);
+
         var response = await _client.PostAsJsonAsync($"client/restaurants/{restaurant.Id}/ingredients", requestBody, TestContext.Current.CancellationToken);
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.Created, content);
 
         var responseBody = await response.Content.ReadFromJsonAsync<Controllers.Client.IngredientResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
@@ -46,14 +49,16 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
     {
         using var builder = CreateSeedingBuilder();
 
-        var masterUser = await builder.SeedMasterUserAsync();
+        var (masterUser, _) = await builder.SeedMasterUserAsync();
         var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
         var ingredient = await builder.SeedIngredientAsync(restaurant.Id);
 
         await builder.CommitAsync();
+        await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"client/restaurants/{restaurant.Id}/ingredients/{ingredient.Id}", TestContext.Current.CancellationToken);
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, content);
 
         var responseBody = await response.Content.ReadFromJsonAsync<Controllers.Client.IngredientResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();

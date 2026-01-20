@@ -1,16 +1,9 @@
-using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using FoodSphere.Data.Models;
 using FoodSphere.Services;
 
 namespace FoodSphere.Tests;
-
-public record TestUserData(
-    string Id,
-    string Email,
-    string Password
-);
 
 public static class TestSeedingGenerator
 {
@@ -51,7 +44,7 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false, 
         }
     }
 
-    public async Task<TestUserData> SeedMasterUserAsync()
+    public async Task<(MasterUser, string)> SeedMasterUserAsync()
     {
         var unique = TestSeedingGenerator.GetUniqueString();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<MasterUser>>();
@@ -67,11 +60,7 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false, 
 
         await userManager.CreateAsync(user, password);
 
-        return new(
-            user.Id,
-            email,
-            password
-        );
+        return (user, password);
     }
 
     public async Task<Restaurant> SeedRestaurantAsync(string ownerId)
@@ -81,8 +70,8 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false, 
 
         var restaurant = await restaurantService.CreateRestaurant(
             ownerId: ownerId,
-            name: $"restaurant-name:{unique}",
-            displayName: $"restaurant-display_name:{unique}",
+            name: $"GENERATED.restaurant-name.{unique}",
+            displayName: $"GENERATED.restaurant-display_name.{unique}",
             cancellationToken: cancellationToken
         );
 
@@ -96,10 +85,10 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false, 
 
         var menu = await menuService.CreateMenu(
             restaurantId: restaurantId,
-            name: $"menu-name:{unique}",
-            displayName: $"menu-display_name:{unique}",
-            description: $"menu-description:{unique}",
-            imageUrl: $"http://foodsphere.com/img/{unique}.png",
+            name: $"GENERATED.menu-name.{unique}",
+            displayName: $"GENERATED.menu-display_name.{unique}",
+            description: $"GENERATED.menu-description.{unique}",
+            imageUrl: $"http://foodsphere.com/img/GENERATED.{unique}.png",
             price: Random.Shared.Next(300),
             cancellationToken: cancellationToken
         );
@@ -114,9 +103,9 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false, 
 
         var ingredient = await ingredientService.CreateIngredient(
             restaurantId: restaurantId,
-            name: $"ingredient-name:{unique}",
-            description: $"ingredient-description:{unique}",
-            imageUrl: $"http://foodsphere.com/img/{unique}.png",
+            name: $"GENERATED.ingredient-name.{unique}",
+            description: $"GENERATED.ingredient-description.{unique}",
+            imageUrl: $"http://foodsphere.com/img/GENERATED.{unique}.png",
             unit: TestSeedingGenerator.GetUnit(),
             cancellationToken: cancellationToken
         );
@@ -131,9 +120,9 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false, 
 
         var branch = await branchService.CreateBranch(
             restaurantId: restaurantId,
-            name: $"branch-name:{unique}",
-            displayName: $"branch-display_name:{unique}",
-            address: $"branch-address:{unique}",
+            name: $"GENERATED.branch-name.{unique}",
+            displayName: $"GENERATED.branch-display_name.{unique}",
+            address: $"GENERATED.branch-address.{unique}",
             openingTime: new TimeOnly(Random.Shared.Next(0, 12), Random.Shared.Next(0, 2) * 30),
             closingTime: new TimeOnly(Random.Shared.Next(12, 24), Random.Shared.Next(0, 2) * 30),
             cancellationToken: cancellationToken
@@ -150,7 +139,7 @@ public class TestSeedingBuilder(IServiceScope scope, bool disposeScope = false, 
         var table = await tableService.CreateTable(
             restaurantId: restaurantId,
             branchId: branchId,
-            name: $"table-name:{unique}",
+            name: $"GENERATED.table-name.{unique}",
             cancellationToken: cancellationToken
         );
 
