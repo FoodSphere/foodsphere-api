@@ -74,25 +74,25 @@ namespace FoodSphere.Configurations.Options
         public const string SectionName = "Domain";
 
         [ValidateObjectMembers]
-        public required NestdeDomainOption api { get; init; }
+        public required NestedDomainOption api { get; init; }
 
         [ValidateObjectMembers]
-        public required NestdeDomainOption admin { get; init; }
+        public required NestedDomainOption admin { get; init; }
 
         [ValidateObjectMembers]
-        public required NestdeDomainOption pos { get; init; }
+        public required NestedDomainOption pos { get; init; }
 
         [ValidateObjectMembers]
-        public required NestdeDomainOption master { get; init; }
+        public required NestedDomainOption master { get; init; }
 
         [ValidateObjectMembers]
-        public required NestdeDomainOption consumer { get; init; }
+        public required NestedDomainOption consumer { get; init; }
 
         [ValidateObjectMembers]
-        public required NestdeDomainOption ordering { get; init; }
+        public required NestedDomainOption ordering { get; init; }
     }
 
-    public class NestdeDomainOption
+    public class NestedDomainOption
     {
         [Required]
         public required string url { get; init; }
