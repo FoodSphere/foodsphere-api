@@ -1,10 +1,15 @@
 <Solution>
-  <Folder Name="/application/">
-    <Project Path="./application/foodsphere.application.csproj" />
+  <Folder Name="/Core/">
+    <Project Path="./src/core/foodsphere.core.csproj" />
   </Folder>
-  <Folder Name="/tests/">
-    <Project Path="./tests/unit/foodsphere.tests.unit.csproj" />
-    <Project Path="./tests/integration/foodsphere.tests.integration.csproj" />
-    <Project Path="./tests/system/foodsphere.tests.system.csproj" />
+  <Folder Name="/APIs/">
+    <Project Path="./src/client/client.api/foodsphere.client.api.csproj" />
+    <Project Path="./src/consumer/consumer.api/foodsphere.consumer.api.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="./src/client/client.test.unit/foodsphere.client.test.unit.csproj" />
+    <Project Path="./src/client/client.test.integration/foodsphere.client.test.integration.csproj" />
+    <!-- <Project Path="./src/consumer/consumer.test.unit/foodsphere.consumer.test.unit.csproj" /> -->
+    <!-- <Project Path="./src/consumer/consumer.test.integration/foodsphere.consumer.test.integration.csproj" /> -->
   </Folder>
 </Solution>

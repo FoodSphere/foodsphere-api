@@ -16,12 +16,9 @@
         "**/build": true,
         "**/publish": true,
         "**/out": true,
-        "Migrations": true,
+        "**/Migrations": true,
     },
     "rest-client.previewOption": "exchange",
-    "githubPullRequests.remotes": [
-        "main"
-    ],
     "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
     "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
     "dotnet.defaultSolution": "foodsphere.slnx",
