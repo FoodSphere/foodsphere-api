@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/application/">
+    <Project Path="./application/foodsphere.application.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="./tests/unit/foodsphere.tests.unit.csproj" />
+    <Project Path="./tests/integration/foodsphere.tests.integration.csproj" />
+    <Project Path="./tests/system/foodsphere.tests.system.csproj" />
+  </Folder>
+</Solution>

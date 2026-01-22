@@ -1,10 +1,9 @@
 bin
-build
 obj
-ignore
-*.slnx
-*.sln
+build
+publish
+out
 
-.editorconfig
-.env*
-!.env.example
+ignore
+
+.env.development

@@ -1,24 +1,28 @@
 {
     "rest-client.environmentVariables": {
         "$shared": {
-            "email": "test@test",
-            "password": "test@test",
-            "restaurantName": "TestRestaurant",
-            "branchName": "main",
+            "email": "test.email@foodsphere.com",
+            "password": "testpassword",
+            "restaurant_name": "TestRestaurant",
         },
         "local": {
-            // should sync with launchSettings.json
+            // should be sync with launchSettings.json
             "host": "http://localhost:5266",
         },
     },
     "files.exclude": {
-        "bin": true,
-        "obj": true,
-        "build": true,
+        "**/bin": true,
+        "**/obj": true,
+        "**/build": true,
+        "**/publish": true,
+        "**/out": true,
         "Migrations": true,
-        // "*.slnx": true,
     },
     "rest-client.previewOption": "exchange",
+    "githubPullRequests.remotes": [
+        "main"
+    ],
     "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
     "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
+    "dotnet.defaultSolution": "foodsphere.slnx",
 }
