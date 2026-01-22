@@ -1,15 +1,19 @@
 <Solution>
   <Folder Name="/Core/">
-    <Project Path="./src/core/foodsphere.core.csproj" />
+    <Project Path="src/Core/FoodSphere.Core.csproj" />
+  </Folder>
+  <Folder Name="/Aspire/">
+    <Project Path="src/Aspire/Aspire.AppHost/FoodSphere.Aspire.AppHost.csproj" />
+    <Project Path="src/Aspire/Aspire.ServiceDefaults/FoodSphere.Aspire.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/APIs/">
-    <Project Path="./src/client/client.api/foodsphere.client.api.csproj" />
-    <Project Path="./src/consumer/consumer.api/foodsphere.consumer.api.csproj" />
+    <Project Path="src/Client/Client.Api/FoodSphere.Client.Api.csproj" />
+    <Project Path="src/Consumer/Consumer.Api/FoodSphere.Consumer.Api.csproj" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="./src/client/client.test.unit/foodsphere.client.test.unit.csproj" />
-    <Project Path="./src/client/client.test.integration/foodsphere.client.test.integration.csproj" />
-    <!-- <Project Path="./src/consumer/consumer.test.unit/foodsphere.consumer.test.unit.csproj" /> -->
-    <!-- <Project Path="./src/consumer/consumer.test.integration/foodsphere.consumer.test.integration.csproj" /> -->
+    <Project Path="src/Client/Client.Test.Unit/FoodSphere.Client.Test.Unit.csproj" />
+    <Project Path="src/Client/Client.Test.Integration/FoodSphere.Client.Test.Integration.csproj" />
+    <Project Path="src/Consumer/Consumer.Test.Unit/FoodSphere.Consumer.Test.Unit.csproj" />
+    <Project Path="src/Consumer/Consumer.Test.Integration/FoodSphere.Consumer.Test.Integration.csproj" />
   </Folder>
 </Solution>

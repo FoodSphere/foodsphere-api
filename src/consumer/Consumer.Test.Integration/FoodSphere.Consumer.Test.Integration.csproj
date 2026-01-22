@@ -31,7 +31,7 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="FluentAssertions" />
-    <ProjectReference Include="../Client.Api/FoodSphere.Client.Api.csproj" />
+    <ProjectReference Include="../Consumer.Api/FoodSphere.Consumer.Api.csproj" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../.env.development" Link=".env.development" CopyToOutputDirectory="PreserveNewest" Condition="Exists('../.env.development')" />
   </ItemGroup>

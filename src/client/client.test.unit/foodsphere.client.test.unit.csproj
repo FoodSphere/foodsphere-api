@@ -29,7 +29,7 @@
     <Using Include="Xunit" />
     <Using Include="FluentAssertions" />
     <Using Include="Moq" />
-    <ProjectReference Include="../client.api/foodsphere.client.api.csproj" />
+    <ProjectReference Include="../Client.Api/FoodSphere.Client.Api.csproj" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

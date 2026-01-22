@@ -44,4 +44,8 @@
     <Content Include="../.env.development" Link=".env.development" CopyToOutputDirectory="PreserveNewest" Condition="Exists('../.env.development')" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../../Aspire/Aspire.ServiceDefaults/FoodSphere.Aspire.ServiceDefaults.csproj" />
+  </ItemGroup>
+
 </Project>
