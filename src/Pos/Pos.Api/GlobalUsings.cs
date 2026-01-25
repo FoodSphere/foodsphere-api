@@ -1,0 +1,10 @@
+global using Microsoft.Extensions.Options;
+global using FoodSphere.Core.Entities;
+global using FoodSphere.Core.Enums;
+global using FoodSphere.Core.DTOs;
+global using FoodSphere.Core.Options;
+global using FoodSphere.Core.Services;
+global using FoodSphere.Core.Api;
+global using FoodSphere.Pos.Api.DTOs;
+global using FoodSphere.Pos.Api.Services;
+global using FoodSphere.Pos.Api.Authorizations;

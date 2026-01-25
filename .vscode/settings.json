@@ -1,9 +1,9 @@
 {
     "rest-client.environmentVariables": {
         "$shared": {
-            "email": "test.email@foodsphere.com",
+            "email": "rest.client@foodsphere.com",
             "password": "testpassword",
-            "restaurant_name": "TestRestaurant",
+            "restaurant_name": "rest-client restaurant",
         },
         "local": {
             // should be sync with launchSettings.json
@@ -16,10 +16,9 @@
         "**/build": true,
         "**/publish": true,
         "**/out": true,
-        "**/Migrations": true,
     },
     "rest-client.previewOption": "exchange",
     "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
     "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
-    "dotnet.defaultSolution": "foodsphere.slnx",
+    "dotnet.defaultSolution": "FoodSphere.slnx",
 }

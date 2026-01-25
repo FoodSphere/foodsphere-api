@@ -1,0 +1,55 @@
+namespace FoodSphere.Resource.Api.DTOs;
+
+public class OrderRequest
+{
+    public List<OrderItemRequest> items { get; set; } = [];
+}
+
+public class OrderResponse
+{
+    public short id { get; set; }
+
+    public DateTime create_time { get; set; }
+    public DateTime update_time { get; set; }
+
+    public Guid bill_id { get; set; }
+
+    public List<OrderItemRequest> items { get; set; } = [];
+
+    public OrderStatus status { get; set; }
+
+    public static OrderResponse FromModel(Order model)
+    {
+        return new OrderResponse
+        {
+            id = model.Id,
+            create_time = model.CreateTime,
+            update_time = model.UpdateTime,
+            bill_id = model.BillId,
+            items = [.. model.Items.Select(OrderItemRequest.FromModel)],
+            status = model.Status,
+        };
+    }
+}
+
+public class OrderItemRequest
+{
+    public short menu_id { get; set; }
+    public short quantity { get; set; }
+    public string? note { get; set; }
+
+    public static OrderItemRequest FromModel(OrderItem model)
+    {
+        return new OrderItemRequest
+        {
+            menu_id = model.MenuId,
+            quantity = model.Quantity,
+            note = model.Note,
+        };
+    }
+}
+
+public class OrderStatusRequest
+{
+    public OrderStatus status { get; set; }
+}

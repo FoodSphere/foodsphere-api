@@ -1,6 +1,5 @@
-# cookie for frontend, jwt for api
-
-# @host = https://stingray-app-owvbf.ondigitalocean.app
+# cookie frontend, jwt api
+# @host =
 ##################################################
 # @name manager_register
 
@@ -28,13 +27,13 @@ Content-Type: application/json
 ##################################################
 # @name check_claims
 
-GET {{host}}/current/client/claims
+GET {{host}}/pos/current/claims
 Authorization: Bearer {{jwt}}
 
 ##################################################
 # @name create_restaurant
 
-POST {{host}}/client/restaurants
+POST {{host}}/pos/restaurants
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -47,7 +46,7 @@ Content-Type: application/json
 ##################################################
 # @name create_branch
 
-POST {{host}}/client/restaurants/{{test_restaurant_id}}/branches
+POST {{host}}/pos/restaurants/{{test_restaurant_id}}/branches
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -58,7 +57,7 @@ Content-Type: application/json
 ##################################################
 # @name quick_create_restaurant
 
-POST {{host}}/client/restaurants
+POST {{host}}/pos/restaurants
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -72,7 +71,7 @@ Content-Type: application/json
 ##################################################
 # @name get_branches
 
-GET {{host}}/client/restaurants/{{restaurant_id}}/branches
+GET {{host}}/pos/restaurants/{{restaurant_id}}/branches
 Authorization: Bearer {{jwt}}
 
 ##################################################
@@ -80,7 +79,7 @@ Authorization: Bearer {{jwt}}
 ##################################################
 # @name create_ingredient_1
 
-POST {{host}}/client/restaurants/{{restaurant_id}}/ingredients
+POST {{host}}/pos/restaurants/{{restaurant_id}}/ingredients
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -95,7 +94,7 @@ Content-Type: application/json
 ##################################################
 # @name create_ingredient_2
 
-POST {{host}}/client/restaurants/{{restaurant_id}}/ingredients
+POST {{host}}/pos/restaurants/{{restaurant_id}}/ingredients
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -109,7 +108,7 @@ Content-Type: application/json
 ##################################################
 # @name create_menu_1
 
-POST {{host}}/client/restaurants/{{restaurant_id}}/menus
+POST {{host}}/pos/restaurants/{{restaurant_id}}/menus
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -130,7 +129,7 @@ Content-Type: application/json
 ##################################################
 # @name create_menu_2
 
-POST {{host}}/client/restaurants/{{restaurant_id}}/menus
+POST {{host}}/pos/restaurants/{{restaurant_id}}/menus
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -154,7 +153,7 @@ Content-Type: application/json
 ##################################################
 # @name set_ingredient_1
 
-POST {{host}}/client/restaurants/{{restaurant_id}}/menus/{{menu_id_1}}/ingredients
+POST {{host}}/pos/restaurants/{{restaurant_id}}/menus/{{menu_id_1}}/ingredients
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -166,7 +165,7 @@ Content-Type: application/json
 ##################################################
 # @name set_stock_1
 
-POST {{host}}/client/restaurants/{{restaurant_id}}/branches/{{branch_id}}/stocks
+POST {{host}}/pos/restaurants/{{restaurant_id}}/branches/{{branch_id}}/stocks
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -180,7 +179,7 @@ Content-Type: application/json
 ##################################################
 # @name set_stock_2
 
-POST {{host}}/client/restaurants/{{restaurant_id}}/branches/{{branch_id}}/stocks
+POST {{host}}/pos/restaurants/{{restaurant_id}}/branches/{{branch_id}}/stocks
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -192,7 +191,7 @@ Content-Type: application/json
 ##################################################
 # @name set_stock_3
 
-POST {{host}}/client/restaurants/{{restaurant_id}}/branches/{{branch_id}}/stocks
+POST {{host}}/pos/restaurants/{{restaurant_id}}/branches/{{branch_id}}/stocks
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -204,7 +203,7 @@ Content-Type: application/json
 ##################################################
 # @name create_table
 
-POST {{host}}/client/restaurants/{{restaurant_id}}/branches/{{branch_id}}/tables
+POST {{host}}/pos/restaurants/{{restaurant_id}}/branches/{{branch_id}}/tables
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -217,7 +216,7 @@ Content-Type: application/json
 ##################################################
 # @name create_bill
 
-POST {{host}}/client/bills
+POST {{host}}/pos/bills
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -233,13 +232,13 @@ Content-Type: application/json
 ##################################################
 # @name get_bill
 
-GET {{host}}/client/bills/{{billID}}
+GET {{host}}/pos/bills/{{billID}}
 Authorization: Bearer {{jwt}}
 
 ##################################################
 # @name create_order_1
 
-POST {{host}}/client/bills/{{billID}}/orders
+POST {{host}}/pos/bills/{{billID}}/orders
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -261,7 +260,7 @@ Content-Type: application/json
 ##################################################
 # @name create_order_2
 
-POST {{host}}/client/bills/{{billID}}/orders
+POST {{host}}/pos/bills/{{billID}}/orders
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -277,7 +276,7 @@ Content-Type: application/json
 ##################################################
 # @name update_order_item
 
-POST {{host}}/client/bills/{{billID}}/orders/{{orderID1}}/items
+POST {{host}}/pos/bills/{{billID}}/orders/{{orderID1}}/items
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -289,7 +288,7 @@ Content-Type: application/json
 ##################################################
 # @name generate_ordering_portal
 
-POST {{host}}/client/bills/{{billID}}/portals
+POST {{host}}/pos/bills/{{billID}}/portals
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
@@ -303,7 +302,7 @@ Content-Type: application/json
 ##################################################
 # @name get_ordering_portals
 
-GET {{host}}/client/bills/{{billID}}/portals?portal_id={{ordering_portal_id}}
+GET {{host}}/pos/bills/{{billID}}/portals?portal_id={{ordering_portal_id}}
 Authorization: Bearer {{jwt}}
 
 ##################################################

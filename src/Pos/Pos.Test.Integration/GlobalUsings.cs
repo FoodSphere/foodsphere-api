@@ -1,0 +1,10 @@
+global using System.Net;
+global using System.Net.Http.Json;
+global using Microsoft.Extensions.DependencyInjection;
+global using Xunit;
+global using FluentAssertions;
+global using FoodSphere.Core.Entities;
+global using FoodSphere.Core.Enums;
+global using FoodSphere.Core.DTOs;
+global using FoodSphere.Core.Services;
+global using FoodSphere.Pos.Api.DTOs;

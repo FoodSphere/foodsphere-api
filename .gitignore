@@ -3,7 +3,7 @@ obj
 build
 publish
 out
-
+artifacts
 ignore
 
 .env.development

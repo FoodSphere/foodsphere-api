@@ -1,19 +1,22 @@
 <Solution>
-  <Folder Name="/Core/">
-    <Project Path="src/Core/FoodSphere.Core.csproj" />
-  </Folder>
   <Folder Name="/Aspire/">
     <Project Path="src/Aspire/Aspire.AppHost/FoodSphere.Aspire.AppHost.csproj" />
     <Project Path="src/Aspire/Aspire.ServiceDefaults/FoodSphere.Aspire.ServiceDefaults.csproj" />
   </Folder>
-  <Folder Name="/APIs/">
-    <Project Path="src/Client/Client.Api/FoodSphere.Client.Api.csproj" />
+  <Folder Name="/Core/">
+    <Project Path="src/Core/Core.Api/FoodSphere.Core.Api.csproj" />
+    <Project Path="src/Core/Core.Domain/FoodSphere.Core.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Applications/">
+    <Project Path="src/Resource/Resource.Api/FoodSphere.Resource.Api.csproj" />
+    <Project Path="src/Pos/Pos.Api/FoodSphere.Pos.Api.csproj" />
+    <Project Path="src/SelfOrdering/SelfOrdering.Api/FoodSphere.SelfOrdering.Api.csproj" />
     <Project Path="src/Consumer/Consumer.Api/FoodSphere.Consumer.Api.csproj" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="src/Client/Client.Test.Unit/FoodSphere.Client.Test.Unit.csproj" />
-    <Project Path="src/Client/Client.Test.Integration/FoodSphere.Client.Test.Integration.csproj" />
-    <Project Path="src/Consumer/Consumer.Test.Unit/FoodSphere.Consumer.Test.Unit.csproj" />
-    <Project Path="src/Consumer/Consumer.Test.Integration/FoodSphere.Consumer.Test.Integration.csproj" />
+    <Project Path="src/Pos/Pos.Test.Unit/FoodSphere.Pos.Test.Unit.csproj" />
+    <Project Path="src/Pos/Pos.Test.Integration/FoodSphere.Pos.Test.Integration.csproj" />
+    <!-- <Project Path="src/Consumer/Consumer.Test.Unit/FoodSphere.Consumer.Test.Unit.csproj" />
+    <Project Path="src/Consumer/Consumer.Test.Integration/FoodSphere.Consumer.Test.Integration.csproj" /> -->
   </Folder>
 </Solution>
