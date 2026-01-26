@@ -10,6 +10,10 @@ public static class SwaggerConfiguration
 
     public static Action<SwaggerGenOptions> Configure()
     {
+        // if capture inside lambda => Microsoft.Extensions.Options
+        // not real calling assembly we want
+        var callingAssembly = Assembly.GetCallingAssembly();
+
         return options =>
         {
             options.AddSecurityDefinition(JwtSchemeName, new OpenApiSecurityScheme
@@ -27,7 +31,7 @@ public static class SwaggerConfiguration
                 [new OpenApiSecuritySchemeReference(JwtSchemeName, doc)] = [] // name must match the SecurityDefinition scheme
             });
 
-            var assemblyName = Assembly.GetEntryAssembly()!.GetName();
+            var assemblyName = callingAssembly.GetName();
             var xmlFileName = $"{assemblyName.Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFileName);
 
