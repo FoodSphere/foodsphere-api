@@ -2,8 +2,13 @@ namespace FoodSphere.Common.DTOs;
 
 public class ContactDto
 {
+    /// <example>บิ๊กบัง</example>
     public string? name { get; set; }
+
+    /// <example>bigbang@foodsphere.com</example>
     public string? email { get; set; }
+
+    /// <example>0812345678</example>
     public string? phone { get; set; }
 
     public Contact ToModel()

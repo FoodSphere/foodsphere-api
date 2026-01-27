@@ -4,10 +4,19 @@ public class BranchRequest
 {
     public ContactDto? contact { get; set; }
 
+    /// <example>โรบินสันลาดกระบัง</example>
     public required string name { get; set; }
+
+    /// <example>ร้านบิ๊กบัง สาขาโรบินสันลาดกระบัง</example>
     public string? display_name { get; set; }
+
+    /// <example>71 Lat Krabang Rd, Lat Krabang, Bangkok 10520</example>
     public string? address { get; set; }
+
+    /// <example>10:00</example>
     public TimeOnly? opening_time { get; set; }
+
+    /// <example>22:00</example>
     public TimeOnly? closing_time { get; set; }
 }
 
@@ -22,10 +31,19 @@ public class BranchResponse //: IDTO<Branch, BranchResponse>
 
     public ContactDto? contact { get; set; }
 
+    /// <example>โรบินสันลาดกระบัง</example>
     public string? name { get; set; }
+
+    /// <example>ร้านบิ๊กบัง สาขาโรบินสันลาดกระบัง</example>
     public string? display_name { get; set; }
+
+    /// <example>71 Lat Krabang Rd, Lat Krabang, Bangkok 10520</example>
     public string? address { get; set; }
+
+    /// <example>10:00</example>
     public TimeOnly? opening_time { get; set; }
+
+    /// <example>22:00</example>
     public TimeOnly? closing_time { get; set; }
 
     public static BranchResponse FromModel(Branch model)
@@ -48,10 +66,7 @@ public class BranchResponse //: IDTO<Branch, BranchResponse>
 
 public class ManagerRequest
 {
-    public Guid restaurant_id;
-    public short branch_id;
     public required string master_id;
-
 }
 
 public class ManagerResponse

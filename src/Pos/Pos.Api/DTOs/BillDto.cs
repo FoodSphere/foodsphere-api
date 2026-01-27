@@ -7,6 +7,8 @@ public class BillRequest
     public short table_id { get; set; }
 
     public Guid? consumer_id { get; set; }
+
+    /// <example>2</example>
     public short? pax { get; set; }
 }
 
@@ -24,7 +26,9 @@ public class BillResponse
 
     public List<OrderResponse> orders { get; set; } = [];
 
+    /// <example>2</example>
     public short? pax { get; set; }
+
     public BillStatus status { get; set; }
 
     public static BillResponse FromModel(Bill model)
@@ -81,6 +85,8 @@ public class OrderItemDto
 {
     public short menu_id { get; set; }
     public short quantity { get; set; }
+
+    /// <example>no spicy</example>
     public string? note { get; set; }
 
     public static OrderItemDto FromModel(OrderItem model)
@@ -101,7 +107,9 @@ public class OrderStatusDTO
 
 public class OrderingPortalRequest
 {
+    /// <example>2</example>
     public short? max_usage { get; set; }
+
     public TimeSpan? valid_duration { get; set; }
 }
 
@@ -114,8 +122,12 @@ public class OrderingPortalResponse
     public DateTime create_time { get; set; }
     public DateTime update_time { get; set; }
 
+    /// <example>2</example>
     public short? max_usage { get; set; }
+
+    /// <example>0</example>
     public short usage_count { get; set; }
+
     public TimeSpan? valid_duration { get; set; }
 
     public static OrderingPortalResponse FromModel(SelfOrderingPortal model)

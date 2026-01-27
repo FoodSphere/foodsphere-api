@@ -3,6 +3,8 @@ namespace FoodSphere.Pos.Api.DTOs;
 public class StockDto
 {
     public short ingredient_id { get; set; }
+
+    /// <example>20</example>
     public decimal amount { get; set; }
 
     public static StockDto FromModel(Stock model)

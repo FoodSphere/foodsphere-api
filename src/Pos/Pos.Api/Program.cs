@@ -22,7 +22,6 @@ if (builder.Environment.IsDevelopment())
     // builder.Services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
 
     builder.Services.AddSwaggerGen(SwaggerConfiguration.Configure());
-    builder.AddServiceDefaults();
 }
 else if (builder.Environment.IsProduction())
 {
@@ -48,6 +47,12 @@ else
 {
     throw new InvalidOperationException("unsupported environment");
 }
+
+// builder.Services.AddHealthChecks() vs app.MapHealthChecks() vs app.MapdefaultEndpoints()
+builder.AddServiceDefaults();
+
+// builder.Services.AddHealthChecks()
+//     .AddCheck<HealthCheck>("custom_health_check");
 
 builder.Services.AddConnectionStringsOptions();
 builder.Services.AddDomainApiOptions();
@@ -86,6 +91,7 @@ builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
 // https://github.com/dotnet/aspnetcore/blob/8f657272b6a9092f58df84c0123729919a693fbe/src/Identity/Extensions.Core/src/IdentityServiceCollectionExtensions.cs#L23
 // services.TryAddScoped<UserManager<TUser>>(); register by AddIdentityCore:
 builder.Services.AddIdentityCore<MasterUser>(IdentityConfiguration.Configure())
+    .AddRoles<IdentityRole>()
     .AddDefaultTokenProviders() /// map token providers name to handler type eg. "Email" -> EmailTokenProvider (TOTP) <see cref="EmailTokenProvider{TUser}"/>
     .AddEntityFrameworkStores<FoodSphereDbContext>(); // must be after AddRoles
 
@@ -126,9 +132,6 @@ builder.Services.AddTransient<IMagicLinkService, MessagePackMagicLinkService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddProblemDetails(); // RFC 9457, Result.Problem()
-// builder.Services.AddHealthChecks()
-//     .AddCheck<HealthCheck>("custom_health_check")
-//     ;
 
 var app = builder.Build();
 

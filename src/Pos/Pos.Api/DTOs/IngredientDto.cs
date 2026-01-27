@@ -2,9 +2,15 @@ namespace FoodSphere.Pos.Api.DTOs;
 
 public class IngredientRequest
 {
+    /// <example>เนื้อโคขุน</example>
     public required string name { get; set; }
+
+    /// <example>เนื้อออส</example>
     public string? description { get; set; }
+
     public string? image_url { get; set; }
+
+    /// <example>กิโล</example>
     public string? unit { get; set; }
 }
 
@@ -17,10 +23,17 @@ public class IngredientResponse
 
     public Guid restaurant_id { get; set; }
 
+    /// <example>เนื้อโคขุน</example>
     public required string name { get; set; }
+
+    /// <example>เนื้อโคขุน</example>
     public string? description { get; set; }
+
     public string? image_url { get; set; }
+
+    /// <example>กิโล</example>
     public string? unit { get; set; }
+
     public IngredientStatus status { get; set; }
 
     public static IngredientResponse FromModel(Ingredient model)

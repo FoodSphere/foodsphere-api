@@ -2,14 +2,21 @@ namespace FoodSphere.Pos.Api.DTOs;
 
 public class MasterRegisterRequest
 {
+    /// <example>swagger@foodsphere.com</example>
     public required string email { get; init; }
+
+    /// <example>swaggerpassword</example>
     public required string password { get; init; }
 }
 
 public class MasterTokenRequest
 {
+    /// <example>swagger@foodsphere.com</example>
     public required string email { get; init; }
+
+    /// <example>swaggerpassword</example>
     public required string password { get; init; }
+
     public string? two_factor_code { get; init; }
 }
 

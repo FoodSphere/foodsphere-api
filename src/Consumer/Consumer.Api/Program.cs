@@ -14,7 +14,6 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddEnvironmentVariables();
 
     builder.Services.AddSwaggerGen(SwaggerConfiguration.Configure());
-    builder.AddServiceDefaults();
 }
 else if (builder.Environment.IsProduction())
 {
@@ -37,6 +36,7 @@ else
     throw new InvalidOperationException("unsupported environment");
 }
 
+builder.AddServiceDefaults();
 builder.Services.AddConnectionStringsOptions();
 builder.Services.AddDomainApiOptions();
 builder.Services.AddDomainConsumerOptions();

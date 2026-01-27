@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var resourceApi = builder.AddProject<Projects.FoodSphere_Resource_Api>("resource");
@@ -5,7 +7,7 @@ var posApi = builder.AddProject<Projects.FoodSphere_Pos_Api>("pos");
 var selfOrderingApi = builder.AddProject<Projects.FoodSphere_SelfOrdering_Api>("self-ordering");
 var consumerApi = builder.AddProject<Projects.FoodSphere_Consumer_Api>("consumer");
 
-if (builder.Environment.EnvironmentName == "Development")
+if (builder.Environment.IsDevelopment())
 {
     // var redis = builder.AddRedis("redis");
 
@@ -15,10 +17,11 @@ if (builder.Environment.EnvironmentName == "Development")
 
     // https://aspire.dev/id/integrations/databases/postgres/postgres-client/#properties-of-the-postgresql-resources
     // https://aspire.dev/id/integrations/databases/postgres/postgres-host/#using-with-non-net-applications
-    // .WithReference(pgDb) to add environment `ConnectionStrings__default=...`
+    // .WithReference(pgDb) => add environment: `ConnectionStrings__default=...`
+    //
     var pgDb = pgServer.AddDatabase("default");
 
-    var pgMigrator = builder.AddProject<Projects.FoodSphere_Migrator_Npgsql>("migrations")
+    var pgMigrator = builder.AddProject<Projects.FoodSphere_Migrator_Npgsql>("migrator")
         .WithReference(pgDb)
         .WaitFor(pgDb);
 
@@ -40,11 +43,12 @@ if (builder.Environment.EnvironmentName == "Development")
 }
 
 
-if (builder.Environment.EnvironmentName == "Production")
+if (builder.Environment.IsProduction())
 {
     builder.AddDockerComposeEnvironment("compose");
     // builder.AddKubernetesEnvironment("k8s");
     // deploy to azure?
+    // var appServiceEnvironment = builder.AddAzureAppServiceEnvironment("env");
 }
 
 builder.Build().Run();
