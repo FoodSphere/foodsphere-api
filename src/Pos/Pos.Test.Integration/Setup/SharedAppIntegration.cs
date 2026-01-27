@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
-using FoodSphere.Infrastructure.Npgsql;
+using FoodSphere.Infrastructure.Persistence;
 using FoodSphere.Pos.Api.Services;
 
 [assembly: AssemblyFixture(typeof(FoodSphere.Pos.Test.Integration.SharedAppFixture))]
@@ -54,9 +54,9 @@ public abstract class SharedAppTestsBase(SharedAppFixture Factory)
     protected readonly HttpClient _client = Factory.CreateClient();
     protected IServiceScope CreateScope() => Factory.Services.CreateScope();
 
-    protected TestSeeder CreateTestSeeder(IServiceScope? scope = null, CancellationToken? cancellationToken = null)
+    protected TestSeeder CreateTestSeeder(IServiceScope? scope = null, CancellationToken? ct = null)
     {
-        return new(scope ?? CreateScope(), disposeScope: scope is null, cancellationToken ?? TestContext.Current.CancellationToken);
+        return new(scope ?? CreateScope(), disposeScope: scope is null, ct ?? TestContext.Current.CancellationToken);
     }
 
     protected async Task Authenticate(MasterUser user)

@@ -53,7 +53,7 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         responseBody.description.Should().Be(requestBody.description);
         responseBody.image_url.Should().Be(requestBody.image_url);
         responseBody.price.Should().Be(requestBody.price);
-        responseBody.status.Should().Be(Core.Enums.MenuStatus.Active);
+        responseBody.status.Should().Be(MenuStatus.Active);
 
         responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
         responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);

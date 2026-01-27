@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using FoodSphere.Core.Api.Configurations;
-using FoodSphere.Infrastructure.Npgsql;
+using FoodSphere.Core.Configurations;
+using FoodSphere.Infrastructure.Persistence;
 using FoodSphere.SelfOrdering.Api.Configurations;
 using FoodSphere.SelfOrdering.Api.Authentication;
 
@@ -18,7 +18,7 @@ if (builder.Environment.IsDevelopment())
 }
 else if (builder.Environment.IsProduction())
 {
-    builder.Services.AddKeyVaultOptions(builder.Configuration);
+    builder.Services.AddKeyVaultOptions();
 
     #pragma warning disable ASP0000
     using var sp = builder.Services.BuildServiceProvider();
@@ -37,21 +37,19 @@ else
     throw new InvalidOperationException("unsupported environment");
 }
 
-builder.Services.AddConnectionStringsOptions(builder.Configuration);
-builder.Services.AddDomainApiOptions(builder.Configuration);
-builder.Services.AddDomainConsumerOptions(builder.Configuration);
-builder.Services.AddDomainOrderingOptions(builder.Configuration);
+builder.Services.AddConnectionStringsOptions();
+builder.Services.AddDomainApiOptions();
+builder.Services.AddDomainConsumerOptions();
+builder.Services.AddDomainOrderingOptions();
 
 builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
     var envConnectionString = sp.GetRequiredService<IOptions<EnvConnectionStrings>>().Value;
 
+    // optionsBuilder.UseLazyLoadingProxies();
     optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(2);
     });
-    // optionsBuilder.UseLazyLoadingProxies();
-    // optionsBuilder.UseSeeding(Seeder.Seed(sp));
-    // optionsBuilder.UseAsyncSeeding(Seeder.SeedAsync(sp));
 
     if (builder.Environment.IsDevelopment())
     {
@@ -67,7 +65,7 @@ authBuilder.AddSelfOrderingJwt(builder.Services);
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddGoogleOptions(builder.Configuration);
+    builder.Services.AddGoogleOptions();
     authBuilder.AddGoogle(GoogleConfiguration.Configure(builder.Services));
 }
 

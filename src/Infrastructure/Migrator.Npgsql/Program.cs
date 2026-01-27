@@ -1,0 +1,57 @@
+using Azure.Identity;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using FoodSphere.Core.Configurations;
+using FoodSphere.Worker.Migration;
+
+var builder = Host.CreateApplicationBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
+    builder.Configuration.AddEnvironmentVariables();
+    builder.AddServiceDefaults();
+}
+else if (builder.Environment.IsProduction())
+{
+    builder.Services.AddKeyVaultOptions();
+
+    using var sp = builder.Services.BuildServiceProvider();
+    {
+        var envKeyVault = sp.GetRequiredService<IOptions<EnvKeyVault>>().Value;
+
+        builder.Configuration.AddAzureKeyVault(
+            new Uri(envKeyVault.uri),
+            new DefaultAzureCredential(),
+            new AzureKeyVaultConfigurationOptions { ReloadInterval = TimeSpan.FromMinutes(30) });
+    }
+}
+else
+{
+    throw new InvalidOperationException("unsupported environment");
+}
+
+builder.Services.AddConnectionStringsOptions();
+builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
+    var envConnectionString = sp.GetRequiredService<IOptions<EnvConnectionStrings>>().Value;
+
+    // optionsBuilder.UseSeeding(Seed(sp));
+    // optionsBuilder.UseAsyncSeeding(SeedAsync(sp)); // depend on ensureAsync?
+    optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
+    {
+        sqlOptions.MigrationsAssembly(typeof(Program).Assembly);
+        sqlOptions.EnableRetryOnFailure(2);
+        // sqlOptions.UseAdminDatabase(builder.Configuration.GetConnectionString("admin"));
+    });
+
+    if (builder.Environment.IsDevelopment())
+    {
+        optionsBuilder.EnableSensitiveDataLogging();
+    }
+});
+
+builder.Services.AddHostedService<NpgsqlMigrationWorker>();
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing.AddSource(NpgsqlMigrationWorker.ActivitySourceName));
+
+var host = builder.Build();
+host.Run();

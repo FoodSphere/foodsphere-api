@@ -19,10 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../Infrastructure/Migrator.Npgsql/FoodSphere.Migrator.Npgsql.csproj" />
     <ProjectReference Include="../../Resource/Resource.Api/FoodSphere.Resource.Api.csproj" />
     <ProjectReference Include="../../Pos/Pos.Api/FoodSphere.Pos.Api.csproj" />
     <ProjectReference Include="../../SelfOrdering/SelfOrdering.Api/FoodSphere.SelfOrdering.Api.csproj" />
     <ProjectReference Include="../../Consumer/Consumer.Api/FoodSphere.Consumer.Api.csproj" />
   </ItemGroup>
-
 </Project>

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using FoodSphere.Core.Services;
-using FoodSphere.Infrastructure.Npgsql;
+using FoodSphere.Common.Services;
+using FoodSphere.Infrastructure.Persistence;
 
 namespace FoodSphere.Pos.Api.Services;
 

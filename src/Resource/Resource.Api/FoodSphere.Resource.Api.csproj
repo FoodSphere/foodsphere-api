@@ -14,10 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../Core/Core.Api/FoodSphere.Core.Api.csproj" />
-    <ProjectReference Include="../../Infrastructure/Infrastructure.Npgsql/FoodSphere.Infrastructure.Npgsql.csproj" />
+    <ProjectReference Include="../../Common/Common.Core/FoodSphere.Common.Core.csproj" />
+    <ProjectReference Include="../../Infrastructure/Persistence/FoodSphere.Infrastructure.Persistence.csproj" />
     <ProjectReference Include="../../Aspire/Aspire.ServiceDefaults/FoodSphere.Aspire.ServiceDefaults.csproj" />
     <Content Include="../../../.env.development" Link=".env.development" CopyToOutputDirectory="PreserveNewest" Condition="Exists('../../../.env.development')" />
   </ItemGroup>
-
 </Project>

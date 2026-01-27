@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using FoodSphere.Core.Api.Configurations;
-using FoodSphere.Infrastructure.Npgsql;
+using FoodSphere.Core.Configurations;
+using FoodSphere.Infrastructure.Persistence;
 using FoodSphere.Pos.Api.Utilities;
 using FoodSphere.Pos.Api.Configurations;
 using FoodSphere.Pos.Api.Authentication;
@@ -26,7 +26,7 @@ if (builder.Environment.IsDevelopment())
 }
 else if (builder.Environment.IsProduction())
 {
-    builder.Services.AddKeyVaultOptions(builder.Configuration);
+    builder.Services.AddKeyVaultOptions();
 
     #pragma warning disable ASP0000
     using var sp = builder.Services.BuildServiceProvider();
@@ -49,37 +49,32 @@ else
     throw new InvalidOperationException("unsupported environment");
 }
 
-builder.Services.AddConnectionStringsOptions(builder.Configuration);
-builder.Services.AddDomainApiOptions(builder.Configuration);
-builder.Services.AddDomainMasterOptions(builder.Configuration);
-builder.Services.AddDomainPosOptions(builder.Configuration);
+builder.Services.AddConnectionStringsOptions();
+builder.Services.AddDomainApiOptions();
+builder.Services.AddDomainMasterOptions();
+builder.Services.AddDomainPosOptions();
 
 builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
     var envConnectionString = sp.GetRequiredService<IOptions<EnvConnectionStrings>>().Value;
 
+    // # navigation properties, Eager vs Explicit vs Lazy
+    // ## Eager loading
+    // ```
+    // var blog = context.Blogs
+    //     .Include(b => b.Posts)
+    //     .FirstOrDefault(b => b.Id == id);
+    // ```
+
+    // ## Explicit loading
+    // ```
+    // var blog = context.Blogs.Find(id);
+    // context.Entry(blog).Collection(b => b.Posts).Load();
+    // ```
+    optionsBuilder.UseLazyLoadingProxies();
     optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(2);
-        // sqlOptions.UseAdminDatabase(builder.Configuration.GetConnectionString("admin"));
     });
-
-/*
-    # Eager loading
-    ```
-    var blog = context.Blogs
-        .Include(b => b.Posts)
-        .FirstOrDefault(b => b.Id == id);
-    ```
-
-    # Explicit loading
-    ```
-    var blog = context.Blogs.Find(id);
-    context.Entry(blog).Collection(b => b.Posts).Load();
-    ```
-*/
-    optionsBuilder.UseLazyLoadingProxies(); // navigation properties, Eager vs Explicit vs Lazy
-    optionsBuilder.UseSeeding(DataSeeder.Seed(sp));
-    optionsBuilder.UseAsyncSeeding(DataSeeder.SeedAsync(sp));
 
     if (builder.Environment.IsDevelopment())
     {
@@ -91,7 +86,6 @@ builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
 // https://github.com/dotnet/aspnetcore/blob/8f657272b6a9092f58df84c0123729919a693fbe/src/Identity/Extensions.Core/src/IdentityServiceCollectionExtensions.cs#L23
 // services.TryAddScoped<UserManager<TUser>>(); register by AddIdentityCore:
 builder.Services.AddIdentityCore<MasterUser>(IdentityConfiguration.Configure())
-    .AddRoles<IdentityRole>() // services.TryAddScoped<RoleManager<TRole>>();
     .AddDefaultTokenProviders() /// map token providers name to handler type eg. "Email" -> EmailTokenProvider (TOTP) <see cref="EmailTokenProvider{TUser}"/>
     .AddEntityFrameworkStores<FoodSphereDbContext>(); // must be after AddRoles
 
@@ -103,7 +97,7 @@ authBuilder.AddPosJwt(builder.Services);
 
 if (builder.Environment.IsProduction())
 {
-    builder.Services.AddGoogleOptions(builder.Configuration);
+    builder.Services.AddGoogleOptions();
     authBuilder.AddGoogle(GoogleConfiguration.Configure(builder.Services));
 }
 

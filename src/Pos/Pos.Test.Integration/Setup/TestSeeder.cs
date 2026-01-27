@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using FoodSphere.Infrastructure.Npgsql;
+using FoodSphere.Infrastructure.Persistence;
 
 namespace FoodSphere.Pos.Test;
 
@@ -24,13 +24,13 @@ public static class TestSeedingGenerator
     });
 }
 
-public class TestSeeder(IServiceScope scope, bool disposeScope = false, CancellationToken cancellationToken = default) : IDisposable
+public class TestSeeder(IServiceScope scope, bool disposeScope = false, CancellationToken ct = default) : IDisposable
 {
     public async Task<int> CommitAsync()
     {
         var context = scope.ServiceProvider.GetRequiredService<FoodSphereDbContext>();
 
-        return await context.SaveChangesAsync(cancellationToken);
+        return await context.SaveChangesAsync(ct);
     }
 
     public void Dispose()
@@ -70,7 +70,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             ownerId: ownerId,
             name: $"GENERATED.restaurant-name.{unique}",
             displayName: $"GENERATED.restaurant-display_name.{unique}",
-            cancellationToken: cancellationToken
+            ct: ct
         );
 
         return restaurant;
@@ -88,7 +88,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             description: $"GENERATED.menu-description.{unique}",
             imageUrl: $"http://foodsphere.com/img/GENERATED.{unique}.png",
             price: Random.Shared.Next(300),
-            cancellationToken: cancellationToken
+            ct: ct
         );
 
         return menu;
@@ -105,7 +105,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             description: $"GENERATED.ingredient-description.{unique}",
             imageUrl: $"http://foodsphere.com/img/GENERATED.{unique}.png",
             unit: TestSeedingGenerator.GetUnit(),
-            cancellationToken: cancellationToken
+            ct: ct
         );
 
         return ingredient;
@@ -123,7 +123,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             address: $"GENERATED.branch-address.{unique}",
             openingTime: new TimeOnly(Random.Shared.Next(0, 12), Random.Shared.Next(0, 2) * 30),
             closingTime: new TimeOnly(Random.Shared.Next(12, 24), Random.Shared.Next(0, 2) * 30),
-            cancellationToken: cancellationToken
+            ct: ct
         );
 
         return branch;
@@ -138,7 +138,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             restaurantId: restaurantId,
             branchId: branchId,
             name: $"GENERATED.table-name.{unique}",
-            cancellationToken: cancellationToken
+            ct: ct
         );
 
         return table;

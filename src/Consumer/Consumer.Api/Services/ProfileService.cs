@@ -1,4 +1,4 @@
-using FoodSphere.Infrastructure.Npgsql;
+using FoodSphere.Infrastructure.Persistence;
 
 namespace FoodSphere.Consumer.Api.Services;
 

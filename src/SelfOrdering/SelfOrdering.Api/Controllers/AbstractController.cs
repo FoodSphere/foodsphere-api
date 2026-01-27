@@ -10,7 +10,7 @@ public abstract class SelfOrderingControllerBase : FoodSphereControllerBase
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Core.Entities.BillMember)];
+            var obj = HttpContext.Items[nameof(Common.Entities.BillMember)];
 
             if (obj is not BillMember member)
             {

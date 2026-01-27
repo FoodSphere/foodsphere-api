@@ -11,24 +11,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../Core/Core.Api/FoodSphere.Core.Api.csproj" />
-    <ProjectReference Include="../../Infrastructure/Infrastructure.Npgsql/FoodSphere.Infrastructure.Npgsql.csproj" />
+    <ProjectReference Include="../../Common/Common.Core/FoodSphere.Common.Core.csproj" />
+    <ProjectReference Include="../../Infrastructure/Persistence/FoodSphere.Infrastructure.Persistence.csproj" />
     <ProjectReference Include="../../Aspire/Aspire.ServiceDefaults/FoodSphere.Aspire.ServiceDefaults.csproj" />
     <Content Include="../../../.env.development" Link=".env.development" CopyToOutputDirectory="PreserveNewest" Condition="Exists('../../../.env.development')" />
   </ItemGroup>
-
 </Project>
