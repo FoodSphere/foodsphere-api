@@ -63,7 +63,7 @@ var authBuilder = builder.Services.AddAuthentication(DefaultAuthentication.Confi
 // authBuilder.AddDefaultPolicyScheme(builder.Services);
 authBuilder.AddSelfOrderingJwt(builder.Services);
 
-if (builder.Environment.IsDevelopment())
+if (builder.Environment.IsProduction())
 {
     builder.Services.AddGoogleOptions();
     authBuilder.AddGoogle(GoogleConfiguration.Configure(builder.Services));

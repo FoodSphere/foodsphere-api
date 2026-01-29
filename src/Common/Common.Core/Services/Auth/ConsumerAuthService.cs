@@ -35,8 +35,8 @@ public class ConsumerAuthService(
     {
         return new SecurityTokenDescriptor
         {
-            Issuer = envDomainApi.url,
-            Audience = envDomainConsumer.url,
+            Issuer = envDomainApi.hostname,
+            Audience = envDomainConsumer.hostname,
             Subject = await GetSubject(user),
             Claims = await GetClaims(user),
             Expires = DateTime.UtcNow.AddMinutes(300),
@@ -48,8 +48,8 @@ public class ConsumerAuthService(
     {
         return new TokenValidationParameters()
         {
-            ValidIssuer = envDomainApi.url,
-            // ValidAudience = envDomainConsumer.url,
+            ValidIssuer = envDomainApi.hostname,
+            // ValidAudience = envDomainConsumer.hostname,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = envDomainConsumer.GetSecurityKey(),
         };

@@ -34,8 +34,8 @@ public class ResourceAuthService(
     {
         return new SecurityTokenDescriptor
         {
-            Issuer = envDomainApi.url,
-            Audience = envDomainResource.url,
+            Issuer = envDomainApi.hostname,
+            Audience = envDomainResource.hostname,
             Subject = await GetSubject(identifier),
             Claims = await GetClaims(identifier),
             Expires = DateTime.UtcNow.AddMinutes(300),

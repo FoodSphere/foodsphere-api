@@ -29,8 +29,8 @@ public static class JwtAuthentication
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidIssuer = envDomainApi.url,
-                ValidAudience = envDomainConsumer.url,
+                ValidIssuer = envDomainApi.hostname,
+                ValidAudience = envDomainConsumer.hostname,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = envDomainConsumer.GetSecurityKey()
             };

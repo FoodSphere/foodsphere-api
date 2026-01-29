@@ -42,8 +42,8 @@ public class OrderingAuthService(
         // make expire
         return new SecurityTokenDescriptor
         {
-            Issuer = envDomainApi.url,
-            Audience = envDomainOrdering.url,
+            Issuer = envDomainApi.hostname,
+            Audience = envDomainOrdering.hostname,
             Subject = await GetSubject(member),
             Claims = await GetClaims(member),
             Expires = DateTime.UtcNow.AddMinutes(300),

@@ -45,16 +45,16 @@ public class MasterAuthService(
     {
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Issuer = envDomainApi.url,
-            Audience = envDomainMaster.url,
+            Issuer = envDomainApi.hostname,
+            Audience = envDomainMaster.hostname,
             Subject = await GetSubject(user),
             Claims = await GetClaims(user),
             Expires = DateTime.UtcNow.AddMinutes(300),
             SigningCredentials = envDomainMaster.GetSigningCredentials(),
         };
 
-        // tokenDescriptor.Audiences.Add(envDomainMaster.url);
-        tokenDescriptor.Audiences.Add(envDomainPos.url);
+        // tokenDescriptor.Audiences.Add(envDomainMaster.hostname);
+        tokenDescriptor.Audiences.Add(envDomainPos.hostname);
 
         return tokenDescriptor;
     }

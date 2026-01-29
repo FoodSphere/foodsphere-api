@@ -36,8 +36,8 @@ public class StaffAuthService(
     {
         return new SecurityTokenDescriptor
         {
-            Issuer = envDomainApi.url,
-            Audience = envDomainPos.url,
+            Issuer = envDomainApi.hostname,
+            Audience = envDomainPos.hostname,
             Subject = await GetSubject(user),
             Claims = await GetClaims(user),
             Expires = DateTime.UtcNow.AddMinutes(300),

@@ -30,10 +30,10 @@ public static class JwtAuthentication
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidIssuer = envDomainApi.url,
+                ValidIssuer = envDomainApi.hostname,
                 ValidAudiences = [
-                    // envDomainMaster.url,
-                    envDomainPos.url
+                    // envDomainMaster.hostname,
+                    envDomainPos.hostname
                 ],
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKeys = [
