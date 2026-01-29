@@ -7,3 +7,4 @@ artifacts
 ignore
 
 .env.development
+values.yaml

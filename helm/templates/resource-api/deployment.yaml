@@ -1,0 +1,44 @@
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "resource-api-deployment"
+  labels:
+    app.kubernetes.io/name: "foodsphere-api"
+    app.kubernetes.io/component: "resource-api"
+    app.kubernetes.io/instance: "{{.Release.Name}}"
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "foodsphere-api"
+        app.kubernetes.io/component: "resource-api"
+        app.kubernetes.io/instance: "{{.Release.Name}}"
+    spec:
+      containers:
+        - image: "{{ .Values.parameters.resource_api.resource_api_image }}"
+          name: "resource-api"
+          envFrom:
+            - configMapRef:
+                name: "resource-api-config"
+            - configMapRef:
+                name: "api-config"
+            - secretRef:
+                name: "api-secrets"
+          ports:
+            - name: "http"
+              protocol: "TCP"
+              containerPort: {{ .Values.parameters.resource_api.port_http }}
+          imagePullPolicy: "Always"
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: "foodsphere-api"
+      app.kubernetes.io/component: "resource-api"
+      app.kubernetes.io/instance: "{{.Release.Name}}"
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: "RollingUpdate"

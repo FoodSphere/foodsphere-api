@@ -1,0 +1,12 @@
+---
+apiVersion: "v1"
+kind: "ConfigMap"
+metadata:
+  name: "api-config"
+data:
+  Domain__api__hostname: "{{ .Values.hostname.api }}"
+  Domain__resource__hostname: "{{ .Values.hostname.resource }}"
+  Domain__pos__hostname: "{{ .Values.hostname.pos }}"
+  Domain__master__hostname: "{{ .Values.hostname.master }}"
+  Domain__consumer__hostname: "{{ .Values.hostname.consumer }}"
+  Domain__ordering__hostname: "{{ .Values.hostname.ordering }}"

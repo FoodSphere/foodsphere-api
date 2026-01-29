@@ -1,0 +1,23 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: pos-route
+spec:
+  parentRefs:
+  - name: subdomain-gateway
+  hostnames:
+  - "{{ .Values.hostname.pos }}"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /
+    backendRefs:
+    - name: pos-api-service
+      port: {{ .Values.parameters.pos_api.port_http }}

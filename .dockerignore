@@ -7,12 +7,14 @@
 .git/
 .vs/
 .vscode/
+artifacts/
+helm/
 ignore/
 rest-client/
-tests/
 
 .dockerignore
 .editorconfig
+.env.development
 .env.example
 .gitignore
 dockerfile

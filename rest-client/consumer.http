@@ -1,8 +1,8 @@
 # scan qr code
 # open link         https://ordering.foodsphere.com/portals/{portal_id}
-# get token from    https://api.foodsphere.com/consumer/self-ordering/portals/{portal_id}
+# get token from    https://ordering.foodsphere.com/api/portals/{portal_id}
 # redirect          https://ordering.foodsphere.com headers: authentication's token { bill_id: "...", consumer_id: "..." }
-# request to        https://api.foodsphere.com/consumer/self-ordering/current
+# request to        https://ordering.foodsphere.com/api/*
 # opaque token => meaningless string
 #
 # # การป้องกัน QR code โต๊ะ
