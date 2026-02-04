@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using FoodSphere.SelfOrdering.Api.Authentication;
 using FoodSphere.SelfOrdering.Api.Configurations;
 

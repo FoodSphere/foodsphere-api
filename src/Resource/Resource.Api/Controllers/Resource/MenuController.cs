@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-
 namespace FoodSphere.Resource.Api.Controllers;
 
 [Route("restaurants/{restaurant_id}/menus")]

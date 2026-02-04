@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-
 namespace FoodSphere.Consumer.Api.Controllers;
 
 [Route("profile")]

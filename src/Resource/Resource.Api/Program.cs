@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using FoodSphere.Core.Configurations;
+using FoodSphere.Common.Configurations;
 using FoodSphere.Infrastructure.Persistence;
 using FoodSphere.Resource.Api.Configurations;
 using FoodSphere.Resource.Api.Authentication;

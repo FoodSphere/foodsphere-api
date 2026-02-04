@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
 
 namespace FoodSphere.Pos.Api.Controllers;
 
@@ -10,7 +9,7 @@ public abstract class PosControllerBase : FoodSphereControllerBase
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Common.Enums.UserType)];
+            var obj = HttpContext.Items[nameof(Common.Constant.UserType)];
 
             if (obj is not UserType userType)
             {

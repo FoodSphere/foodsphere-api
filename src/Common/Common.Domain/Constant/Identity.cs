@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 
-namespace FoodSphere.Common.Enums;
+namespace FoodSphere.Common.Constant;
 
 public enum UserType
 {
@@ -28,6 +28,8 @@ public static class FoodSphereClaimType
         SecurityStampClaimType = "stamp"
     };
 
+    // Cast<T>() => throw invalid types
+    // OfType<T>() => skip (filters)
     public static IEnumerable<string> GetAll() =>
         typeof(FoodSphereClaimType)
             .GetFields(BindingFlags.Public | BindingFlags.Static)

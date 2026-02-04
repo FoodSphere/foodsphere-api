@@ -4,7 +4,7 @@ global using Microsoft.Extensions.DependencyInjection;
 global using Xunit;
 global using FluentAssertions;
 global using FoodSphere.Common.Entities;
-global using FoodSphere.Common.Enums;
+global using FoodSphere.Common.Constant;
 global using FoodSphere.Common.DTOs;
 global using FoodSphere.Common.Services;
 global using FoodSphere.Pos.Api.DTOs;

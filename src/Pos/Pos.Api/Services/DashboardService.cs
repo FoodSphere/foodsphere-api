@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using FoodSphere.Common.Services;
 using FoodSphere.Infrastructure.Persistence;
 
 namespace FoodSphere.Pos.Api.Services;

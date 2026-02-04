@@ -1,4 +1,4 @@
-namespace FoodSphere.Common.Enums;
+namespace FoodSphere.Common.Constant;
 
 public enum BillStatus
 {

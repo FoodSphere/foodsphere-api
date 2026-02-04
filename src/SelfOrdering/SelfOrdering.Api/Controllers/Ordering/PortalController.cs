@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-
 namespace FoodSphere.SelfOrdering.Api.Controllers;
 
 [Route("portals")]

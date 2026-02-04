@@ -1,6 +1,6 @@
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using FoodSphere.Core.Configurations;
+using FoodSphere.Common.Configurations;
 using FoodSphere.Worker.Migration;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -34,8 +34,8 @@ builder.Services.AddConnectionStringsOptions();
 builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
     var envConnectionString = sp.GetRequiredService<IOptions<EnvConnectionStrings>>().Value;
 
-    // optionsBuilder.UseSeeding(Seed(sp));
-    // optionsBuilder.UseAsyncSeeding(SeedAsync(sp)); // depend on ensureAsync?
+    optionsBuilder.UseSeeding(DataSeeder.Seed(sp));
+    optionsBuilder.UseAsyncSeeding(DataSeeder.SeedAsync(sp)); // depend on .ensureAsync()?
     optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
     {
         sqlOptions.MigrationsAssembly(typeof(Program).Assembly);

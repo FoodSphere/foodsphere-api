@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace FoodSphere.Core.Configurations;
+namespace FoodSphere.Common.Configurations;
 
 public static class SwaggerConfiguration
 {

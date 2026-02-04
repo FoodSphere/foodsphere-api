@@ -1,6 +1,8 @@
 global using Microsoft.Extensions.Options;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Mvc;
 global using FoodSphere.Common.Entities;
-global using FoodSphere.Common.Enums;
+global using FoodSphere.Common.Constant;
 global using FoodSphere.Common.DTOs;
 global using FoodSphere.Common.Options;
 global using FoodSphere.Common.Services;

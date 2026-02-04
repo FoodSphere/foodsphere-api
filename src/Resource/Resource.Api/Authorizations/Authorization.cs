@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using FoodSphere.Resource.Api.Authentication;
 using FoodSphere.Resource.Api.Configurations;
 

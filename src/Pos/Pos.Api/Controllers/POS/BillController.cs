@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-
 namespace FoodSphere.Pos.Api.Controllers;
 
 [Route("bills")]

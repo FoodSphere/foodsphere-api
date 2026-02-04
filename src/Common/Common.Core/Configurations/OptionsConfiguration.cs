@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 // # which one is better?
 // - https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options
 // - https://learn.microsoft.com/en-us/dotnet/core/extensions/options-validation-generator
-namespace FoodSphere.Core.Configurations
+namespace FoodSphere.Common.Configurations
 {
     public static class OptionsExtensions
     {
