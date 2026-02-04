@@ -67,11 +67,10 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         var restaurantService = scope.ServiceProvider.GetRequiredService<RestaurantService>();
 
         var restaurant = await restaurantService.CreateRestaurant(
-            ownerId: ownerId,
+            ownerId,
             name: $"GENERATED.restaurant-name.{unique}",
             displayName: $"GENERATED.restaurant-display_name.{unique}",
-            ct: ct
-        );
+            ct: ct);
 
         return restaurant;
     }
@@ -82,14 +81,13 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         var menuService = scope.ServiceProvider.GetRequiredService<MenuService>();
 
         var menu = await menuService.CreateMenu(
-            restaurantId: restaurantId,
+            restaurantId,
             name: $"GENERATED.menu-name.{unique}",
             displayName: $"GENERATED.menu-display_name.{unique}",
             description: $"GENERATED.menu-description.{unique}",
             imageUrl: $"http://foodsphere.com/img/GENERATED.{unique}.png",
             price: Random.Shared.Next(300),
-            ct: ct
-        );
+            ct: ct);
 
         return menu;
     }
@@ -100,13 +98,12 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         var ingredientService = scope.ServiceProvider.GetRequiredService<MenuService>();
 
         var ingredient = await ingredientService.CreateIngredient(
-            restaurantId: restaurantId,
+            restaurantId,
             name: $"GENERATED.ingredient-name.{unique}",
             description: $"GENERATED.ingredient-description.{unique}",
             imageUrl: $"http://foodsphere.com/img/GENERATED.{unique}.png",
             unit: TestSeedingGenerator.GetUnit(),
-            ct: ct
-        );
+            ct: ct);
 
         return ingredient;
     }
@@ -117,14 +114,13 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         var branchService = scope.ServiceProvider.GetRequiredService<BranchService>();
 
         var branch = await branchService.CreateBranch(
-            restaurantId: restaurantId,
+            restaurantId,
             name: $"GENERATED.branch-name.{unique}",
             displayName: $"GENERATED.branch-display_name.{unique}",
             address: $"GENERATED.branch-address.{unique}",
             openingTime: new TimeOnly(Random.Shared.Next(0, 12), Random.Shared.Next(0, 2) * 30),
             closingTime: new TimeOnly(Random.Shared.Next(12, 24), Random.Shared.Next(0, 2) * 30),
-            ct: ct
-        );
+            ct: ct);
 
         return branch;
     }
@@ -135,12 +131,39 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         var tableService = scope.ServiceProvider.GetRequiredService<BranchService>();
 
         var table = await tableService.CreateTable(
-            restaurantId: restaurantId,
-            branchId: branchId,
+            restaurantId, branchId,
             name: $"GENERATED.table-name.{unique}",
-            ct: ct
-        );
+            ct: ct);
 
         return table;
+    }
+
+    public async Task<Permission[]> SeedPermissionAsync()
+    {
+        var permissionsIds = PERMISSION.GetAll()
+            .ToArray();
+
+        Random.Shared.Shuffle(permissionsIds);
+
+        return permissionsIds[..Random.Shared.Next(permissionsIds.Length)];
+    }
+
+    public async Task<Role> SeedRoleAsync(Guid restaurantId, params Permission[] permissions)
+    {
+        var unique = TestSeedingGenerator.GetUniqueString();
+        var roleService = scope.ServiceProvider.GetRequiredService<RoleService>();
+
+        var role = await roleService.CreateRole(
+            restaurantId,
+            name: $"GENERATED.role-name.{unique}",
+            description: $"GENERATED.role-description.{unique}",
+            ct: ct);
+
+        await roleService.SetPermissionsAsync(
+            restaurantId, role.Id,
+            permissions.Select(p => p.Id),
+            ct: ct);
+
+        return role;
     }
 }

@@ -67,8 +67,7 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
 
         responseBody.id.Should().Be(restaurant.Id);
         responseBody.contact.Should().BeEquivalentTo(
-            ContactDto.FromModel(restaurant.Contact)
-        );
+            ContactDto.FromModel(restaurant.Contact));
 
         responseBody.name.Should().Be(restaurant.Name);
         responseBody.display_name.Should().Be(restaurant.DisplayName);

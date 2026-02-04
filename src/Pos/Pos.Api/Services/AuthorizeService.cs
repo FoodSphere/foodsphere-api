@@ -1,19 +1,35 @@
-using FoodSphere.Common.Services;
+using System.Security.Claims;
 using FoodSphere.Infrastructure.Persistence;
 
 namespace FoodSphere.Pos.Api.Services;
 
-public class AuthorizeService(FoodSphereDbContext context) : ServiceBase(context)
+public class AuthorizeService(
+    FoodSphereDbContext context,
+    IAuthorizationService authorizationService
+) : ServiceBase(context)
 {
-//     public async Task<bool> CheckPermission(ClientUser user, Restaurant restaurant, string permission)
-//     {
-//         user.
-//         return user.Permissions.Any(p => p.Name == permission);
-//     }
+    public async Task<bool> CheckPermission(
+        ClaimsPrincipal user,
+        Guid restaurantId,
+        params Permission[] permissions
+    ) {
+        var result = await authorizationService.AuthorizeAsync(user,
+            new RestaurantKeys(restaurantId),
+            new PermissionRequirement(permissions));
 
-//     public async Task<bool> CheckPermission(StaffUser user, string permission)
-//     {
-//         user.
-//         return user.Permissions.Any(p => p.Name == permission);
-//     }
+        return result.Succeeded;
+    }
+
+    public async Task<bool> CheckPermission(
+        ClaimsPrincipal user,
+        Guid restaurantId,
+        short branchId,
+        params Permission[] permissions
+    ) {
+        var result = await authorizationService.AuthorizeAsync(user,
+            new BranchKeys(restaurantId, branchId),
+            new PermissionRequirement(permissions));
+
+        return result.Succeeded;
+    }
 }

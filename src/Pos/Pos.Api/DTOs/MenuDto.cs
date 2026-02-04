@@ -45,7 +45,7 @@ public class MenuResponse
 
     public Guid restaurant_id { get; set; }
 
-    public List<MenuIngredientDto> ingredients { get; set; } = [];
+    public MenuIngredientDto[] ingredients { get; set; } = [];
 
     /// <example>ข้าวผัดโคขุน</example>
     public required string name { get; set; }

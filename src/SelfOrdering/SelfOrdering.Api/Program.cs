@@ -72,6 +72,7 @@ if (builder.Environment.IsProduction())
 builder.Services.AddAuthorization(AuthorizationConfiguration.Configure());
 
 builder.Services.AddScoped<SelfOrderingAuthService>();
+builder.Services.AddScoped<OrderingPortalService>();
 builder.Services.AddScoped<BillService>();
 builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();

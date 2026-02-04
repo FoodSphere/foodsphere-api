@@ -82,8 +82,7 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         responseBody.id.Should().Be(1);
         responseBody.restaurant_id.Should().Be(restaurant.Id);
         responseBody.ingredients.Should().BeEquivalentTo(
-            menu.MenuIngredients.Select(MenuIngredientDto.FromModel)
-        );
+            menu.MenuIngredients.Select(MenuIngredientDto.FromModel));
 
         responseBody.name.Should().Be(menu.Name);
         responseBody.display_name.Should().Be(menu.DisplayName);

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using FoodSphere.Core.Configurations;
+using FoodSphere.Common.Configurations;
 using FoodSphere.Infrastructure.Persistence;
 using FoodSphere.Pos.Api.Utilities;
 using FoodSphere.Pos.Api.Configurations;
@@ -113,6 +113,10 @@ builder.Services.AddAuthorization(AuthorizationConfiguration.Configure());
 builder.Services.AddSingleton<EmailService>();
 
 // scoped each http request
+builder.Services.AddScoped<IAuthorizationHandler, MasterPermissionHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ManagerPermissionHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, StaffPermissionHandler>();
+
 builder.Services.AddScoped<MasterAuthService>();
 builder.Services.AddScoped<StaffAuthService>();
 builder.Services.AddScoped<OrderingAuthService>();
@@ -122,6 +126,8 @@ builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<RestaurantService>();
 builder.Services.AddScoped<StaffService>();
+builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<OrderingPortalService>();
 builder.Services.AddScoped<DashboardService>();
 

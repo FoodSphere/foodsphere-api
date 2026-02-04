@@ -19,6 +19,8 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
             DisplayName = displayName,
         };
 
+        // await SeedRole(); ?
+
         // we don't have to `_ctx.Add(contact)`,
         // because the contact was set in restaurant
         // before the restaurant is added to DbContext
