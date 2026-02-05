@@ -120,16 +120,19 @@ builder.Services.AddScoped<IAuthorizationHandler, StaffPermissionHandler>();
 builder.Services.AddScoped<MasterAuthService>();
 builder.Services.AddScoped<StaffAuthService>();
 builder.Services.AddScoped<OrderingAuthService>();
-builder.Services.AddScoped<BillService>();
+builder.Services.AddScoped<AuthorizeService>();
+builder.Services.AddScoped<OrderingPortalService>();
+builder.Services.AddScoped<StaffPortalService>();
+
+builder.Services.AddScoped<RestaurantService>();
 builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();
-builder.Services.AddScoped<PaymentService>();
-builder.Services.AddScoped<RestaurantService>();
-builder.Services.AddScoped<StaffService>();
-builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<PermissionService>();
-builder.Services.AddScoped<OrderingPortalService>();
+builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<StaffService>();
 builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<BillService>();
+builder.Services.AddScoped<PaymentService>();
 
 // short-lived each injection used
 // AddKeyedTransient?
@@ -138,6 +141,7 @@ builder.Services.AddTransient<IMagicLinkService, MessagePackMagicLinkService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddProblemDetails(); // RFC 9457, Result.Problem()
+// builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -145,6 +149,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();

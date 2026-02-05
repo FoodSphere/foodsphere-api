@@ -126,6 +126,6 @@ public class RoleService(
         });
 
         _ctx.RemoveRange(toRemove);
-        await _ctx.Set<RolePermission>().AddRangeAsync(newEntities, ct);
+        await _ctx.AddRangeAsync(newEntities, ct);
     }
 }

@@ -79,7 +79,7 @@ public class ManagerResponse
     public short branch_id;
     public required string master_id;
 
-    public static ManagerResponse FromModel(Manager model)
+    public static ManagerResponse FromModel(BranchManager model)
     {
         return new ManagerResponse
         {

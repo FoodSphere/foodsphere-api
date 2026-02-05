@@ -148,7 +148,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return permissionsIds[..Random.Shared.Next(permissionsIds.Length)];
     }
 
-    public async Task<Role> SeedRoleAsync(Guid restaurantId, params Permission[] permissions)
+    public async Task<Role> SeedRoleAsync(Guid restaurantId, params IEnumerable<Permission> permissions)
     {
         var unique = TestSeedingGenerator.GetUniqueString();
         var roleService = scope.ServiceProvider.GetRequiredService<RoleService>();
@@ -165,5 +165,41 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             ct: ct);
 
         return role;
+    }
+
+    public async Task<StaffUser> SeedStaffAsync(Guid restaurantId, short branchId)
+    {
+        var unique = TestSeedingGenerator.GetUniqueString();
+        var staffService = scope.ServiceProvider.GetRequiredService<StaffService>();
+
+        var staff = await staffService.CreateStaffAsync(
+            restaurantId, branchId,
+            name: $"GENERATED.role-name.{unique}",
+            phone: TestSeedingGenerator.GetPhone(),
+            ct: ct);
+
+        return staff;
+    }
+
+    public async Task<StaffUser> SeedStaffAsync(Guid restaurantId, short branchId, params IEnumerable<Role> roles)
+    {
+        var staffService = scope.ServiceProvider.GetRequiredService<StaffService>();
+
+        var staff = await SeedStaffAsync(restaurantId, branchId);
+
+        await staffService.SetRolesAsync(
+            staff,
+            roles.Select(r => r.Id),
+            ct: ct);
+
+        return staff;
+    }
+
+    public async Task<StaffUser> SeedStaffAsync(Guid restaurantId, short branchId, params IEnumerable<Permission> permissions)
+    {
+        var role = await SeedRoleAsync(restaurantId, permissions);
+        var staff = await SeedStaffAsync(restaurantId, branchId, role);
+
+        return staff;
     }
 }

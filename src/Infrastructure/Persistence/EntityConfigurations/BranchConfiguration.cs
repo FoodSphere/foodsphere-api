@@ -8,9 +8,9 @@ public class BranchConfiguration : IEntityTypeConfiguration<Branch>
     }
 }
 
-public class ManagerConfiguration : IEntityTypeConfiguration<Manager>
+public class ManagerConfiguration : IEntityTypeConfiguration<BranchManager>
 {
-    public void Configure(EntityTypeBuilder<Manager> builder)
+    public void Configure(EntityTypeBuilder<BranchManager> builder)
     {
         builder.HasKey(e => new { e.RestaurantId, e.BranchId, e.MasterId });
 

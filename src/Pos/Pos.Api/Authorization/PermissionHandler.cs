@@ -98,7 +98,7 @@ public class ManagerPermissionHandler(
 
         if (requiredPermissionIds.Count == 0)
         {
-            var isManager = await dbContext.Set<Manager>()
+            var isManager = await dbContext.Set<BranchManager>()
                 .AnyAsync(m =>
                     m.MasterId == userId &&
                     m.RestaurantId == resource.RestaurantId &&
@@ -112,7 +112,7 @@ public class ManagerPermissionHandler(
         }
         else
         {
-            var count = await dbContext.Set<Manager>()
+            var count = await dbContext.Set<BranchManager>()
                 .Where(m =>
                     m.MasterId == userId &&
                     m.RestaurantId == resource.RestaurantId &&

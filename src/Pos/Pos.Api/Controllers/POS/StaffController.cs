@@ -43,12 +43,20 @@ public class StaffController(
             return NotFound();
         }
 
-        var staff = await staffService.CreateStaff(
+        var staff = await staffService.CreateStaffAsync(
             branch: branch,
             name: body.name,
-            roles: body.roles,
             phone: body.phone
         );
+
+        await staffService.SetRolesAsync(
+            staff: staff,
+            roleIds: body.roles
+        );
+
+        await staffService.SaveAsync();
+
+        // get staff?
 
         return CreatedAtAction(
             nameof(GetStaff),

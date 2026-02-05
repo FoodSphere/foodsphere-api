@@ -34,9 +34,9 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
         return branch;
     }
 
-    public async Task<Manager> CreateManager(Guid restaurantId, short branchId, string masterId)
+    public async Task<BranchManager> CreateManager(Guid restaurantId, short branchId, string masterId)
     {
-        var manager = new Manager
+        var manager = new BranchManager
         {
             RestaurantId = restaurantId,
             BranchId = branchId,
@@ -48,7 +48,7 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
         return manager;
     }
 
-    public async Task UpdateManagerPermissions(Manager manager, List<short> roleIds)
+    public async Task UpdateManagerPermissions(BranchManager manager, List<short> roleIds)
     {
 
     }
@@ -109,9 +109,9 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
             .ToListAsync();
     }
 
-    public async Task<List<Manager>> ListManagers(Guid restaurantId, short branchId)
+    public async Task<List<BranchManager>> ListManagers(Guid restaurantId, short branchId)
     {
-        return await _ctx.Set<Manager>()
+        return await _ctx.Set<BranchManager>()
             .Where(manager => manager.RestaurantId == restaurantId && manager.BranchId == branchId)
             .ToListAsync();
     }
@@ -212,7 +212,7 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
             .AnyAsync(r =>
                 r.Id == branch.RestaurantId && (
                     r.OwnerId == user.Id ||
-                    _ctx.Set<Manager>().Any(m =>
+                    _ctx.Set<BranchManager>().Any(m =>
                         m.RestaurantId == r.Id &&
                         m.MasterId == user.Id &&
                         m.BranchId == branch.Id

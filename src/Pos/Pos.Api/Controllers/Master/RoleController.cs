@@ -3,12 +3,23 @@ namespace FoodSphere.Pos.Api.Controllers;
 [Route("restaurants/{restaurant_id}/roles")]
 public class RoleController(
     ILogger<RoleController> logger,
+    AuthorizeService authorizationService,
     RoleService roleService
 ) : MasterControllerBase
 {
     [HttpPost]
     public async Task<ActionResult<RoleResponse>> CreateRole(Guid restaurant_id, RoleRequest body)
     {
+        var hasPermission = await authorizationService.CheckPermission(
+            User, restaurant_id,
+            PERMISSION.Role.CREATE
+        );
+
+        if (!hasPermission)
+        {
+            return Forbid();
+        }
+
         var role = await roleService.CreateRole(
             restaurantId: restaurant_id,
             name: body.name,
@@ -19,10 +30,12 @@ public class RoleController(
 
         await roleService.SaveAsync();
 
+        var populatedRole = await roleService.GetRole(restaurant_id, role.Id);
+
         return CreatedAtAction(
             nameof(GetRole),
             new { restaurant_id, role_id = role.Id },
-            RoleResponse.FromModel(role)
+            RoleResponse.FromModel(populatedRole!)
         );
     }
 

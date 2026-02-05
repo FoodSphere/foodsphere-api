@@ -177,4 +177,31 @@ public static class PERMISSION
             Name = "dashboard.read",
         };
     }
+
+    public static class Role
+    {
+        public static readonly Permission CREATE = new()
+        {
+            Id = 9000,
+            Name = "role.create",
+        };
+
+        public static readonly Permission READ = new()
+        {
+            Id = 9010,
+            Name = "role.read",
+        };
+
+        public static readonly Permission UPDATE = new()
+        {
+            Id = 9020,
+            Name = "role.update",
+        };
+
+        public static readonly Permission DELETE = new()
+        {
+            Id = 9030,
+            Name = "role.delete",
+        };
+    }
 }

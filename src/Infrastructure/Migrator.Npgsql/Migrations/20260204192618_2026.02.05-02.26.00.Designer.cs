@@ -3,6 +3,7 @@ using System;
 using FoodSphere.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodSphere.Migrator.Npgsql.Migrations
 {
     [DbContext(typeof(FoodSphereDbContext))]
-    partial class FoodSphereDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260204192618_2026.02.05-02.26.00")]
+    partial class _20260205022600
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -682,26 +685,6 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                         {
                             Id = 8000,
                             Name = "dashboard.read"
-                        },
-                        new
-                        {
-                            Id = 9000,
-                            Name = "role.create"
-                        },
-                        new
-                        {
-                            Id = 9010,
-                            Name = "role.read"
-                        },
-                        new
-                        {
-                            Id = 9020,
-                            Name = "role.update"
-                        },
-                        new
-                        {
-                            Id = 9030,
-                            Name = "role.delete"
                         },
                         new
                         {

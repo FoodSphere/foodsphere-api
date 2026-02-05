@@ -8,7 +8,7 @@ public class Branch : EntityBase<short>
     public Guid? ContactId { get; set; }
     public virtual Contact? Contact { get; set; } = null!;
 
-    public virtual List<Manager> BranchManagers { get; } = [];
+    public virtual List<BranchManager> BranchManagers { get; } = [];
     public virtual List<Stock> IngredientStocks { get; } = [];
     public virtual List<Table> Tables { get; } = [];
     public virtual List<StaffUser> Staffs { get; } = [];
@@ -21,7 +21,7 @@ public class Branch : EntityBase<short>
     public TimeOnly? ClosingTime { get; set; }
 }
 
-public class Manager : TrackableEntityBase
+public class BranchManager : TrackableEntityBase
 {
     public Guid RestaurantId { get; set; }
     public short BranchId { get; set; }
@@ -31,6 +31,17 @@ public class Manager : TrackableEntityBase
     public virtual MasterUser Master { get; set; } = null!;
 
     public virtual List<ManagerRole> Roles { get; } = [];
+
+    public Permission[] GetPermissions()
+    {
+        var permissions = Roles
+            .SelectMany(r => r.Role.Permissions)
+            .Select(rp => rp.Permission)
+            .Distinct()
+            .ToArray();
+
+        return permissions;
+    }
 }
 
 public class ManagerRole : TrackableEntityBase
@@ -39,7 +50,7 @@ public class ManagerRole : TrackableEntityBase
     public short BranchId { get; set; }
 
     public string ManagerId { get; set; } = null!;
-    public virtual Manager ManagerBranch { get; set; } = null!;
+    public virtual BranchManager ManagerBranch { get; set; } = null!;
 
     public short RoleId { get; set; }
     public virtual Role Role { get; set; } = null!;

@@ -86,7 +86,7 @@ public class CurrentController : FoodSphereControllerBase
 {
     [PosAuthorize]
     [HttpGet("claims")]
-    public ActionResult<string> GetClaims()
+    public async Task<ActionResult<string>> GetClaims()
     {
         return Ok(User.Claims.Select(c => new { c.Type, c.Value }));
     }

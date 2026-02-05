@@ -25,7 +25,7 @@ public class StaffAuthService(
         var claims = new Dictionary<string, object>
         {
             [FoodSphereClaimType.RestaurantClaimType] = user.RestaurantId,
-            [FoodSphereClaimType.BranchClaimType] = user.BranchId,
+            [FoodSphereClaimType.BranchClaimType] = (int)user.BranchId,
             [FoodSphereClaimType.UserTypeClaimType] = UserType.Staff.ToString(),
         };
 

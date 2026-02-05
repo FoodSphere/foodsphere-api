@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
-
 namespace FoodSphere.Pos.Api.Controllers;
 
 [Route("restaurants/{restaurant_id}/menus")]
 public class MenuController(
     ILogger<MenuController> logger,
+    AuthorizeService authorizationService,
     MenuService menuService
 ) : PosControllerBase
 {
@@ -21,6 +20,16 @@ public class MenuController(
     [HttpPost]
     public async Task<ActionResult<MenuResponse>> CreateMenu(Guid restaurant_id, MenuRequest body)
     {
+        var hasPermission = await authorizationService.CheckPermission(
+            User, restaurant_id,
+            PERMISSION.Menu.CREATE
+        );
+
+        if (!hasPermission)
+        {
+            return Forbid();
+        }
+
         var menu = await menuService.CreateMenu(
             restaurantId: restaurant_id,
             name: body.name,
@@ -60,6 +69,16 @@ public class MenuController(
     [HttpPut("{menu_id}")]
     public async Task<ActionResult> UpdateMenu(Guid restaurant_id, short menu_id, MenuRequest body)
     {
+        var hasPermission = await authorizationService.CheckPermission(
+            User, restaurant_id,
+            PERMISSION.Menu.UPDATE
+        );
+
+        if (!hasPermission)
+        {
+            return Forbid();
+        }
+
         var menu = await menuService.GetMenu(restaurant_id, menu_id);
 
         if (menu is null)

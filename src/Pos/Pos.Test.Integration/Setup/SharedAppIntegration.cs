@@ -69,6 +69,16 @@ public abstract class SharedAppTestsBase(SharedAppFixture Factory)
         _client.DefaultRequestHeaders.Authorization = new("Bearer", token);
     }
 
+    protected async Task Authenticate(StaffUser user)
+    {
+        using var scope = CreateScope();
+        var authService = scope.ServiceProvider.GetRequiredService<StaffAuthService>();
+
+        var token = await authService.GenerateToken(user);
+
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", token);
+    }
+
     protected static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,

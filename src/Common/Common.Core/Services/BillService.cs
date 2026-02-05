@@ -175,7 +175,7 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
             .AnyAsync(r =>
                 r.Id == bill.RestaurantId && (
                     r.OwnerId == user.Id ||
-                    _ctx.Set<Manager>().Any(m =>
+                    _ctx.Set<BranchManager>().Any(m =>
                         m.RestaurantId == r.Id &&
                         m.BranchId == bill.BranchId &&
                         m.MasterId == user.Id

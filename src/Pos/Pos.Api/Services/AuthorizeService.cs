@@ -32,4 +32,34 @@ public class AuthorizeService(
 
         return result.Succeeded;
     }
+
+    public async Task<Permission[]?> GetPermissions(
+        MasterUser user,
+        Guid restaurantId,
+        short branchId
+    ) {
+        var restaurant = await _ctx.Set<Restaurant>()
+            .FindAsync(restaurantId)
+            ?? throw new InvalidOperationException();
+
+        if (restaurant.OwnerId == user.Id)
+        {
+            return [.. _ctx.Set<Permission>()];
+        }
+
+        var manager = await _ctx.Set<BranchManager>()
+            .FindAsync(restaurantId, branchId, user.Id);
+
+        if (manager is null)
+        {
+            return null;
+        }
+
+        return manager.GetPermissions();
+    }
+
+    public async Task<Permission[]?> GetPermissions(StaffUser user)
+    {
+        return user.GetPermissions();
+    }
 }

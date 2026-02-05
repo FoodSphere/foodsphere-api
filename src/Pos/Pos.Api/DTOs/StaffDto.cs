@@ -5,7 +5,7 @@ public class StaffRequest
     /// <example>ป้าเล็กสุดสวย</example>
     public required string name { get; set; }
 
-    public List<short> roles { get; set; } = [];
+    public short[] roles { get; set; } = [];
 
     /// <example>0812345678</example>
     public string? phone { get; set; }
@@ -25,6 +25,8 @@ public class StaffResponse
     /// <example>ป้าเล็กสุดสวย</example>
     public required string name { get; set; }
 
+    public short[] roles { get; set; } = [];
+
     /// <example>0812345678</example>
     public string? phone { get; set; }
 
@@ -40,6 +42,7 @@ public class StaffResponse
             restaurant_id = model.RestaurantId,
             branch_id = model.BranchId,
             name = model.Name,
+            roles = [..model.Roles.Select(r => r.RoleId)],
             phone = model.Phone,
             // status = model.Status,
         };

@@ -21,8 +21,9 @@ public class RolePermission : TrackableEntityBase
     public virtual Permission Permission { get; set; } = null!;
 }
 
-public class Permission : EntityBase<int>
+public class Permission : IEntity<int>
 {
+    public int Id { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }
 }
