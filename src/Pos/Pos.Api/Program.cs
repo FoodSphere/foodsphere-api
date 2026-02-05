@@ -21,7 +21,7 @@ if (builder.Environment.IsDevelopment())
     // https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/implementation/key-storage-ephemeral
     // builder.Services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
 
-    builder.Services.AddSwaggerGen(SwaggerConfiguration.Configure());
+    builder.Services.AddSwaggerGen(SwaggerGenConfiguration.Configure());
 }
 else if (builder.Environment.IsProduction())
 {
@@ -138,7 +138,9 @@ builder.Services.AddScoped<PaymentService>();
 // AddKeyedTransient?
 builder.Services.AddTransient<IMagicLinkService, MessagePackMagicLinkService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(JsonConfiguration.Configure());
+
 builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddProblemDetails(); // RFC 9457, Result.Problem()
 // builder.Services.AddOpenApi();
@@ -147,7 +149,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger(SwaggerConfiguration.Configure());
     app.UseSwaggerUI();
     // app.MapOpenApi();
 }

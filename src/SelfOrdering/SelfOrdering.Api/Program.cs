@@ -13,7 +13,7 @@ if (builder.Environment.IsDevelopment())
     DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
     builder.Configuration.AddEnvironmentVariables();
 
-    builder.Services.AddSwaggerGen(SwaggerConfiguration.Configure());
+    builder.Services.AddSwaggerGen(SwaggerGenConfiguration.Configure());
 }
 else if (builder.Environment.IsProduction())
 {
@@ -72,7 +72,9 @@ if (builder.Environment.IsProduction())
 builder.Services.AddAuthorization(AuthorizationConfiguration.Configure());
 
 builder.Services.AddScoped<SelfOrderingAuthService>();
+builder.Services.AddScoped<OrderingAuthService>();
 builder.Services.AddScoped<OrderingPortalService>();
+
 builder.Services.AddScoped<BillService>();
 builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();
@@ -80,7 +82,9 @@ builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<RestaurantService>();
 builder.Services.AddScoped<StaffService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(JsonConfiguration.Configure());
+
 builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddProblemDetails();
 
@@ -88,7 +92,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger(SwaggerConfiguration.Configure());
     app.UseSwaggerUI();
 }
 

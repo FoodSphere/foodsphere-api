@@ -18,6 +18,11 @@ spec:
         path:
           type: ReplacePrefixMatch
           replacePrefixMatch: /
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        set:
+        - name: X-Forwarded-Prefix
+          value: /api
     backendRefs:
     - name: pos-api-service
       port: {{ .Values.parameters.pos_api.port_http }}
