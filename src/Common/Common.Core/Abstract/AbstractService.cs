@@ -1,0 +1,13 @@
+using FoodSphere.Infrastructure.Persistence;
+
+namespace FoodSphere.Common.Services;
+
+public abstract class ServiceBase(FoodSphereDbContext context)
+{
+    protected readonly FoodSphereDbContext _ctx = context;
+
+    public async Task<int> SaveAsync()
+    {
+        return await _ctx.SaveChangesAsync();
+    }
+}

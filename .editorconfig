@@ -8,3 +8,9 @@ dotnet_diagnostic.CA1050.severity = none
 
 # CS1587: XML comment is not placed on a valid language element
 dotnet_diagnostic.CS1587.severity = none
+
+# ASPIREPIPELINES003: Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+dotnet_diagnostic.ASPIREPIPELINES003.severity = suggestion
+
+# ASPIRECOMPUTE003: Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+dotnet_diagnostic.ASPIRECOMPUTE003.severity = suggestion

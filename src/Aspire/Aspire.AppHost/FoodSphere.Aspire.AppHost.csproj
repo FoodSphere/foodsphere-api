@@ -1,0 +1,26 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>CS1998</NoWarn>
+    <UserSecretsId>3c2201cc-de46-41b3-b54e-2b06d7f58d95</UserSecretsId>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Azure.AppContainers" />
+    <PackageReference Include="Aspire.Hosting.Kubernetes" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.Redis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../Infrastructure/Migrator.Npgsql/FoodSphere.Migrator.Npgsql.csproj" />
+    <ProjectReference Include="../../Resource/Resource.Api/FoodSphere.Resource.Api.csproj" />
+    <ProjectReference Include="../../Pos/Pos.Api/FoodSphere.Pos.Api.csproj" />
+    <ProjectReference Include="../../SelfOrdering/SelfOrdering.Api/FoodSphere.SelfOrdering.Api.csproj" />
+    <ProjectReference Include="../../Consumer/Consumer.Api/FoodSphere.Consumer.Api.csproj" />
+  </ItemGroup>
+</Project>
