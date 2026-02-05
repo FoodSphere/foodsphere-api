@@ -26,7 +26,7 @@ public class StaffController(
     [HttpGet]
     public async Task<ActionResult<List<StaffResponse>>> ListStaffs(Guid restaurant_id, short branch_id)
     {
-        var staffs = await branchService.ListStaffs(restaurant_id, branch_id);
+        var staffs = await staffService.ListStaffs(restaurant_id, branch_id);
 
         return staffs
             .Select(StaffResponse.FromModel)

@@ -71,23 +71,23 @@ public class MasterBranchController(
     }
 
     [HttpGet("managers")]
-    public async Task<ActionResult<List<ManagerResponse>>> ListManagers(Guid restaurant_id, short branch_id)
+    public async Task<ActionResult<List<BranchManagerResponse>>> ListManagers(Guid restaurant_id, short branch_id)
     {
         var managers = await branchService.ListManagers(restaurant_id, branch_id);
 
         return managers
-            .Select(ManagerResponse.FromModel)
+            .Select(BranchManagerResponse.FromModel)
             .ToList();
     }
 
     [HttpPost("managers")]
-    public async Task<ActionResult<ManagerResponse>> CreateManager(Guid restaurant_id, short branch_id, ManagerRequest body)
+    public async Task<ActionResult<BranchManagerResponse>> CreateManager(Guid restaurant_id, short branch_id, BranchManagerRequest body)
     {
         var manager = await branchService.CreateManager(restaurant_id, branch_id, body.master_id);
 
         await branchService.SaveAsync();
 
-        return ManagerResponse.FromModel(manager);
+        return BranchManagerResponse.FromModel(manager);
     }
 
     [HttpDelete("{branch_id}")]

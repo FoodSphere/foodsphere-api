@@ -63,31 +63,3 @@ public class BranchResponse //: IDTO<Branch, BranchResponse>
         };
     }
 }
-
-public class ManagerRequest
-{
-    public required string master_id;
-}
-
-public class ManagerResponse
-{
-    public Guid restaurant_id;
-
-    public DateTime create_time;
-    public DateTime update_time;
-
-    public short branch_id;
-    public required string master_id;
-
-    public static ManagerResponse FromModel(BranchManager model)
-    {
-        return new ManagerResponse
-        {
-            restaurant_id = model.RestaurantId,
-            branch_id = model.BranchId,
-            master_id = model.MasterId,
-            create_time = model.CreateTime,
-            update_time = model.UpdateTime,
-        };
-    }
-}

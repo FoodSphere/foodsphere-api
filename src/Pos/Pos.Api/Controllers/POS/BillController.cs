@@ -22,20 +22,20 @@ public class BillController(
             return NotFound();
         }
 
-        if (UserType is UserType.Master)
-        {
-            if (!await branchService.CheckPermissions(branch, MasterUser))
-            {
-                return Forbid();
-            }
-        }
-        else if (UserType is UserType.Staff)
-        {
-            if (!await branchService.CheckPermissions(branch, StaffUser))
-            {
-                return Forbid();
-            }
-        }
+        // if (UserType is UserType.Master)
+        // {
+        //     if (!await branchService.CheckPermissions(branch, MasterUser))
+        //     {
+        //         return Forbid();
+        //     }
+        // }
+        // else if (UserType is UserType.Staff)
+        // {
+        //     if (!await branchService.CheckPermissions(branch, StaffUser))
+        //     {
+        //         return Forbid();
+        //     }
+        // }
 
         var table = await branchService.GetTable(
             restaurantId: body.restaurant_id,
@@ -80,20 +80,20 @@ public class BillController(
             return NotFound();
         }
 
-        if (UserType is UserType.Master)
-        {
-            if (!await branchService.CheckPermissions(branch, MasterUser))
-            {
-                return Forbid();
-            }
-        }
-        else if (UserType is UserType.Staff)
-        {
-            if (!await branchService.CheckPermissions(branch, StaffUser))
-            {
-                return Forbid();
-            }
-        }
+        // if (UserType is UserType.Master)
+        // {
+        //     if (!await branchService.CheckPermissions(branch, MasterUser))
+        //     {
+        //         return Forbid();
+        //     }
+        // }
+        // else if (UserType is UserType.Staff)
+        // {
+        //     if (!await branchService.CheckPermissions(branch, StaffUser))
+        //     {
+        //         return Forbid();
+        //     }
+        // }
 
         return BillResponse.FromModel(bill);
     }

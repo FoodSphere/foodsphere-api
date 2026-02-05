@@ -29,6 +29,69 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
         return restaurant;
     }
 
+    public async Task<RestaurantManager> CreateManagerAsync(
+        Guid restaurantId,
+        string masterId,
+        CancellationToken ct = default
+    ) {
+        var manager = new RestaurantManager
+        {
+            RestaurantId = restaurantId,
+            MasterId = masterId,
+        };
+
+        await _ctx.AddAsync(manager, ct);
+
+        return manager;
+    }
+
+    public async Task SetManagerRoleAsync(
+        RestaurantManager manager,
+        IEnumerable<short> roleIds,
+        CancellationToken ct = default
+    ) {
+        await SetManagerRoleAsync(
+            manager.RestaurantId,
+            manager.MasterId,
+            roleIds,
+            ct);
+    }
+
+    public async Task SetManagerRoleAsync(
+        Guid restaurantId,
+        string masterId,
+        IEnumerable<short> roleIds,
+        CancellationToken ct = default
+    ) {
+        var desiredIds = roleIds
+            .Distinct()
+            .ToArray();
+
+        var currentRoles = await _ctx.Set<RestaurantManagerRole>()
+            .Where(rmr =>
+                rmr.RestaurantId == restaurantId &&
+                rmr.ManagerId == masterId)
+            .ToArrayAsync(ct);
+
+        var toRemove = currentRoles
+            .ExceptBy(desiredIds, sr => sr.RoleId)
+            .ToArray();
+
+        var toAddIds = desiredIds
+            .Except(currentRoles.Select(sr => sr.RoleId))
+            .ToArray();
+
+        var newEntities = toAddIds.Select(roleId => new RestaurantManagerRole
+        {
+            RestaurantId = restaurantId,
+            ManagerId = masterId,
+            RoleId = roleId
+        });
+
+        _ctx.RemoveRange(toRemove);
+        await _ctx.AddRangeAsync(newEntities, ct);
+    }
+
     public async Task<Restaurant?> GetRestaurant(Guid restaurantId)
     {
         return await _ctx.FindAsync<Restaurant>(restaurantId);
@@ -44,6 +107,13 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
         return await _ctx.Set<Restaurant>()
             .Where(restaurant => restaurant.OwnerId == ownerId)
             .ToListAsync();
+    }
+
+    public async Task<RestaurantManager[]> ListManagers(Guid restaurantId)
+    {
+        return await _ctx.Set<RestaurantManager>()
+            .Where(manager => manager.RestaurantId == restaurantId)
+            .ToArrayAsync();
     }
 
     public async Task DeleteRestaurant(Restaurant restaurant)

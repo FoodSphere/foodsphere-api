@@ -69,7 +69,10 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
             .ToArray();
 
         var currentRoles = await _ctx.Set<StaffRole>()
-            .Where(sr => sr.RestaurantId == restaurantId && sr.BranchId == branchId && sr.StaffId == staffId)
+            .Where(sr =>
+                sr.RestaurantId == restaurantId &&
+                sr.BranchId == branchId &&
+                sr.StaffId == staffId)
             .ToArrayAsync(ct);
 
         var toRemove = currentRoles
@@ -95,6 +98,13 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
     public async Task<StaffUser?> GetStaff(Guid restaurantId, short branchId, short staffId)
     {
         return await _ctx.FindAsync<StaffUser>(restaurantId, branchId, staffId);
+    }
+
+    public async Task<List<StaffUser>> ListStaffs(Guid restaurantId, short branchId)
+    {
+        return await _ctx.Set<StaffUser>()
+            .Where(staff => staff.RestaurantId == restaurantId && staff.BranchId == branchId)
+            .ToListAsync();
     }
 
     public async Task DeleteStaff(StaffUser staff)

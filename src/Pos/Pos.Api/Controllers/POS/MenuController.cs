@@ -3,7 +3,7 @@ namespace FoodSphere.Pos.Api.Controllers;
 [Route("restaurants/{restaurant_id}/menus")]
 public class MenuController(
     ILogger<MenuController> logger,
-    AuthorizeService authorizationService,
+    CheckPermissionService checkPermissionService,
     MenuService menuService
 ) : PosControllerBase
 {
@@ -20,7 +20,7 @@ public class MenuController(
     [HttpPost]
     public async Task<ActionResult<MenuResponse>> CreateMenu(Guid restaurant_id, MenuRequest body)
     {
-        var hasPermission = await authorizationService.CheckPermission(
+        var hasPermission = await checkPermissionService.CheckPermission(
             User, restaurant_id,
             PERMISSION.Menu.CREATE
         );
@@ -69,7 +69,7 @@ public class MenuController(
     [HttpPut("{menu_id}")]
     public async Task<ActionResult> UpdateMenu(Guid restaurant_id, short menu_id, MenuRequest body)
     {
-        var hasPermission = await authorizationService.CheckPermission(
+        var hasPermission = await checkPermissionService.CheckPermission(
             User, restaurant_id,
             PERMISSION.Menu.UPDATE
         );

@@ -8,7 +8,7 @@ public class BranchConfiguration : IEntityTypeConfiguration<Branch>
     }
 }
 
-public class ManagerConfiguration : IEntityTypeConfiguration<BranchManager>
+public class BranchManagerConfiguration : IEntityTypeConfiguration<BranchManager>
 {
     public void Configure(EntityTypeBuilder<BranchManager> builder)
     {
@@ -26,13 +26,13 @@ public class ManagerConfiguration : IEntityTypeConfiguration<BranchManager>
     }
 }
 
-public class ManagerRoleConfiguration : IEntityTypeConfiguration<ManagerRole>
+public class BranchManagerRoleConfiguration : IEntityTypeConfiguration<BranchManagerRole>
 {
-    public void Configure(EntityTypeBuilder<ManagerRole> builder)
+    public void Configure(EntityTypeBuilder<BranchManagerRole> builder)
     {
         builder.HasKey(e => new { e.RestaurantId, e.BranchId, e.ManagerId, e.RoleId });
 
-        builder.HasOne(e => e.ManagerBranch)
+        builder.HasOne(e => e.Manager)
             .WithMany(e => e.Roles)
             .HasForeignKey(e => new { e.RestaurantId, e.BranchId, e.ManagerId })
             .OnDelete(DeleteBehavior.Restrict);

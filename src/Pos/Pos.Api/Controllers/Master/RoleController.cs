@@ -3,14 +3,14 @@ namespace FoodSphere.Pos.Api.Controllers;
 [Route("restaurants/{restaurant_id}/roles")]
 public class RoleController(
     ILogger<RoleController> logger,
-    AuthorizeService authorizationService,
+    CheckPermissionService checkPermissionService,
     RoleService roleService
 ) : MasterControllerBase
 {
     [HttpPost]
     public async Task<ActionResult<RoleResponse>> CreateRole(Guid restaurant_id, RoleRequest body)
     {
-        var hasPermission = await authorizationService.CheckPermission(
+        var hasPermission = await checkPermissionService.CheckPermission(
             User, restaurant_id,
             PERMISSION.Role.CREATE
         );

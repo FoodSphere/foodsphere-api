@@ -169,27 +169,27 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
             );
     }
 
-    public async Task<bool> CheckPermissions(Bill bill, MasterUser user, Permission[]? permissions = null)
-    {
-        return await _ctx.Set<Restaurant>()
-            .AnyAsync(r =>
-                r.Id == bill.RestaurantId && (
-                    r.OwnerId == user.Id ||
-                    _ctx.Set<BranchManager>().Any(m =>
-                        m.RestaurantId == r.Id &&
-                        m.BranchId == bill.BranchId &&
-                        m.MasterId == user.Id
-        )));
-    }
+    // public async Task<bool> CheckPermissions(Bill bill, MasterUser user, Permission[]? permissions = null)
+    // {
+    //     return await _ctx.Set<Restaurant>()
+    //         .AnyAsync(r =>
+    //             r.Id == bill.RestaurantId && (
+    //                 r.OwnerId == user.Id ||
+    //                 _ctx.Set<BranchManager>().Any(m =>
+    //                     m.RestaurantId == r.Id &&
+    //                     m.BranchId == bill.BranchId &&
+    //                     m.MasterId == user.Id
+    //     )));
+    // }
 
-    public async Task<bool> CheckPermissions(Bill bill, StaffUser user, Permission[]? permissions = null)
-    {
-        return bill.RestaurantId == user.RestaurantId &&
-               bill.BranchId == user.BranchId;
-    }
+    // public async Task<bool> CheckPermissions(Bill bill, StaffUser user, Permission[]? permissions = null)
+    // {
+    //     return bill.RestaurantId == user.RestaurantId &&
+    //            bill.BranchId == user.BranchId;
+    // }
 
-    public async Task<bool> CheckPermissions(Bill bill, ConsumerUser user)
-    {
-        return bill.ConsumerId == user.Id;
-    }
+    // public async Task<bool> CheckPermissions(Bill bill, ConsumerUser user)
+    // {
+    //     return bill.ConsumerId == user.Id;
+    // }
 }

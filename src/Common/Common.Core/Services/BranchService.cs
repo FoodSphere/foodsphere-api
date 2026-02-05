@@ -48,9 +48,55 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
         return manager;
     }
 
-    public async Task UpdateManagerPermissions(BranchManager manager, List<short> roleIds)
-    {
+    public async Task SetManagerRoleAsync(
+        BranchManager manager,
+        IEnumerable<short> roleIds,
+        CancellationToken ct = default
+    ) {
+        await SetManagerRoleAsync(
+            manager.RestaurantId,
+            manager.BranchId,
+            manager.MasterId,
+            roleIds,
+            ct);
+    }
 
+    public async Task SetManagerRoleAsync(
+        Guid restaurantId,
+        short branchId,
+        string masterId,
+        IEnumerable<short> roleIds,
+        CancellationToken ct = default
+    ) {
+        var desiredIds = roleIds
+            .Distinct()
+            .ToArray();
+
+        var currentRoles = await _ctx.Set<BranchManagerRole>()
+            .Where(bmr =>
+                bmr.RestaurantId == restaurantId &&
+                bmr.BranchId == branchId &&
+                bmr.ManagerId == masterId)
+            .ToArrayAsync(ct);
+
+        var toRemove = currentRoles
+            .ExceptBy(desiredIds, sr => sr.RoleId)
+            .ToArray();
+
+        var toAddIds = desiredIds
+            .Except(currentRoles.Select(sr => sr.RoleId))
+            .ToArray();
+
+        var newEntities = toAddIds.Select(roleId => new BranchManagerRole
+        {
+            RestaurantId = restaurantId,
+            BranchId = branchId,
+            ManagerId = masterId,
+            RoleId = roleId
+        });
+
+        _ctx.RemoveRange(toRemove);
+        await _ctx.AddRangeAsync(newEntities, ct);
     }
 
     public async Task<Table?> GetTable(
@@ -99,13 +145,6 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
     {
         return await _ctx.Set<Table>()
             .Where(table => table.RestaurantId == restaurantId && table.BranchId == branchId)
-            .ToListAsync();
-    }
-
-    public async Task<List<StaffUser>> ListStaffs(Guid restaurantId, short branchId)
-    {
-        return await _ctx.Set<StaffUser>()
-            .Where(staff => staff.RestaurantId == restaurantId && staff.BranchId == branchId)
             .ToListAsync();
     }
 
@@ -204,24 +243,5 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
         {
             _ctx.Remove(branch.Contact);
         }
-    }
-
-    public async Task<bool> CheckPermissions(Branch branch, MasterUser user, Permission[]? permissions = null)
-    {
-        return await _ctx.Set<Restaurant>()
-            .AnyAsync(r =>
-                r.Id == branch.RestaurantId && (
-                    r.OwnerId == user.Id ||
-                    _ctx.Set<BranchManager>().Any(m =>
-                        m.RestaurantId == r.Id &&
-                        m.MasterId == user.Id &&
-                        m.BranchId == branch.Id
-            )));
-    }
-
-    public async Task<bool> CheckPermissions(Branch branch, StaffUser user, Permission[]? permissions = null)
-    {
-        return branch.RestaurantId == user.RestaurantId &&
-               branch.Id == user.BranchId;
     }
 }

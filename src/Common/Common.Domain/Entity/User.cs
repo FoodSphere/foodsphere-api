@@ -5,7 +5,8 @@ namespace FoodSphere.Common.Entities;
 public class MasterUser : IdentityUser
 {
     public virtual List<Restaurant> OwnedRestaurants { get; } = [];
-    public virtual List<Manager> ManagedBranches { get; } = [];
+    public virtual List<RestaurantManager> ManagedRestaurants { get; } = [];
+    public virtual List<BranchManager> ManagedBranches { get; } = [];
 }
 
 public class StaffUser : EntityBase<short>
@@ -19,6 +20,17 @@ public class StaffUser : EntityBase<short>
     public string? Phone { get; set; }
 
     public virtual List<StaffRole> Roles { get; } = [];
+
+    public Permission[] GetPermissions()
+    {
+        var permissions = Roles
+            .SelectMany(r => r.Role.Permissions)
+            .Select(rp => rp.Permission)
+            .Distinct()
+            .ToArray();
+
+        return permissions;
+    }
 }
 
 public class StaffRole : TrackableEntityBase

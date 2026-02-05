@@ -113,14 +113,14 @@ builder.Services.AddAuthorization(AuthorizationConfiguration.Configure());
 builder.Services.AddSingleton<EmailService>();
 
 // scoped each http request
-builder.Services.AddScoped<IAuthorizationHandler, MasterPermissionHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, ManagerPermissionHandler>();
-builder.Services.AddScoped<IAuthorizationHandler, StaffPermissionHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, RestaurantPermissionHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, BranchPermissionHandler>();
 
 builder.Services.AddScoped<MasterAuthService>();
 builder.Services.AddScoped<StaffAuthService>();
 builder.Services.AddScoped<OrderingAuthService>();
 builder.Services.AddScoped<AuthorizeService>();
+builder.Services.AddScoped<CheckPermissionService>();
 builder.Services.AddScoped<OrderingPortalService>();
 builder.Services.AddScoped<StaffPortalService>();
 

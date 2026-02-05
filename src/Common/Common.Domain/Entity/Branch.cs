@@ -30,7 +30,7 @@ public class BranchManager : TrackableEntityBase
     public string MasterId { get; set; } = null!;
     public virtual MasterUser Master { get; set; } = null!;
 
-    public virtual List<ManagerRole> Roles { get; } = [];
+    public virtual List<BranchManagerRole> Roles { get; } = [];
 
     public Permission[] GetPermissions()
     {
@@ -44,13 +44,13 @@ public class BranchManager : TrackableEntityBase
     }
 }
 
-public class ManagerRole : TrackableEntityBase
+public class BranchManagerRole : TrackableEntityBase
 {
     public Guid RestaurantId { get; set; }
     public short BranchId { get; set; }
 
     public string ManagerId { get; set; } = null!;
-    public virtual BranchManager ManagerBranch { get; set; } = null!;
+    public virtual BranchManager Manager { get; set; } = null!;
 
     public short RoleId { get; set; }
     public virtual Role Role { get; set; } = null!;
