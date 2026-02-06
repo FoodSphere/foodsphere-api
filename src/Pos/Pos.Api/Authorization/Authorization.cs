@@ -1,7 +1,7 @@
 using FoodSphere.Pos.Api.Authentication;
-using FoodSphere.Pos.Api.Configurations;
+using FoodSphere.Pos.Api.Configuration;
 
-namespace FoodSphere.Pos.Api.Authorizations
+namespace FoodSphere.Pos.Api.Authorization
 {
     public class PosAuthorizeAttribute : AuthorizeAttribute
     {
@@ -20,7 +20,7 @@ namespace FoodSphere.Pos.Api.Authorizations
     }
 }
 
-namespace FoodSphere.Pos.Api.Configurations
+namespace FoodSphere.Pos.Api.Configuration
 {
     public static class AuthorizationConfiguration
     {

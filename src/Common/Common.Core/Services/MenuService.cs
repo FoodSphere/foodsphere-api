@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FoodSphere.Infrastructure.Persistence;
 
-namespace FoodSphere.Common.Services;
+namespace FoodSphere.Common.Service;
 
 public class MenuService(FoodSphereDbContext context) : ServiceBase(context)
 {

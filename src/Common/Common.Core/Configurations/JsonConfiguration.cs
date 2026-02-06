@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace FoodSphere.Common.Configurations;
+namespace FoodSphere.Common.Configuration;
 
 public static class JsonConfiguration
 {

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.DataProtection;
 using FoodSphere.Infrastructure.Persistence;
 using MessagePack;
 
-namespace FoodSphere.Common.Services;
+namespace FoodSphere.Common.Service;
 
 public interface IMagicLinkService
 {

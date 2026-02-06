@@ -1,6 +1,6 @@
 using FoodSphere.Infrastructure.Persistence;
 
-namespace FoodSphere.Common.Services;
+namespace FoodSphere.Common.Service;
 
 public abstract class ServiceBase(FoodSphereDbContext context)
 {

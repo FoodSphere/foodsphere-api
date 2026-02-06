@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace FoodSphere.Pos.Api.Controllers;
+namespace FoodSphere.Pos.Api.Controller;
 
 /// <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi"/>
 /// <see cref="Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions"/>
@@ -14,7 +14,7 @@ namespace FoodSphere.Pos.Api.Controllers;
 [Route("auth/master")]
 public class MasterAuthController(
     ILogger<MasterAuthController> logger,
-    Utilities.EmailService emailSender,
+    Utility.EmailService emailSender,
     UserManager<MasterUser> userManager,
     MasterAuthService authService
 ) : FoodSphereControllerBase

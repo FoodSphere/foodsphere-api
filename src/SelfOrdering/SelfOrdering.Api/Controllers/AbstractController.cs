@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace FoodSphere.SelfOrdering.Api.Controllers;
+namespace FoodSphere.SelfOrdering.Api.Controller;
 
 [SelfOrderingAuthorize]
 public abstract class SelfOrderingControllerBase : FoodSphereControllerBase
@@ -9,7 +9,7 @@ public abstract class SelfOrderingControllerBase : FoodSphereControllerBase
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Common.Entities.BillMember)];
+            var obj = HttpContext.Items[nameof(Common.Entity.BillMember)];
 
             if (obj is not BillMember member)
             {

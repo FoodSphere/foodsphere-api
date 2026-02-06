@@ -1,4 +1,4 @@
-namespace FoodSphere.Pos.Api.Controllers;
+namespace FoodSphere.Pos.Api.Controller;
 
 [Route("bills")]
 public class BillController(

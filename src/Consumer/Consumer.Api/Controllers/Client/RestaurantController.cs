@@ -1,4 +1,4 @@
-namespace FoodSphere.Consumer.Api.Controllers;
+namespace FoodSphere.Consumer.Api.Controller;
 
 [Route("restaurants")]
 public class RestaurantController(

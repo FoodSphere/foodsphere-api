@@ -1,4 +1,4 @@
-namespace FoodSphere.Resource.Api.Controllers;
+namespace FoodSphere.Resource.Api.Controller;
 
 [Route("auth")]
 public class ResourceAuthController(

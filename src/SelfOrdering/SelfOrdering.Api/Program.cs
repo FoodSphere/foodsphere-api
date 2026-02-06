@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using FoodSphere.Common.Configurations;
+using FoodSphere.Common.Configuration;
 using FoodSphere.Infrastructure.Persistence;
-using FoodSphere.SelfOrdering.Api.Configurations;
+using FoodSphere.SelfOrdering.Api.Configuration;
 using FoodSphere.SelfOrdering.Api.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);

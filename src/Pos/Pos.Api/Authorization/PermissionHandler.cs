@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace FoodSphere.Pos.Api.Authorizations;
+namespace FoodSphere.Pos.Api.Authorization;
 
 // https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resourcebased
 // custom requirement is better than OperationAuthorizationRequirement

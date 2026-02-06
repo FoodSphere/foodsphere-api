@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace FoodSphere.Resource.Api.Services;
+namespace FoodSphere.Resource.Api.Service;
 
 public class ResourceAuthService(
     ILogger<ResourceAuthService> logger,

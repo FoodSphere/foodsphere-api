@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace FoodSphere.Pos.Api.Controllers;
+namespace FoodSphere.Pos.Api.Controller;
 
 [PosAuthorize]
 public abstract class PosControllerBase : FoodSphereControllerBase
@@ -24,7 +24,7 @@ public abstract class PosControllerBase : FoodSphereControllerBase
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Common.Entities.MasterUser)];
+            var obj = HttpContext.Items[nameof(Common.Entity.MasterUser)];
 
             if (obj is not MasterUser user)
             {
@@ -39,7 +39,7 @@ public abstract class PosControllerBase : FoodSphereControllerBase
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Common.Entities.StaffUser)];
+            var obj = HttpContext.Items[nameof(Common.Entity.StaffUser)];
 
             if (obj is not StaffUser user)
             {
@@ -69,7 +69,7 @@ public abstract class MasterControllerBase : FoodSphereControllerBase
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Common.Entities.MasterUser)];
+            var obj = HttpContext.Items[nameof(Common.Entity.MasterUser)];
 
             if (obj is not MasterUser user)
             {

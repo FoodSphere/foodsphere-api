@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 using FoodSphere.Infrastructure.Persistence;
-using FoodSphere.Pos.Api.Services;
+using FoodSphere.Pos.Api.Service;
 
 [assembly: AssemblyFixture(typeof(FoodSphere.Pos.Test.Integration.SharedAppFixture))]
 

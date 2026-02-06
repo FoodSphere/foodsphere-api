@@ -1,2 +1,2 @@
-global using FoodSphere.Common.Entities;
+global using FoodSphere.Common.Entity;
 global using FoodSphere.Common.Constant;

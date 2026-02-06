@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace FoodSphere.Pos.Api.Services;
+namespace FoodSphere.Pos.Api.Service;
 
 public class StaffAuthService(
     IOptions<EnvDomainApi> envDomainApi,

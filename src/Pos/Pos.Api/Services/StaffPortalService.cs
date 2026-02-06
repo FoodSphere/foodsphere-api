@@ -1,6 +1,6 @@
 using FoodSphere.Infrastructure.Persistence;
 
-namespace FoodSphere.Pos.Api.Services;
+namespace FoodSphere.Pos.Api.Service;
 
 public class StaffPortalService(
     FoodSphereDbContext context,

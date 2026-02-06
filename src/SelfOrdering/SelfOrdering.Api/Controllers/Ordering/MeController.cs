@@ -1,4 +1,4 @@
-namespace FoodSphere.SelfOrdering.Api.Controllers;
+namespace FoodSphere.SelfOrdering.Api.Controller;
 
 [Route("me")]
 public class MeController(

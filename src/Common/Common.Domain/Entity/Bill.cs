@@ -1,4 +1,4 @@
-namespace FoodSphere.Common.Entities;
+namespace FoodSphere.Common.Entity;
 
 public class Bill : EntityBase
 {

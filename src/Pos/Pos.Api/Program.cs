@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using FoodSphere.Common.Configurations;
+using FoodSphere.Common.Configuration;
 using FoodSphere.Infrastructure.Persistence;
-using FoodSphere.Pos.Api.Utilities;
-using FoodSphere.Pos.Api.Configurations;
+using FoodSphere.Pos.Api.Utility;
+using FoodSphere.Pos.Api.Configuration;
 using FoodSphere.Pos.Api.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);

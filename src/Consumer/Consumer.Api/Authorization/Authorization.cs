@@ -1,7 +1,7 @@
 using FoodSphere.Consumer.Api.Authentication;
-using FoodSphere.Consumer.Api.Configurations;
+using FoodSphere.Consumer.Api.Configuration;
 
-namespace FoodSphere.Consumer.Api.Authorizations
+namespace FoodSphere.Consumer.Api.Authorization
 {
     public class ConsumerAuthorizeAttribute : AuthorizeAttribute
     {
@@ -12,7 +12,7 @@ namespace FoodSphere.Consumer.Api.Authorizations
     }
 }
 
-namespace FoodSphere.Consumer.Api.Configurations
+namespace FoodSphere.Consumer.Api.Configuration
 {
     public static class AuthorizationConfiguration
     {

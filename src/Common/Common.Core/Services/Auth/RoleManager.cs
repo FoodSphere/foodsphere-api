@@ -1,5 +1,5 @@
 
-namespace FoodSphere.Common.Services;
+namespace FoodSphere.Common.Service;
 
 // var roleManager = sp.GetRequiredService<RoleManager<IdentityRole>>();
 

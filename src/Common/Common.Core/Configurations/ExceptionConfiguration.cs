@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace FoodSphere.Common.Configurations;
+namespace FoodSphere.Common.Configuration;
 
 public static class ExceptionConfiguration
 {

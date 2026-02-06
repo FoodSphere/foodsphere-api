@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace FoodSphere.Resource.Api.Controllers;
+namespace FoodSphere.Resource.Api.Controller;
 
 [ResourceAuthorize]
 public abstract class ResourceControllerBase : FoodSphereControllerBase

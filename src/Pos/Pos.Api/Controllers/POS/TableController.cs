@@ -1,4 +1,4 @@
-namespace FoodSphere.Pos.Api.Controllers;
+namespace FoodSphere.Pos.Api.Controller;
 
 [Route("restaurants/{restaurant_id}/branches/{branch_id}/tables")]
 public class TableController(

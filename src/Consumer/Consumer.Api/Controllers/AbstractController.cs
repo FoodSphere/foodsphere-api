@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace FoodSphere.Consumer.Api.Controllers;
+namespace FoodSphere.Consumer.Api.Controller;
 
 [ConsumerAuthorize]
 public abstract class ConsumerControllerBase : FoodSphereControllerBase

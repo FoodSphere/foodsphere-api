@@ -1,4 +1,4 @@
-namespace FoodSphere.Pos.Api.DTOs;
+namespace FoodSphere.Pos.Api.DTO;
 
 public class IngredientRequest
 {

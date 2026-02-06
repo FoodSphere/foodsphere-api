@@ -1,5 +1,4 @@
 using System.Text;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.IdentityModel.Tokens;
 
 // IServiceCollection.PostConfigure()
@@ -7,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 // # which one is better?
 // - https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options
 // - https://learn.microsoft.com/en-us/dotnet/core/extensions/options-validation-generator
-namespace FoodSphere.Common.Configurations
+namespace FoodSphere.Common.Configuration
 {
     public static class OptionsExtensions
     {
@@ -135,6 +134,33 @@ namespace FoodSphere.Common.Configurations
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
+
+            // public void AddEnvOptions(params Type[] types)
+            // {
+            //     using var sp = services.BuildServiceProvider();
+            //     var config = sp.GetRequiredService<IConfiguration>();
+
+            //     foreach (var type in types)
+            //     {
+            //         if (type == typeof(IEnvOptions))
+            //         {
+            //             services.AddOptions<EnvDomainApi>()
+            //                 .Bind(config
+            //                     .GetSection(EnvDomainApi.ParentSectionName)
+            //                     .GetSection(EnvDomainApi.SectionName))
+            //                 .ValidateDataAnnotations()
+            //                 .ValidateOnStart();
+
+            //             continue;
+            //         }
+            //         services.AddOptions<EnvDomainOrdering>()
+            //             .Bind(config
+            //                 .GetSection(EnvDomainOrdering.ParentSectionName)
+            //                 .GetSection(EnvDomainOrdering.SectionName))
+            //             .ValidateDataAnnotations()
+            //             .ValidateOnStart();
+            //     }
+            // }
         }
     }
 }

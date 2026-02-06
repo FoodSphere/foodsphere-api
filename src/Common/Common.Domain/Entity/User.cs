@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace FoodSphere.Common.Entities;
+namespace FoodSphere.Common.Entity;
 
 public class MasterUser : IdentityUser
 {
