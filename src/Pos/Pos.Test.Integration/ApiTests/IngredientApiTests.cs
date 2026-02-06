@@ -9,7 +9,7 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
+        var restaurant = await builder.SeedRestaurantAsync(masterUser);
 
         await builder.CommitAsync();
         var requestBody = new IngredientRequest
@@ -47,8 +47,8 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
-        var ingredient = await builder.SeedIngredientAsync(restaurant.Id);
+        var restaurant = await builder.SeedRestaurantAsync(masterUser);
+        var ingredient = await builder.SeedIngredientAsync(restaurant);
 
         await builder.CommitAsync();
         await Authenticate(masterUser);
@@ -60,8 +60,7 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         var responseBody = await response.Content.ReadFromJsonAsync<IngredientResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
-        responseBody.id.Should().Be(ingredient.Id);
-        responseBody.id.Should().Be(1);
+        responseBody.id.Should().Be(ingredient.Id).And.Be(1);
         responseBody.restaurant_id.Should().Be(restaurant.Id);
 
         responseBody.name.Should().Be(ingredient.Name);

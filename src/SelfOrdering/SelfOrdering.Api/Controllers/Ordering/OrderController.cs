@@ -27,7 +27,7 @@ public class OrderingController(
             return NotFound();
         }
 
-        var order = await billService.CreateOrder(bill);
+        var order = await billService.CreateOrderAsync(bill);
 
         foreach (var item in body.items)
         {
@@ -38,7 +38,7 @@ public class OrderingController(
                 return NotFound();
             }
 
-            await billService.SetOrderItem(order, menu, item.quantity);
+            await billService.SetOrderItemAsync(order, menu, item.quantity);
         }
 
         await billService.SaveAsync();
@@ -98,7 +98,7 @@ public class OrderingController(
             return NotFound();
         }
 
-        await billService.SetOrderItem(order, menu, body.quantity);
+        await billService.SetOrderItemAsync(order, menu, body.quantity);
         await billService.SaveAsync();
 
         return NoContent();

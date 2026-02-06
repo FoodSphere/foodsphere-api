@@ -9,7 +9,7 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
+        var restaurant = await builder.SeedRestaurantAsync(masterUser);
         var permissions = await builder.SeedPermissionAsync();
 
         await builder.CommitAsync();
@@ -47,9 +47,9 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
+        var restaurant = await builder.SeedRestaurantAsync(masterUser);
         var permissions = await builder.SeedPermissionAsync();
-        var role = await builder.SeedRoleAsync(restaurant.Id, permissions);
+        var role = await builder.SeedRoleAsync(restaurant, permissions);
 
         await builder.CommitAsync();
         await Authenticate(masterUser);
@@ -61,8 +61,7 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         var responseBody = await response.Content.ReadFromJsonAsync<RoleResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
-        responseBody.id.Should().Be(role.Id);
-        responseBody.id.Should().Be(1);
+        responseBody.id.Should().Be(role.Id).And.Be(1);
         responseBody.restaurant_id.Should().Be(restaurant.Id);
 
         responseBody.name.Should().Be(role.Name);

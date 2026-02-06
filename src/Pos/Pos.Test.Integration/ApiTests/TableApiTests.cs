@@ -1,57 +1,45 @@
 namespace FoodSphere.Pos.Test.Integration;
 
-public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
+public class TableApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
 {
     [Fact]
-    public async Task Post_Order_Should_Succeed()
+    public async Task Post_Table_Should_Succeed()
     {
+        var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
         var restaurant = await builder.SeedRestaurantAsync(masterUser);
         var branch = await builder.SeedBranchAsync(restaurant);
-        var table = await builder.SeedTableAsync(branch);
-        var bill = await builder.SeedBillAsync(table);
-
-        List<OrderItemDto> items = [];
-
-        for (var i = 0; i < Random.Shared.Next(1, 10); i++)
-        {
-            var menu = await builder.SeedMenuAsync(restaurant);
-
-            items.Add(new()
-            {
-                menu_id = menu.Id,
-                quantity = (short)Random.Shared.Next(1, 5),
-            });
-        }
 
         await builder.CommitAsync();
-        var requestBody = new OrderDto
+        var requestBody = new TableRequest
         {
-            items = items,
+            name = $"TEST.table-name.{unique}",
         };
 
         await Authenticate(masterUser);
 
-        var response = await _client.PostAsJsonAsync($"bills/{bill.Id}/orders", requestBody, TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/tables", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created, content);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<OrderResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var responseBody = await response.Content.ReadFromJsonAsync<TableResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
         responseBody.id.Should().Be(1);
-        responseBody.bill_id.Should().Be(bill.Id);
+        responseBody.restaurant_id.Should().Be(restaurant.Id);
+        responseBody.branch_id.Should().Be(branch.Id);
 
-        responseBody.items.Should().BeEquivalentTo(requestBody.items);
+        responseBody.name.Should().Be(requestBody.name);
+        // responseBody.status.Should().Be(TableStatus.Open);
 
         responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
         responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
     }
 
     [Fact]
-    public async Task Get_Bill_Should_Succeed()
+    public async Task Get_Table_Should_Succeed()
     {
         using var builder = CreateTestSeeder();
 
@@ -59,24 +47,23 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         var restaurant = await builder.SeedRestaurantAsync(masterUser);
         var branch = await builder.SeedBranchAsync(restaurant);
         var table = await builder.SeedTableAsync(branch);
-        var bill = await builder.SeedBillAsync(table);
-        var order = await builder.SeedOrderAsync(bill);
 
         await builder.CommitAsync();
         await Authenticate(masterUser);
 
-        var response = await _client.GetAsync($"bills/{bill.Id}/orders/{order.Id}", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/tables/{table.Id}", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.OK, content);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<OrderResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var responseBody = await response.Content.ReadFromJsonAsync<TableResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
-        responseBody.id.Should().Be(order.Id).And.Be(1);
-        responseBody.bill_id.Should().Be(order.BillId);
+        responseBody.id.Should().Be(table.Id).And.Be(1);
+        responseBody.restaurant_id.Should().Be(restaurant.Id);
+        responseBody.branch_id.Should().Be(branch.Id);
 
-        responseBody.items.Should().BeEquivalentTo(order.Items);
-        responseBody.status.Should().Be(order.Status);
+        responseBody.name.Should().Be(table.Name);
+        responseBody.status.Should().Be(table.Status);
 
         responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
         responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);

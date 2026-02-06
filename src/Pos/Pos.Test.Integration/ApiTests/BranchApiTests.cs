@@ -9,7 +9,7 @@ public class BranchApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
+        var restaurant = await builder.SeedRestaurantAsync(masterUser);
 
         await builder.CommitAsync();
         var requestBody = new BranchRequest
@@ -56,8 +56,8 @@ public class BranchApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
-        var branch = await builder.SeedBranchAsync(restaurant.Id);
+        var restaurant = await builder.SeedRestaurantAsync(masterUser);
+        var branch = await builder.SeedBranchAsync(restaurant);
 
         await builder.CommitAsync();
         await Authenticate(masterUser);

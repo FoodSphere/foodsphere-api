@@ -28,28 +28,48 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
             .ToListAsync();
     }
 
-    public async Task<Bill> CreateBill(
-        Table table,
+    public async Task<Bill> CreateBillAsync(
+        Guid restaurantId,
+        short branchId,
+        short tableId,
         short? pax,
-        Guid? consumerId
+        Guid? consumerId,
+        CancellationToken ct = default
     ) {
         var bill = new Bill
         {
+            RestaurantId = restaurantId,
+            BranchId = branchId,
+            TableId = tableId,
+            Pax = pax,
             ConsumerId = consumerId,
-            Table = table,
-            Pax = pax
         };
 
-        await _ctx.AddAsync(bill);
+        await _ctx.AddAsync(bill, ct);
 
         return bill;
     }
 
-    public async Task<Order> CreateOrder(Bill bill)
+    public async Task<Bill> CreateBillAsync(
+        Table table,
+        short? pax,
+        Guid? consumerId,
+        CancellationToken ct = default
+    ) {
+        return await CreateBillAsync(
+            table.RestaurantId,
+            table.BranchId,
+            table.Id,
+            pax,
+            consumerId,
+            ct);
+    }
+
+    public async Task<Order> CreateOrderAsync(Bill bill, CancellationToken ct = default)
     {
         var lastId = await _ctx.Set<Order>()
             .Where(order => order.BillId == bill.Id)
-            .MaxAsync(order => (int?)order.Id) ?? 0;
+            .MaxAsync(order => (short?)order.Id, ct) ?? 0;
 
         var order = new Order
         {
@@ -104,13 +124,13 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
         }
     }
 
-    public async Task SetOrderItem(Order order, Menu menu, short quantity)
+    public async Task SetOrderItemAsync(Order order, Menu menu, short quantity, CancellationToken ct = default)
     {
         // if (order.Status != OrderStatus.Wait) return;
 
         ArgumentOutOfRangeException.ThrowIfNegative(quantity);
 
-        var item = await _ctx.FindAsync<OrderItem>(order.BillId, menu.RestaurantId, order.Id, menu.Id);
+        var item = await _ctx.FindAsync<OrderItem>(order.BillId, menu.RestaurantId, order.Id, menu.Id, ct);
 
         if (item is null)
         {

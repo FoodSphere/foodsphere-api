@@ -75,6 +75,11 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return restaurant;
     }
 
+    public async Task<Restaurant> SeedRestaurantAsync(MasterUser owner)
+    {
+        return await SeedRestaurantAsync(owner.Id);
+    }
+
     public async Task<Menu> SeedMenuAsync(Guid restaurantId)
     {
         var unique = TestSeedingGenerator.GetUniqueString();
@@ -92,6 +97,11 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return menu;
     }
 
+    public async Task<Menu> SeedMenuAsync(Restaurant restaurant)
+    {
+        return await SeedMenuAsync(restaurant.Id);
+    }
+
     public async Task<Ingredient> SeedIngredientAsync(Guid restaurantId)
     {
         var unique = TestSeedingGenerator.GetUniqueString();
@@ -106,6 +116,11 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             ct: ct);
 
         return ingredient;
+    }
+
+    public async Task<Ingredient> SeedIngredientAsync(Restaurant restaurant)
+    {
+        return await SeedIngredientAsync(restaurant.Id);
     }
 
     public async Task<Branch> SeedBranchAsync(Guid restaurantId)
@@ -125,6 +140,11 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return branch;
     }
 
+    public async Task<Branch> SeedBranchAsync(Restaurant restaurant)
+    {
+        return await SeedBranchAsync(restaurant.Id);
+    }
+
     public async Task<Table> SeedTableAsync(Guid restaurantId, short branchId)
     {
         var unique = TestSeedingGenerator.GetUniqueString();
@@ -136,6 +156,11 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             ct: ct);
 
         return table;
+    }
+
+    public async Task<Table> SeedTableAsync(Branch branch)
+    {
+        return await SeedTableAsync(branch.RestaurantId, branch.Id);
     }
 
     public async Task<Permission[]> SeedPermissionAsync()
@@ -167,6 +192,11 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return role;
     }
 
+    public async Task<Role> SeedRoleAsync(Restaurant restaurant, params IEnumerable<Permission> permissions)
+    {
+        return await SeedRoleAsync(restaurant.Id, permissions);
+    }
+
     public async Task<RestaurantManager> SeedRestaurantManagerAsync(
         Guid restaurantId,
         string masterUserId
@@ -178,6 +208,13 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             ct: ct);
 
         return manager;
+    }
+
+    public async Task<RestaurantManager> SeedRestaurantManagerAsync(
+        Restaurant restaurant,
+        MasterUser masterUser
+    ) {
+        return await SeedRestaurantManagerAsync(restaurant.Id, masterUser.Id);
     }
 
     public async Task<RestaurantManager> SeedRestaurantManagerAsync(
@@ -198,6 +235,14 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
     }
 
     public async Task<RestaurantManager> SeedRestaurantManagerAsync(
+        Restaurant restaurant,
+        MasterUser masterUser,
+        params IEnumerable<Role> roles
+    ) {
+        return await SeedRestaurantManagerAsync(restaurant.Id, masterUser.Id, roles);
+    }
+
+    public async Task<RestaurantManager> SeedRestaurantManagerAsync(
         Guid restaurantId,
         string masterUserId,
         params IEnumerable<Permission> permissions
@@ -206,6 +251,14 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         var manager = await SeedRestaurantManagerAsync(restaurantId, masterUserId, role);
 
         return manager;
+    }
+
+    public async Task<RestaurantManager> SeedRestaurantManagerAsync(
+        Restaurant restaurant,
+        MasterUser masterUser,
+        params IEnumerable<Permission> permissions
+    ) {
+        return await SeedRestaurantManagerAsync(restaurant.Id, masterUser.Id, permissions);
     }
 
     public async Task<StaffUser> SeedStaffAsync(
@@ -222,6 +275,11 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             ct: ct);
 
         return staff;
+    }
+
+    public async Task<StaffUser> SeedStaffAsync(Branch branch)
+    {
+        return await SeedStaffAsync(branch.RestaurantId, branch.Id);
     }
 
     public async Task<StaffUser> SeedStaffAsync(
@@ -242,6 +300,13 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
     }
 
     public async Task<StaffUser> SeedStaffAsync(
+        Branch branch,
+        params IEnumerable<Role> roles
+    ) {
+        return await SeedStaffAsync(branch.RestaurantId, branch.Id, roles);
+    }
+
+    public async Task<StaffUser> SeedStaffAsync(
         Guid restaurantId,
         short branchId,
         params IEnumerable<Permission> permissions
@@ -250,5 +315,59 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         var staff = await SeedStaffAsync(restaurantId, branchId, role);
 
         return staff;
+    }
+
+    public async Task<StaffUser> SeedStaffAsync(
+        Branch branch,
+        params IEnumerable<Permission> permissions
+    ) {
+        return await SeedStaffAsync(branch.RestaurantId, branch.Id, permissions);
+    }
+
+    public async Task<Bill> SeedBillAsync(
+        Guid restaurantId,
+        short branchId,
+        short tableId,
+        short? pax = null,
+        Guid? consumerId = null
+    ) {
+        var billService = scope.ServiceProvider.GetRequiredService<BillService>();
+
+        var bill = await billService.CreateBillAsync(
+            restaurantId, branchId, tableId,
+            pax, consumerId,
+            ct: ct);
+
+        return bill;
+    }
+
+    public async Task<Bill> SeedBillAsync(
+        Table table,
+        short? pax = null,
+        ConsumerUser? consumer = null
+    ) {
+        return await SeedBillAsync(
+            table.RestaurantId, table.BranchId, table.Id,
+            pax, consumer?.Id
+        );
+    }
+
+    public async Task<Order> SeedOrderAsync(
+        Bill bill,
+        params IEnumerable<(Menu menu, short quantity)> items
+    ) {
+        var billService = scope.ServiceProvider.GetRequiredService<BillService>();
+        var order = await billService.CreateOrderAsync(bill);
+
+        foreach (var (menu, quantity) in items)
+        {
+            await billService.SetOrderItemAsync(
+                order,
+                menu,
+                quantity,
+                ct);
+        }
+
+        return order;
     }
 }

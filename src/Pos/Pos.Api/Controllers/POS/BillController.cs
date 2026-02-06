@@ -48,7 +48,7 @@ public class BillController(
             return NotFound();
         }
 
-        var bill = await billService.CreateBill(
+        var bill = await billService.CreateBillAsync(
             table: table,
             pax: body.pax,
             consumerId: body.consumer_id
@@ -165,7 +165,7 @@ public class BillController(
             return NotFound();
         }
 
-        var order = await billService.CreateOrder(bill);
+        var order = await billService.CreateOrderAsync(bill);
 
         foreach (var item in body.items)
         {
@@ -176,7 +176,7 @@ public class BillController(
                 return NotFound();
             }
 
-            await billService.SetOrderItem(order, menu, item.quantity);
+            await billService.SetOrderItemAsync(order, menu, item.quantity);
         }
 
         await billService.SaveAsync();
@@ -244,7 +244,7 @@ public class BillController(
             return NotFound();
         }
 
-        await billService.SetOrderItem(order, menu, body.quantity);
+        await billService.SetOrderItemAsync(order, menu, body.quantity);
         await billService.SaveAsync();
 
         return NoContent();

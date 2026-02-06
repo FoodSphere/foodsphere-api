@@ -8,7 +8,7 @@ public class TableRequest
 
 public class TableResponse
 {
-    public int id { get; set; }
+    public short id { get; set; }
 
     public DateTime create_time { get; set; }
     public DateTime update_time { get; set; }

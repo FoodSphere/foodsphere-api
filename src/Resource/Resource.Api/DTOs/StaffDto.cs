@@ -17,8 +17,8 @@ public class StaffResponse
     public Guid restaurant_id { get; set; }
     public short branch_id { get; set; }
 
-    public required string Name { get; set; }
-    public string? Phone { get; set; }
+    public required string name { get; set; }
+    public string? phone { get; set; }
 
     // public StaffStatus status { get; set; }
 
@@ -31,8 +31,8 @@ public class StaffResponse
             update_time = model.UpdateTime,
             restaurant_id = model.RestaurantId,
             branch_id = model.BranchId,
-            Name = model.Name,
-            Phone = model.Phone,
+            name = model.Name,
+            phone = model.Phone,
             // status = model.Status,
         };
     }

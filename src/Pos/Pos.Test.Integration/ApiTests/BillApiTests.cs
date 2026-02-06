@@ -1,9 +1,9 @@
 namespace FoodSphere.Pos.Test.Integration;
 
-public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
+public class BillApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
 {
     [Fact]
-    public async Task Post_Order_Should_Succeed()
+    public async Task Post_Bill_Should_Succeed()
     {
         using var builder = CreateTestSeeder();
 
@@ -11,40 +11,32 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         var restaurant = await builder.SeedRestaurantAsync(masterUser);
         var branch = await builder.SeedBranchAsync(restaurant);
         var table = await builder.SeedTableAsync(branch);
-        var bill = await builder.SeedBillAsync(table);
-
-        List<OrderItemDto> items = [];
-
-        for (var i = 0; i < Random.Shared.Next(1, 10); i++)
-        {
-            var menu = await builder.SeedMenuAsync(restaurant);
-
-            items.Add(new()
-            {
-                menu_id = menu.Id,
-                quantity = (short)Random.Shared.Next(1, 5),
-            });
-        }
 
         await builder.CommitAsync();
-        var requestBody = new OrderDto
+        var requestBody = new BillRequest
         {
-            items = items,
+            restaurant_id = restaurant.Id,
+            branch_id = branch.Id,
+            table_id = table.Id,
+            // consumer_id = null,
+            pax = (short)Random.Shared.Next(1, 20),
         };
 
         await Authenticate(masterUser);
 
-        var response = await _client.PostAsJsonAsync($"bills/{bill.Id}/orders", requestBody, TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync($"bills", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created, content);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<OrderResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var responseBody = await response.Content.ReadFromJsonAsync<BillResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
-        responseBody.id.Should().Be(1);
-        responseBody.bill_id.Should().Be(bill.Id);
+        responseBody.restaurant_id.Should().Be(requestBody.restaurant_id);
+        responseBody.branch_id.Should().Be(requestBody.branch_id);
+        responseBody.table_id.Should().Be(requestBody.table_id);
+        responseBody.consumer_id.Should().Be(requestBody.consumer_id);
 
-        responseBody.items.Should().BeEquivalentTo(requestBody.items);
+        responseBody.pax.Should().Be(requestBody.pax);
 
         responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
         responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
@@ -60,23 +52,26 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         var branch = await builder.SeedBranchAsync(restaurant);
         var table = await builder.SeedTableAsync(branch);
         var bill = await builder.SeedBillAsync(table);
-        var order = await builder.SeedOrderAsync(bill);
 
         await builder.CommitAsync();
         await Authenticate(masterUser);
 
-        var response = await _client.GetAsync($"bills/{bill.Id}/orders/{order.Id}", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync($"bills/{bill.Id}", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.OK, content);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<OrderResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var responseBody = await response.Content.ReadFromJsonAsync<BillResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
-        responseBody.id.Should().Be(order.Id).And.Be(1);
-        responseBody.bill_id.Should().Be(order.BillId);
+        responseBody.id.Should().Be(bill.Id);
+        responseBody.restaurant_id.Should().Be(bill.RestaurantId);
+        responseBody.branch_id.Should().Be(bill.BranchId);
+        responseBody.table_id.Should().Be(bill.TableId);
+        responseBody.consumer_id.Should().Be(bill.ConsumerId);
 
-        responseBody.items.Should().BeEquivalentTo(order.Items);
-        responseBody.status.Should().Be(order.Status);
+        responseBody.orders.Should().BeEquivalentTo(bill.Orders);
+        responseBody.pax.Should().Be(bill.Pax);
+        responseBody.status.Should().Be(bill.Status);
 
         responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
         responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);

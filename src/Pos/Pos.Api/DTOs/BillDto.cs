@@ -63,7 +63,7 @@ public class OrderResponse
 
     public Guid bill_id { get; set; }
 
-    public List<OrderItemDto> items { get; set; } = [];
+    public OrderItemDto[] items { get; set; } = [];
 
     public OrderStatus status { get; set; }
 

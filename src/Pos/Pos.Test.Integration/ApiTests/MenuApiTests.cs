@@ -126,8 +126,8 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
 
         var (owner, _) = await builder.SeedMasterUserAsync();
         var (manager, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(owner.Id);
-        await builder.SeedRestaurantManagerAsync(restaurant.Id, manager.Id);
+        var restaurant = await builder.SeedRestaurantAsync(owner);
+        await builder.SeedRestaurantManagerAsync(restaurant, manager);
 
         List<MenuIngredientDto> ingredients = [];
 
@@ -166,8 +166,8 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
-        var menu = await builder.SeedMenuAsync(restaurant.Id);
+        var restaurant = await builder.SeedRestaurantAsync(masterUser);
+        var menu = await builder.SeedMenuAsync(restaurant);
 
         await builder.CommitAsync();
         await Authenticate(masterUser);
@@ -179,8 +179,7 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         var responseBody = await response.Content.ReadFromJsonAsync<MenuResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
-        responseBody.id.Should().Be(menu.Id);
-        responseBody.id.Should().Be(1);
+       responseBody.id.Should().Be(menu.Id).And.Be(1);
         responseBody.restaurant_id.Should().Be(restaurant.Id);
         responseBody.ingredients.Should().BeEquivalentTo(
             menu.MenuIngredients.Select(MenuIngredientDto.FromModel));

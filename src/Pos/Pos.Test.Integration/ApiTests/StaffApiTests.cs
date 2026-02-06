@@ -9,8 +9,8 @@ public class StaffApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
-        var branch = await builder.SeedBranchAsync(restaurant.Id);
+        var restaurant = await builder.SeedRestaurantAsync(masterUser);
+        var branch = await builder.SeedBranchAsync(restaurant);
         var permissions = await builder.SeedPermissionAsync();
 
         List<Role> roles = [];
@@ -58,8 +58,8 @@ public class StaffApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
-        var branch = await builder.SeedBranchAsync(restaurant.Id);
+        var restaurant = await builder.SeedRestaurantAsync(masterUser);
+        var branch = await builder.SeedBranchAsync(restaurant);
         var permissions = await builder.SeedPermissionAsync();
 
         List<Role> roles = [];
@@ -87,8 +87,7 @@ public class StaffApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         var responseBody = await response.Content.ReadFromJsonAsync<StaffResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
-        responseBody.id.Should().Be(staff.Id);
-        responseBody.id.Should().Be(1);
+        responseBody.id.Should().Be(staff.Id).And.Be(1);
         responseBody.restaurant_id.Should().Be(restaurant.Id);
         responseBody.branch_id.Should().Be(branch.Id);
 
