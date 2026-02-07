@@ -31,7 +31,7 @@ public class BranchController(
             await branchService.SetContact(branch, body.contact);
         }
 
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetBranch),
@@ -82,7 +82,7 @@ public class BranchController(
         }
 
         await branchService.DeleteBranch(branch);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }
@@ -113,7 +113,7 @@ public class BranchController(
         }
 
         await branchService.SetStock(branch, body.ingredient_id, body.amount);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }
@@ -136,7 +136,7 @@ public class BranchController(
         }
 
         await branchService.DeleteStock(stock);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }
@@ -159,18 +159,18 @@ public class BranchController(
             return NotFound();
         }
 
-        var staff = await staffService.CreateStaffAsync(
+        var staff = await staffService.CreateStaff(
             branch: branch,
             name: body.name,
             phone: body.phone
         );
 
-        await staffService.SetRolesAsync(
+        await staffService.SetRoles(
             staff: staff,
             roleIds: body.roles
         );
 
-        await staffService.SaveAsync();
+        await staffService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetStaff),
@@ -231,7 +231,7 @@ public class BranchController(
         }
 
         await staffService.DeleteStaff(staff);
-        await staffService.SaveAsync();
+        await staffService.SaveChanges();
 
         return NoContent();
     }
@@ -258,7 +258,7 @@ public class BranchController(
             branch: branch,
             name: body.name
         );
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetTable),
@@ -319,7 +319,7 @@ public class BranchController(
         }
 
         await branchService.DeleteTable(table);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }

@@ -3,14 +3,14 @@ namespace FoodSphere.Pos.Api.Controller;
 [Route("restaurants/{restaurant_id}/roles")]
 public class RoleController(
     ILogger<RoleController> logger,
-    CheckPermissionService checkPermissionService,
+    AccessControlService accessControlService,
     RoleService roleService
 ) : MasterControllerBase
 {
     [HttpPost]
     public async Task<ActionResult<RoleResponse>> CreateRole(Guid restaurant_id, RoleRequest body)
     {
-        var hasPermission = await checkPermissionService.CheckPermission(
+        var hasPermission = await accessControlService.Validate(
             User, restaurant_id,
             PERMISSION.Role.CREATE
         );
@@ -26,9 +26,9 @@ public class RoleController(
             description: body.description
         );
 
-        await roleService.SetPermissionsAsync(restaurant_id, role.Id, body.permission_ids);
+        await roleService.SetPermissions(restaurant_id, role.Id, body.permission_ids);
 
-        await roleService.SaveAsync();
+        await roleService.SaveChanges();
 
         var populatedRole = await roleService.GetRole(restaurant_id, role.Id);
 
@@ -73,7 +73,7 @@ public class RoleController(
         }
         else
         {
-            await roleService.SaveAsync();
+            await roleService.SaveChanges();
         }
 
         return NoContent();
@@ -82,9 +82,9 @@ public class RoleController(
     [HttpPut("{role_id}/permissions")]
     public async Task<ActionResult> SetPermissions(Guid restaurant_id, short role_id, PermissionRequest body)
     {
-        await roleService.SetPermissionsAsync(restaurant_id, role_id, body.permission_ids);
+        await roleService.SetPermissions(restaurant_id, role_id, body.permission_ids);
 
-        await roleService.SaveAsync();
+        await roleService.SaveChanges();
 
         return NoContent();
     }

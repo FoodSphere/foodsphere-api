@@ -8,11 +8,11 @@ public class TableApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var branch = await builder.SeedBranchAsync(restaurant);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var branch = await builder.SeedBranch(restaurant);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new TableRequest
         {
             name = $"TEST.table-name.{unique}",
@@ -43,12 +43,12 @@ public class TableApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var branch = await builder.SeedBranchAsync(restaurant);
-        var table = await builder.SeedTableAsync(branch);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var branch = await builder.SeedBranch(restaurant);
+        var table = await builder.SeedTable(branch);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/tables/{table.Id}", TestContext.Current.CancellationToken);

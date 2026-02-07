@@ -8,10 +8,10 @@ public class BranchApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new BranchRequest
         {
             name = $"TEST.branch-name.{unique}",
@@ -55,11 +55,11 @@ public class BranchApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var branch = await builder.SeedBranchAsync(restaurant);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var branch = await builder.SeedBranch(restaurant);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}", TestContext.Current.CancellationToken);

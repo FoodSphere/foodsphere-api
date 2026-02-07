@@ -28,7 +28,7 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
             .ToListAsync();
     }
 
-    public async Task<Bill> CreateBillAsync(
+    public async Task<Bill> CreateBill(
         Guid restaurantId,
         short branchId,
         short tableId,
@@ -50,13 +50,13 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
         return bill;
     }
 
-    public async Task<Bill> CreateBillAsync(
+    public async Task<Bill> CreateBill(
         Table table,
         short? pax,
         Guid? consumerId,
         CancellationToken ct = default
     ) {
-        return await CreateBillAsync(
+        return await CreateBill(
             table.RestaurantId,
             table.BranchId,
             table.Id,
@@ -65,7 +65,7 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
             ct);
     }
 
-    public async Task<Order> CreateOrderAsync(Bill bill, CancellationToken ct = default)
+    public async Task<Order> CreateOrder(Bill bill, CancellationToken ct = default)
     {
         var lastId = await _ctx.Set<Order>()
             .Where(order => order.BillId == bill.Id)
@@ -124,7 +124,7 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
         }
     }
 
-    public async Task SetOrderItemAsync(Order order, Menu menu, short quantity, CancellationToken ct = default)
+    public async Task SetOrderItem(Order order, Menu menu, short quantity, CancellationToken ct = default)
     {
         // if (order.Status != OrderStatus.Wait) return;
 

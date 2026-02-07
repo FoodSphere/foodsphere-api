@@ -8,9 +8,9 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
+        var (masterUser, _) = await builder.SeedMasterUser();
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new QuickRestaurantRequest
         {
             name = $"TEST.restaurant-name.{unique}",
@@ -52,10 +52,10 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser.Id);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}", TestContext.Current.CancellationToken);

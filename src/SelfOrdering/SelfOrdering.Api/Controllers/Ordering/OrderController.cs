@@ -27,7 +27,7 @@ public class OrderingController(
             return NotFound();
         }
 
-        var order = await billService.CreateOrderAsync(bill);
+        var order = await billService.CreateOrder(bill);
 
         foreach (var item in body.items)
         {
@@ -38,10 +38,10 @@ public class OrderingController(
                 return NotFound();
             }
 
-            await billService.SetOrderItemAsync(order, menu, item.quantity);
+            await billService.SetOrderItem(order, menu, item.quantity);
         }
 
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetOrder),
@@ -76,7 +76,7 @@ public class OrderingController(
         // check if order can be canceled ...
 
         await billService.UpdateOrderStatus(order, OrderStatus.Canceled);
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return NoContent();
     }
@@ -98,8 +98,8 @@ public class OrderingController(
             return NotFound();
         }
 
-        await billService.SetOrderItemAsync(order, menu, body.quantity);
-        await billService.SaveAsync();
+        await billService.SetOrderItem(order, menu, body.quantity);
+        await billService.SaveChanges();
 
         return NoContent();
     }

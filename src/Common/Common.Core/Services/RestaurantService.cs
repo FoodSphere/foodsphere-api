@@ -29,7 +29,7 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
         return restaurant;
     }
 
-    public async Task<RestaurantManager> CreateManagerAsync(
+    public async Task<RestaurantManager> CreateManager(
         Guid restaurantId,
         string masterId,
         CancellationToken ct = default
@@ -45,19 +45,19 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
         return manager;
     }
 
-    public async Task SetManagerRoleAsync(
+    public async Task SetManagerRoles(
         RestaurantManager manager,
         IEnumerable<short> roleIds,
         CancellationToken ct = default
     ) {
-        await SetManagerRoleAsync(
+        await SetManagerRoles(
             manager.RestaurantId,
             manager.MasterId,
             roleIds,
             ct);
     }
 
-    public async Task SetManagerRoleAsync(
+    public async Task SetManagerRoles(
         Guid restaurantId,
         string masterId,
         IEnumerable<short> roleIds,

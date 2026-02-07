@@ -7,17 +7,17 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var branch = await builder.SeedBranchAsync(restaurant);
-        var table = await builder.SeedTableAsync(branch);
-        var bill = await builder.SeedBillAsync(table);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var branch = await builder.SeedBranch(restaurant);
+        var table = await builder.SeedTable(branch);
+        var bill = await builder.SeedBill(table);
 
         List<OrderItemDto> items = [];
 
         for (var i = 0; i < Random.Shared.Next(1, 10); i++)
         {
-            var menu = await builder.SeedMenuAsync(restaurant);
+            var menu = await builder.SeedMenu(restaurant);
 
             items.Add(new()
             {
@@ -26,7 +26,7 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
             });
         }
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new OrderDto
         {
             items = items,
@@ -55,14 +55,14 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var branch = await builder.SeedBranchAsync(restaurant);
-        var table = await builder.SeedTableAsync(branch);
-        var bill = await builder.SeedBillAsync(table);
-        var order = await builder.SeedOrderAsync(bill);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var branch = await builder.SeedBranch(restaurant);
+        var table = await builder.SeedTable(branch);
+        var bill = await builder.SeedBill(table);
+        var order = await builder.SeedOrder(bill);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"bills/{bill.Id}/orders/{order.Id}", TestContext.Current.CancellationToken);

@@ -7,12 +7,12 @@ public class BillApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var branch = await builder.SeedBranchAsync(restaurant);
-        var table = await builder.SeedTableAsync(branch);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var branch = await builder.SeedBranch(restaurant);
+        var table = await builder.SeedTable(branch);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new BillRequest
         {
             restaurant_id = restaurant.Id,
@@ -47,13 +47,13 @@ public class BillApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var branch = await builder.SeedBranchAsync(restaurant);
-        var table = await builder.SeedTableAsync(branch);
-        var bill = await builder.SeedBillAsync(table);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var branch = await builder.SeedBranch(restaurant);
+        var table = await builder.SeedTable(branch);
+        var bill = await builder.SeedBill(table);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"bills/{bill.Id}", TestContext.Current.CancellationToken);

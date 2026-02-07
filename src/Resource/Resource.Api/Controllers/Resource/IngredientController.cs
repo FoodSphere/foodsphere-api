@@ -25,7 +25,7 @@ public class IngredientController(
             unit: body.unit
         );
 
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetIngredient),
@@ -62,7 +62,7 @@ public class IngredientController(
         ingredient.ImageUrl = body?.image_url;
         ingredient.Unit = body?.unit;
 
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }
@@ -78,7 +78,7 @@ public class IngredientController(
         }
 
         await menuService.DeleteIngredient(ingredient);
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }

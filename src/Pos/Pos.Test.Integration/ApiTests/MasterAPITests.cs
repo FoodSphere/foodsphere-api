@@ -27,9 +27,9 @@ public class MasterApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, password) = await builder.SeedMasterUserAsync();
+        var (masterUser, password) = await builder.SeedMasterUser();
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new MasterTokenRequest
         {
             email = masterUser.Email!,

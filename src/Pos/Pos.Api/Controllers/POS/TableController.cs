@@ -30,7 +30,7 @@ public class TableController(
             branch: branch,
             name: body.name
         );
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetTable),
@@ -63,7 +63,7 @@ public class TableController(
         }
 
         await branchService.DeleteTable(table);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }

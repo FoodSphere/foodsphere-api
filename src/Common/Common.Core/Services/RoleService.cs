@@ -96,7 +96,7 @@ public class RoleService(
     //     role.Permissions.AddRange(newRolePermissions);
     // }
 
-    public async Task SetPermissionsAsync(
+    public async Task SetPermissions(
         Guid restaurantId,
         short roleId,
         IEnumerable<int> permissionIds,

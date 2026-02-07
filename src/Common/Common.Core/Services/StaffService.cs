@@ -5,13 +5,13 @@ namespace FoodSphere.Common.Service;
 
 public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
 {
-    public async Task<StaffUser> CreateStaffAsync(
+    public async Task<StaffUser> CreateStaff(
         Branch branch,
         string name,
         string? phone = null,
         CancellationToken ct = default
     ) {
-        return await CreateStaffAsync(
+        return await CreateStaff(
             branch.RestaurantId,
             branch.Id,
             name,
@@ -19,7 +19,7 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
             ct);
     }
 
-    public async Task<StaffUser> CreateStaffAsync(
+    public async Task<StaffUser> CreateStaff(
         Guid restaurantId,
         short branchId,
         string name,
@@ -44,12 +44,12 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
         return staff;
     }
 
-    public async Task SetRolesAsync(
+    public async Task SetRoles(
         StaffUser staff,
         IEnumerable<short> roleIds,
         CancellationToken ct = default
     ) {
-        await SetRolesAsync(
+        await SetRoles(
             staff.RestaurantId,
             staff.BranchId,
             staff.Id,
@@ -57,7 +57,7 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
             ct);
     }
 
-    public async Task SetRolesAsync(
+    public async Task SetRoles(
         Guid restaurantId,
         short branchId,
         short staffId,

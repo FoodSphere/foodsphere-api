@@ -1,31 +1,4 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc.Filters;
-
 namespace FoodSphere.Pos.Api.Controller;
-
-// check master have access to branch?
-public class ManageBranchFilter : IAuthorizationFilter
-{
-    public void OnAuthorization(AuthorizationFilterContext context)
-    {
-        var sp = context.HttpContext.RequestServices;
-        var restaurantService = sp.GetService<RestaurantService>();
-
-        var userId = context.HttpContext.User.FindFirstValue(FoodSphereClaimType.Identity.UserIdClaimType);
-
-        if (userId is null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        // var restaurantId = Guid.Parse((string)context.RouteData.Values["restaurant_id"]!);
-
-        // if (restaurantService.UserOwnsRestaurant(userId, restaurantId))
-        // {
-        //     context.Result = new ForbidResult();
-        // }
-    }
-}
 
 [Route("restaurants/{restaurant_id}/branches")]
 public class MasterBranchController(
@@ -60,7 +33,7 @@ public class MasterBranchController(
             await branchService.SetContact(branch, body.contact);
         }
 
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return CreatedAtAction(
             nameof(StaffAccessController.GetBranch),
@@ -85,7 +58,7 @@ public class MasterBranchController(
     {
         var manager = await branchService.CreateManager(restaurant_id, branch_id, body.master_id);
 
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return BranchManagerResponse.FromModel(manager);
     }
@@ -101,7 +74,7 @@ public class MasterBranchController(
         }
 
         await branchService.DeleteBranch(branch);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }

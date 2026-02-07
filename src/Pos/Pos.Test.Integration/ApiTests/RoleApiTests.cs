@@ -8,11 +8,11 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var permissions = await builder.SeedPermissionAsync();
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var permissions = await builder.SeedPermission();
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new RoleRequest
         {
             name = $"TEST.role-name.{unique}",
@@ -46,12 +46,12 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var permissions = await builder.SeedPermissionAsync();
-        var role = await builder.SeedRoleAsync(restaurant, permissions);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var permissions = await builder.SeedPermission();
+        var role = await builder.SeedRole(restaurant, permissions);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}/roles/{role.Id}", TestContext.Current.CancellationToken);

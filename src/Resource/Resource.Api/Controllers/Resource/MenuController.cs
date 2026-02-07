@@ -31,7 +31,7 @@ public class MenuController(
             await menuService.UpdateIngredient(restaurant_id, menu.Id, ingredient.ingredient_id, ingredient.amount);
         }
 
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetMenu),
@@ -69,7 +69,7 @@ public class MenuController(
         menu.Description = body?.description;
         menu.ImageUrl = body?.image_url;
 
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }
@@ -85,7 +85,7 @@ public class MenuController(
         }
 
         await menuService.UpdateIngredient(restaurant_id, menu.Id, body.ingredient_id, body.amount);
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }
@@ -101,7 +101,7 @@ public class MenuController(
         }
 
         await menuService.DeleteMenu(menu);
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }

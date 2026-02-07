@@ -68,7 +68,7 @@ public class MasterAuthService(
         return token;
     }
 
-    public async Task<bool> IsTwoFactorEnabledAsync(MasterUser user)
+    public async Task<bool> IsTwoFactorEnabled(MasterUser user)
     {
         return
             await userManager.GetTwoFactorEnabledAsync(user) &&

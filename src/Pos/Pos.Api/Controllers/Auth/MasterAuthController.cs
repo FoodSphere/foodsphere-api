@@ -72,7 +72,7 @@ public class MasterAuthController(
         if (!await userManager.CheckPasswordAsync(user, body.password))
             return TypedResults.Unauthorized();
 
-        if (await authService.IsTwoFactorEnabledAsync(user))
+        if (await authService.IsTwoFactorEnabled(user))
         {
             if (string.IsNullOrEmpty(body.two_factor_code))
             {

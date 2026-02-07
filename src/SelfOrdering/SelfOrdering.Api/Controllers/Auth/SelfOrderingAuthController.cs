@@ -24,7 +24,7 @@ public class SelfOrderingAuthController(
 
         var token = await orderingPortalService.GenerateToken(portal);
 
-        await orderingPortalService.SaveAsync();
+        await orderingPortalService.SaveChanges();
 
         return new SelfOrderingTokenResponse
         {

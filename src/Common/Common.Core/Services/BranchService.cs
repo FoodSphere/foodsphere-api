@@ -48,12 +48,12 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
         return manager;
     }
 
-    public async Task SetManagerRoleAsync(
+    public async Task SetManagerRoles(
         BranchManager manager,
         IEnumerable<short> roleIds,
         CancellationToken ct = default
     ) {
-        await SetManagerRoleAsync(
+        await SetManagerRoles(
             manager.RestaurantId,
             manager.BranchId,
             manager.MasterId,
@@ -61,7 +61,7 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
             ct);
     }
 
-    public async Task SetManagerRoleAsync(
+    public async Task SetManagerRoles(
         Guid restaurantId,
         short branchId,
         string masterId,

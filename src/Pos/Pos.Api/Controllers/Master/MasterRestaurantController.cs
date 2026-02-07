@@ -29,7 +29,7 @@ public class RestaurantController(
             closingTime: body.closing_time
         );
 
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return CreatedAtAction(
             nameof(StaffAccessController.GetRestaurant),
@@ -65,7 +65,7 @@ public class RestaurantController(
         }
 
         await restaurantService.SetContact(restaurant, body);
-        await restaurantService.SaveAsync();
+        await restaurantService.SaveChanges();
 
         return NoContent();
     }
@@ -86,7 +86,7 @@ public class RestaurantController(
         }
 
         await restaurantService.DeleteRestaurant(restaurant);
-        await restaurantService.SaveAsync();
+        await restaurantService.SaveChanges();
 
         return NoContent();
     }

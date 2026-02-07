@@ -30,7 +30,7 @@ public class PortalController(
             body.valid_duration
         );
 
-        await orderingPortalService.SaveAsync();
+        await orderingPortalService.SaveChanges();
 
         return CreatedAtAction(
             nameof(ListPortals),

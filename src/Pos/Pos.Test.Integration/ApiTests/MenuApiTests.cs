@@ -8,14 +8,14 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser.Id);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser.Id);
 
         List<MenuIngredientDto> ingredients = [];
 
         for (var i = 0; i < Random.Shared.Next(1, 10); i++)
         {
-            var ingredient = await builder.SeedIngredientAsync(restaurant.Id);
+            var ingredient = await builder.SeedIngredient(restaurant.Id);
 
             ingredients.Add(new()
             {
@@ -24,7 +24,7 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
             });
         }
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new MenuRequest
         {
             name = $"TEST.menu-name.{unique}",
@@ -65,16 +65,16 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (owner, _) = await builder.SeedMasterUserAsync();
-        var (manager, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(owner.Id);
-        await builder.SeedRestaurantManagerAsync(restaurant.Id, manager.Id, PERMISSION.Menu.CREATE);
+        var (owner, _) = await builder.SeedMasterUser();
+        var (manager, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(owner.Id);
+        await builder.SeedRestaurantManager(restaurant.Id, manager.Id, PERMISSION.Menu.CREATE);
 
         List<MenuIngredientDto> ingredients = [];
 
         for (var i = 0; i < Random.Shared.Next(1, 10); i++)
         {
-            var ingredient = await builder.SeedIngredientAsync(restaurant.Id);
+            var ingredient = await builder.SeedIngredient(restaurant.Id);
 
             ingredients.Add(new()
             {
@@ -83,7 +83,7 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
             });
         }
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new MenuRequest
         {
             name = $"TEST.menu-name.{unique}",
@@ -124,16 +124,16 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (owner, _) = await builder.SeedMasterUserAsync();
-        var (manager, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(owner);
-        await builder.SeedRestaurantManagerAsync(restaurant, manager);
+        var (owner, _) = await builder.SeedMasterUser();
+        var (manager, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(owner);
+        await builder.SeedRestaurantManager(restaurant, manager);
 
         List<MenuIngredientDto> ingredients = [];
 
         for (var i = 0; i < Random.Shared.Next(1, 10); i++)
         {
-            var ingredient = await builder.SeedIngredientAsync(restaurant.Id);
+            var ingredient = await builder.SeedIngredient(restaurant.Id);
 
             ingredients.Add(new()
             {
@@ -142,7 +142,7 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
             });
         }
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new MenuRequest
         {
             name = $"TEST.menu-name.{unique}",
@@ -165,11 +165,11 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var menu = await builder.SeedMenuAsync(restaurant);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var menu = await builder.SeedMenu(restaurant);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}/menus/{menu.Id}", TestContext.Current.CancellationToken);

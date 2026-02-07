@@ -43,18 +43,18 @@ public class StaffController(
             return NotFound();
         }
 
-        var staff = await staffService.CreateStaffAsync(
+        var staff = await staffService.CreateStaff(
             branch: branch,
             name: body.name,
             phone: body.phone
         );
 
-        await staffService.SetRolesAsync(
+        await staffService.SetRoles(
             staff: staff,
             roleIds: body.roles
         );
 
-        await staffService.SaveAsync();
+        await staffService.SaveChanges();
 
         // get staff?
 
@@ -89,7 +89,7 @@ public class StaffController(
         }
 
         await staffService.DeleteStaff(staff);
-        await staffService.SaveAsync();
+        await staffService.SaveChanges();
 
         return NoContent();
     }

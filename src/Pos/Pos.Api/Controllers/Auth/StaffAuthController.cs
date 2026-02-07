@@ -23,7 +23,7 @@ public class StaffAuthController(
 
         var token = await staffPortalService.GenerateToken(portal);
 
-        await staffPortalService.SaveAsync();
+        await staffPortalService.SaveChanges();
 
         return new StaffTokenResponse
         {

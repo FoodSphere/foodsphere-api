@@ -8,21 +8,21 @@ public class StaffApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var branch = await builder.SeedBranchAsync(restaurant);
-        var permissions = await builder.SeedPermissionAsync();
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var branch = await builder.SeedBranch(restaurant);
+        var permissions = await builder.SeedPermission();
 
         List<Role> roles = [];
 
         for (var i = 0; i < Random.Shared.Next(1, 3); i++)
         {
-            var role = await builder.SeedRoleAsync(restaurant.Id, permissions);
+            var role = await builder.SeedRole(restaurant.Id, permissions);
 
             roles.Add(role);
         }
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new StaffRequest
         {
             name = $"TEST.staff-name.{unique}",
@@ -57,27 +57,27 @@ public class StaffApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var branch = await builder.SeedBranchAsync(restaurant);
-        var permissions = await builder.SeedPermissionAsync();
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var branch = await builder.SeedBranch(restaurant);
+        var permissions = await builder.SeedPermission();
 
         List<Role> roles = [];
 
         for (var i = 0; i < Random.Shared.Next(1, 3); i++)
         {
-            var role = await builder.SeedRoleAsync(restaurant.Id, permissions);
+            var role = await builder.SeedRole(restaurant.Id, permissions);
 
             roles.Add(role);
         }
 
-        var staff = await builder.SeedStaffAsync(
+        var staff = await builder.SeedStaff(
             restaurant.Id,
             branch.Id,
             roles: roles
         );
 
-        await builder.CommitAsync();
+        await builder.Commit();
         await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/staffs/{staff.Id}", TestContext.Current.CancellationToken);

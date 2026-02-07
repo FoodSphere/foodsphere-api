@@ -32,7 +32,7 @@ public class StockController(
         }
 
         await branchService.SetStock(branch, body.ingredient_id, body.amount);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }
@@ -68,7 +68,7 @@ public class StockController(
         }
 
         await branchService.DeleteStock(stock);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }

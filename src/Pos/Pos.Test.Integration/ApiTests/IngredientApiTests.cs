@@ -8,10 +8,10 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         var requestBody = new IngredientRequest
         {
             name = $"TEST.ingredient-name.{unique}",
@@ -46,11 +46,11 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUserAsync();
-        var restaurant = await builder.SeedRestaurantAsync(masterUser);
-        var ingredient = await builder.SeedIngredientAsync(restaurant);
+        var (masterUser, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(masterUser);
+        var ingredient = await builder.SeedIngredient(restaurant);
 
-        await builder.CommitAsync();
+        await builder.Commit();
         await Authenticate(masterUser);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}/ingredients/{ingredient.Id}", TestContext.Current.CancellationToken);

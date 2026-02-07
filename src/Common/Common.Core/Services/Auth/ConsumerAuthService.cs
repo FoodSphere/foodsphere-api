@@ -78,7 +78,7 @@ public class ConsumerAuthService(
         return token;
     }
 
-    public async Task<bool> IsTwoFactorEnabledAsync(ConsumerUser user)
+    public async Task<bool> IsTwoFactorEnabled(ConsumerUser user)
     {
         return user.TwoFactorEnabled;
     }
