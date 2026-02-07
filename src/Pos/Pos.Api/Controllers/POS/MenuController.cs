@@ -3,7 +3,7 @@ namespace FoodSphere.Pos.Api.Controller;
 [Route("restaurants/{restaurant_id}/menus")]
 public class MenuController(
     ILogger<MenuController> logger,
-    CheckPermissionService checkPermissionService,
+    AccessControlService accessControlService,
     MenuService menuService
 ) : PosControllerBase
 {
@@ -20,7 +20,7 @@ public class MenuController(
     [HttpPost]
     public async Task<ActionResult<MenuResponse>> CreateMenu(Guid restaurant_id, MenuRequest body)
     {
-        var hasPermission = await checkPermissionService.CheckPermission(
+        var hasPermission = await accessControlService.Validate(
             User, restaurant_id,
             PERMISSION.Menu.CREATE
         );
@@ -44,7 +44,7 @@ public class MenuController(
             await menuService.UpdateIngredient(restaurant_id, menu.Id, ingredient.ingredient_id, ingredient.amount);
         }
 
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetMenu),
@@ -69,7 +69,7 @@ public class MenuController(
     [HttpPut("{menu_id}")]
     public async Task<ActionResult> UpdateMenu(Guid restaurant_id, short menu_id, MenuRequest body)
     {
-        var hasPermission = await checkPermissionService.CheckPermission(
+        var hasPermission = await accessControlService.Validate(
             User, restaurant_id,
             PERMISSION.Menu.UPDATE
         );
@@ -92,7 +92,7 @@ public class MenuController(
         menu.Description = body?.description;
         menu.ImageUrl = body?.image_url;
 
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }
@@ -108,7 +108,7 @@ public class MenuController(
         }
 
         await menuService.UpdateIngredient(restaurant_id, menu.Id, body.ingredient_id, body.amount);
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }
@@ -124,7 +124,7 @@ public class MenuController(
         }
 
         await menuService.DeleteMenu(menu);
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }

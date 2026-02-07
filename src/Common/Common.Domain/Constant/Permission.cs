@@ -3,11 +3,10 @@ using System.Reflection;
 namespace FoodSphere.Common.Constant;
 
 // CREATE
-// GET, READ
-// LIST
+// READ, GET/LIST
 // UPDATE
 // DELETE
-// UNDELETE
+// UNDELETE?
 public static class PERMISSION
 {
     static readonly Lazy<List<Permission>> _allPermissions = new(() =>
@@ -51,12 +50,12 @@ public static class PERMISSION
             public static readonly Permission READ = new()
             {
                 Id = 1000,
-                Name = "restaurant.read",
+                Name = "restaurant.setting.read",
             };
             public static readonly Permission UPDATE = new()
             {
                 Id = 1010,
-                Name = "restaurant.update",
+                Name = "restaurant.setting.update",
             };
         }
     }
@@ -89,6 +88,7 @@ public static class PERMISSION
             Id = 3000,
             Name = "menu.create",
         };
+
         public static readonly Permission UPDATE = new()
         {
             Id = 3010,
@@ -103,12 +103,13 @@ public static class PERMISSION
             public static readonly Permission READ = new()
             {
                 Id = 4000,
-                Name = "branch.read",
+                Name = "branch.setting.read",
             };
+
             public static readonly Permission UPDATE = new()
             {
                 Id = 4010,
-                Name = "branch.update",
+                Name = "branch.setting.update",
             };
         }
     }
@@ -135,6 +136,7 @@ public static class PERMISSION
             Id = 6000,
             Name = "table.create",
         };
+
         public static readonly Permission UPDATE = new()
         {
             Id = 6010,

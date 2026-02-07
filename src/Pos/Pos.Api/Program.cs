@@ -22,6 +22,7 @@ if (builder.Environment.IsDevelopment())
     // builder.Services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
 
     builder.Services.AddSwaggerGen(SwaggerGenConfiguration.Configure());
+    builder.Services.AddCors(CorsConfiguration.Configure());
 }
 else if (builder.Environment.IsProduction())
 {
@@ -120,7 +121,7 @@ builder.Services.AddScoped<MasterAuthService>();
 builder.Services.AddScoped<StaffAuthService>();
 builder.Services.AddScoped<OrderingAuthService>();
 builder.Services.AddScoped<AuthorizeService>();
-builder.Services.AddScoped<CheckPermissionService>();
+builder.Services.AddScoped<AccessControlService>();
 builder.Services.AddScoped<OrderingPortalService>();
 builder.Services.AddScoped<StaffPortalService>();
 
@@ -151,6 +152,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger(SwaggerConfiguration.Configure());
     app.UseSwaggerUI();
+    app.UseCors();
     // app.MapOpenApi();
 }
 

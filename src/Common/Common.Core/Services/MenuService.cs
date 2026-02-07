@@ -14,9 +14,23 @@ public class MenuService(FoodSphereDbContext context) : ServiceBase(context)
         string? imageUrl = null,
         CancellationToken ct = default
     ) {
-        var lastId = await _ctx.Set<Menu>()
-            .Where(menu => menu.RestaurantId == restaurantId)
-            .MaxAsync(menu => (int?)menu.Id, ct) ?? 0;
+        int lastId;
+        var hasPendingAdds = _ctx.ChangeTracker.Entries<Menu>()
+            .Any(e => e.State == EntityState.Added && e.Entity.RestaurantId == restaurantId);
+
+        if (hasPendingAdds)
+        {
+            lastId = _ctx.Set<Menu>().Local
+                .Where(menu => menu.RestaurantId == restaurantId)
+                .Max(menu => (int?)menu.Id) ?? 0;
+        }
+        else
+        {
+            lastId = await _ctx.Set<Menu>()
+                .Where(menu => menu.RestaurantId == restaurantId)
+                .Select(menu => (int?)menu.Id)
+                .MaxAsync(ct) ?? 0;
+        }
 
         var menu = new Menu
         {

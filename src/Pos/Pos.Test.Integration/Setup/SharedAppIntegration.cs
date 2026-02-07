@@ -16,7 +16,6 @@ namespace FoodSphere.Pos.Test.Integration;
 public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
     readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18-alpine")
-        .WithReuse(true)
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

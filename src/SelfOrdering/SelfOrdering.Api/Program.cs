@@ -14,6 +14,7 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddEnvironmentVariables();
 
     builder.Services.AddSwaggerGen(SwaggerGenConfiguration.Configure());
+    builder.Services.AddCors(CorsConfiguration.Configure());
 }
 else if (builder.Environment.IsProduction())
 {
@@ -94,6 +95,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger(SwaggerConfiguration.Configure());
     app.UseSwaggerUI();
+    app.UseCors();
 }
 
 app.UseHttpsRedirection();

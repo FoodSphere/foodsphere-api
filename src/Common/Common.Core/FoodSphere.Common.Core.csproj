@@ -25,6 +25,8 @@
     <!-- <PackageReference Include="NSwag.AspNetCore" /> -->
     <PackageReference Include="Swashbuckle.AspNetCore" />
 
+    <!-- <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" /> -->
+
     <!-- legacy, vulnerability -->
     <!-- <PackageReference Include="Microsoft.IdentityModel.KeyVaultExtensions" Version="7.7.1" /> -->
   </ItemGroup>
