@@ -124,47 +124,62 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
         }
     }
 
-    public async Task SetOrderItem(Order order, Menu menu, short quantity, CancellationToken ct = default)
-    {
-        // if (order.Status != OrderStatus.Wait) return;
+    public async Task CreateOrderItem(
+        Order order,
+        Menu menu,
+        short quantity,
+        string? note,
+        CancellationToken ct = default
+    ) {
+        int lastId;
+        var hasPendingAdds = _ctx.ChangeTracker.Entries<OrderItem>()
+            .Any(e =>
+                e.State == EntityState.Added &&
+                e.Entity.BillId == order.BillId &&
+                e.Entity.OrderId == order.Id);
 
-        ArgumentOutOfRangeException.ThrowIfNegative(quantity);
-
-        var item = await _ctx.FindAsync<OrderItem>(order.BillId, menu.RestaurantId, order.Id, menu.Id, ct);
-
-        if (item is null)
+        if (hasPendingAdds)
         {
-            if (quantity == 0)
-            {
-                return;
-            }
-            else
-            {
-                item = new OrderItem
-                {
-                    Order = order,
-                    Menu = menu,
-                    Quantity = quantity
-                };
-
-                // await _ctx.AddAsync(item);
-                order.Items.Add(item);
-            }
+            lastId = _ctx.Set<OrderItem>().Local
+                .Where(item => item.BillId == order.BillId && item.OrderId == order.Id)
+                .Max(item => (int?)item.Id) ?? 0;
         }
         else
         {
-            if (quantity == 0)
-            {
-                // _ctx.Remove(item);
-                order.Items.Remove(item);
-            }
-            else
-            {
-                item.Quantity = quantity;
-                _ctx.Entry(item).State = EntityState.Modified;
-            }
+            lastId = await _ctx.Set<OrderItem>()
+                .Where(item => item.BillId == order.BillId && item.OrderId == order.Id)
+                .Select(item => (int?)item.Id)
+                .MaxAsync(ct) ?? 0;
         }
+
+        var item = new OrderItem
+        {
+            Id = (short)(lastId + 1),
+            Order = order,
+            Menu = menu,
+            PriceSnapshot = menu.Price,
+            Quantity = quantity,
+            Note = note
+        };
+
+        order.Items.Add(item);
     }
+
+    // public async Task UpdateOrderItem(
+    //     OrderItem item,
+
+    //     CancellationToken ct = default
+    // ) {
+    //     if (quantity is not null)
+    //     {
+    //         ArgumentOutOfRangeException.ThrowIfNegative(quantity.Value);
+    //         item.Quantity = quantity.Value;
+    //     }
+
+    //     item.Note ??= note;
+
+    //     // _ctx.Entry(orderItem).State = EntityState.Modified;
+    // }
 
     public async Task UpdateOrderStatus(Order order, OrderStatus status)
     {

@@ -1,15 +1,15 @@
 namespace FoodSphere.Pos.Api.DTO;
 
-public class MenuIngredientDto
+public class IngredientItemDto
 {
     public short ingredient_id { get; set; }
 
-    /// <example>.25</example>
+    /// <example>0.25</example>
     public decimal amount { get; set; }
 
-    public static MenuIngredientDto FromModel(MenuIngredient model)
+    public static IngredientItemDto FromModel(MenuIngredient model)
     {
-        return new MenuIngredientDto
+        return new IngredientItemDto
         {
             ingredient_id = model.IngredientId,
             amount = model.Amount,
@@ -19,21 +19,19 @@ public class MenuIngredientDto
 
 public class MenuRequest
 {
-    public List<MenuIngredientDto> ingredients { get; set; } = [];
-
     /// <example>ข้าวผัดโคขุน</example>
     public required string name { get; set; }
+
+    /// <example>120</example>
+    public int price { get; set; }
+
+    public List<IngredientItemDto> ingredients { get; set; } = [];
 
     /// <example>ข้าวผัดโคขุนสูตรเด็ดของทางร้าน</example>
     public string? display_name { get; set; }
 
     /// <example>เนื้อโคจากออสเตรเลีย</example>
     public string? description { get; set; }
-
-    public string? image_url { get; set; }
-
-    /// <example>120</example>
-    public int price { get; set; }
 }
 
 public class MenuResponse
@@ -45,7 +43,8 @@ public class MenuResponse
 
     public Guid restaurant_id { get; set; }
 
-    public MenuIngredientDto[] ingredients { get; set; } = [];
+    public IngredientItemDto[] ingredients { get; set; } = [];
+    public TagDto[] tags { get; set; } = [];
 
     /// <example>ข้าวผัดโคขุน</example>
     public required string name { get; set; }
@@ -71,7 +70,8 @@ public class MenuResponse
             create_time = model.CreateTime,
             update_time = model.UpdateTime,
             restaurant_id = model.RestaurantId,
-            ingredients = [.. model.MenuIngredients.Select(MenuIngredientDto.FromModel)],
+            ingredients = [.. model.MenuIngredients.Select(IngredientItemDto.FromModel)],
+            tags = [.. model.MenuTags.Select(TagDto.FromModel)],
             name = model.Name,
             display_name = model.DisplayName,
             description = model.Description,

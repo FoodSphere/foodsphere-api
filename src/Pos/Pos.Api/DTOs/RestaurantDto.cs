@@ -65,7 +65,10 @@ public class QuickRestaurantResponse
     public short branch_id { get; set; }
 
     /// <example>main</example>
-    public string? branch_name { get; set; }
+    public required string branch_name { get; set; }
+
+    /// <example>null</example>
+    public string? branch_display_name { get; set; }
 
     /// <example>71 Lat Krabang Rd, Lat Krabang, Bangkok 10520</example>
     public string? branch_address { get; set; }
@@ -86,6 +89,7 @@ public class QuickRestaurantResponse
             restaurant_display_name = restaurant.DisplayName,
             branch_id = branch.Id,
             branch_name = branch.Name,
+            branch_display_name = branch.DisplayName,
             branch_address = branch.Address,
             branch_opening_time = branch.OpeningTime,
             branch_closing_time = branch.ClosingTime,

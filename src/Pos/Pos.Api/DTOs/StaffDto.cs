@@ -52,13 +52,13 @@ public class StaffResponse
 public class StaffPortalResponse
 {
     public Guid id { get; set; }
-    public Guid restaurant_id { get; set; }
-
-    public short branch_id { get; set; }
-    public short staff_id { get; set; }
 
     public DateTime create_time { get; set; }
     public DateTime update_time { get; set; }
+
+    public Guid restaurant_id { get; set; }
+    public short branch_id { get; set; }
+    public short staff_id { get; set; }
 
     // public short? max_usage { get; set; }
     // public short usage_count { get; set; }

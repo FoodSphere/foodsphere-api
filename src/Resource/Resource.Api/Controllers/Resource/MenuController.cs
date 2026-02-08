@@ -56,7 +56,7 @@ public class MenuController(
     [HttpPut("{menu_id}")]
     public async Task<ActionResult> UpdateMenu(Guid restaurant_id, short menu_id, MenuRequest body)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var menu = await menuService.FindMenu(restaurant_id, menu_id);
 
         if (menu is null)
         {
@@ -77,7 +77,7 @@ public class MenuController(
     [HttpPost("{menu_id}/ingredients")]
     public async Task<ActionResult> UpdateMenuIngredient(Guid restaurant_id, short menu_id, MenuIngredientDto body)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var menu = await menuService.FindMenu(restaurant_id, menu_id);
 
         if (menu is null)
         {
@@ -93,7 +93,7 @@ public class MenuController(
     [HttpDelete("{menu_id}")]
     public async Task<ActionResult> DeleteMenu(Guid restaurant_id, short menu_id)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var menu = await menuService.FindMenu(restaurant_id, menu_id);
 
         if (menu is null)
         {

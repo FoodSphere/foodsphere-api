@@ -52,65 +52,27 @@ public class MenuService(FoodSphereDbContext context) : ServiceBase(context)
     {
         return await _ctx.Set<Menu>()
             .Where(menu => menu.RestaurantId == restaurantId)
+            .Include(e => e.MenuIngredients)
+            .Include(e => e.MenuTags)
+                .ThenInclude(e => e.Tag)
             .ToListAsync();
     }
 
-    public async Task<List<Ingredient>> ListIngredients(Guid restaurantId)
-    {
-        return await _ctx.Set<Ingredient>()
-            .Where(ingredient => ingredient.RestaurantId == restaurantId)
-            .ToListAsync();
-    }
-
-    public async Task<Ingredient> CreateIngredient(
-        Guid restaurantId,
-        string name,
-        string? description = null,
-        string? imageUrl = null,
-        string? unit = null,
-        CancellationToken ct = default
-    ) {
-        int lastId;
-        var hasPendingAdds = _ctx.ChangeTracker.Entries<Ingredient>()
-            .Any(e => e.State == EntityState.Added && e.Entity.RestaurantId == restaurantId);
-
-        if (hasPendingAdds)
-        {
-            lastId = _ctx.Set<Ingredient>().Local
-                .Where(ingredient => ingredient.RestaurantId == restaurantId)
-                .Max(ingredient => (int?)ingredient.Id) ?? 0;
-        }
-        else
-        {
-            lastId = await _ctx.Set<Ingredient>()
-                .Where(ingredient => ingredient.RestaurantId == restaurantId)
-                .Select(ingredient => (int?)ingredient.Id)
-                .MaxAsync(ct) ?? 0;
-        }
-
-        var ingredient = new Ingredient
-        {
-            Id = (short)(lastId + 1),
-            RestaurantId = restaurantId,
-            Name = name,
-            Description = description,
-            ImageUrl = imageUrl,
-            Unit = unit
-        };
-
-        await _ctx.AddAsync(ingredient, ct);
-
-        return ingredient;
-    }
-
-    public async Task<Menu?> GetMenu(Guid restaurantId, short menuId)
+    public async Task<Menu?> FindMenu(Guid restaurantId, short menuId)
     {
         return await _ctx.FindAsync<Menu>(restaurantId, menuId);
     }
 
-    public async Task<Ingredient?> GetIngredient(Guid restaurantId, short ingredientId)
+    public async Task<Menu?> GetMenu(Guid restaurantId, short menuId)
     {
-        return await _ctx.FindAsync<Ingredient>(restaurantId, ingredientId);
+        return _ctx.Set<Menu>()
+            .Include(e => e.MenuIngredients)
+            .Include(e => e.Components)
+            .Include(e => e.MenuTags)
+                .ThenInclude(e => e.Tag)
+            .FirstOrDefault(e =>
+                e.RestaurantId == restaurantId &&
+                e.Id == menuId);
     }
 
     public async Task DeleteMenu(Menu menu)
@@ -118,9 +80,25 @@ public class MenuService(FoodSphereDbContext context) : ServiceBase(context)
         _ctx.Remove(menu);
     }
 
-    public async Task DeleteIngredient(Ingredient ingredient)
+    public async Task<MenuTag?> GetTag(Guid restaurantId, short menuId, short tagId)
     {
-        _ctx.Remove(ingredient);
+        return await _ctx.FindAsync<MenuTag>(restaurantId, menuId, tagId);
+    }
+
+    public async Task AddTag(Menu menu, Tag tag)
+    {
+        var menuTag = new MenuTag
+        {
+            Menu = menu,
+            Tag = tag
+        };
+
+        await _ctx.AddAsync(menuTag);
+    }
+
+    public async Task DeleteTag(MenuTag menuTag)
+    {
+        _ctx.Remove(menuTag);
     }
 
     async Task<MenuIngredient?> GetMenuIngredient(Guid restaurantId, short menuId, short ingredientId)

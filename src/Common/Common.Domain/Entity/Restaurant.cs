@@ -58,9 +58,10 @@ public class RestaurantManagerRole : TrackableEntityBase
     public virtual Role Role { get; set; } = null!;
 }
 
-public class Tag : TrackableEntityBase
+public class Tag : EntityBase<short>
 {
     public Guid RestaurantId { get; set; }
+
     public required string Name { get; set; }
 
     public virtual List<MenuTag> MenuTags { get; } = [];

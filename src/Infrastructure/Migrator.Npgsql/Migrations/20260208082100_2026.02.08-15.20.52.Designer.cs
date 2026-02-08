@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodSphere.Migrator.Npgsql.Migrations
 {
     [DbContext(typeof(FoodSphereDbContext))]
-    [Migration("20260205012046_2026.02.05-08.20.38")]
-    partial class _20260205082038
+    [Migration("20260208082100_2026.02.08-15.20.52")]
+    partial class _20260208152052
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Bill", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Bill", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -69,7 +69,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Bill");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.BillMember", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BillMember", b =>
                 {
                     b.Property<Guid>("BillId")
                         .HasColumnType("uuid");
@@ -96,7 +96,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("BillMember");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Branch", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Branch", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -120,7 +120,6 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<TimeOnly?>("OpeningTime")
@@ -136,7 +135,58 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Branch");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.ConsumerUser", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManager", b =>
+                {
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("BranchId")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("MasterId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RestaurantId", "BranchId", "MasterId");
+
+                    b.HasIndex("MasterId");
+
+                    b.ToTable("BranchManager");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManagerRole", b =>
+                {
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("BranchId")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("ManagerId")
+                        .HasColumnType("text");
+
+                    b.Property<short>("RoleId")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RestaurantId", "BranchId", "ManagerId", "RoleId");
+
+                    b.HasIndex("RestaurantId", "RoleId");
+
+                    b.ToTable("BranchManagerRole");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.ConsumerUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -170,7 +220,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("ConsumerUser");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Contact", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Contact", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -196,7 +246,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Contact");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Coupon", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Coupon", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -230,7 +280,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Coupon");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Ingredient", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Ingredient", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -265,7 +315,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Ingredient");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.IngredientTag", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.IngredientTag", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -273,8 +323,8 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Property<short>("IngredientId")
                         .HasColumnType("smallint");
 
-                    b.Property<string>("TagId")
-                        .HasColumnType("text");
+                    b.Property<short>("TagId")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
@@ -289,58 +339,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("IngredientTag");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Manager", b =>
-                {
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<short>("BranchId")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("MasterId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("RestaurantId", "BranchId", "MasterId");
-
-                    b.HasIndex("MasterId");
-
-                    b.ToTable("Manager");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entities.ManagerRole", b =>
-                {
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<short>("BranchId")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("ManagerId")
-                        .HasColumnType("text");
-
-                    b.Property<short>("RoleId")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("RestaurantId", "BranchId", "ManagerId", "RoleId");
-
-                    b.HasIndex("RestaurantId", "RoleId");
-
-                    b.ToTable("ManagerRole");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entities.MasterUser", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.MasterUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -404,7 +403,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Menu", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Menu", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -442,7 +441,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Menu");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.MenuComponent", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.MenuComponent", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -469,7 +468,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("MenuComponent");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.MenuIngredient", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.MenuIngredient", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -496,7 +495,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("MenuIngredient");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.MenuTag", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.MenuTag", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -504,8 +503,8 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Property<short>("MenuId")
                         .HasColumnType("smallint");
 
-                    b.Property<string>("TagId")
-                        .HasColumnType("text");
+                    b.Property<short>("TagId")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
@@ -520,7 +519,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("MenuTag");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Order", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Order", b =>
                 {
                     b.Property<Guid>("BillId")
                         .HasColumnType("uuid");
@@ -558,22 +557,22 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Order");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.OrderItem", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.OrderItem", b =>
                 {
                     b.Property<Guid>("BillId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
 
                     b.Property<short>("OrderId")
                         .HasColumnType("smallint");
 
-                    b.Property<short>("MenuId")
+                    b.Property<short>("Id")
                         .HasColumnType("smallint");
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<short>("MenuId")
+                        .HasColumnType("smallint");
 
                     b.Property<string>("Note")
                         .HasColumnType("text");
@@ -584,19 +583,20 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Property<short>("Quantity")
                         .HasColumnType("smallint");
 
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("BillId", "RestaurantId", "OrderId", "MenuId");
-
-                    b.HasIndex("BillId", "OrderId");
+                    b.HasKey("BillId", "OrderId", "Id");
 
                     b.HasIndex("RestaurantId", "MenuId");
 
                     b.ToTable("OrderItem");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Permission", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Permission", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -709,26 +709,26 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                         new
                         {
                             Id = 1000,
-                            Name = "restaurant.read"
+                            Name = "restaurant.setting.read"
                         },
                         new
                         {
                             Id = 1010,
-                            Name = "restaurant.update"
+                            Name = "restaurant.setting.update"
                         },
                         new
                         {
                             Id = 4000,
-                            Name = "branch.read"
+                            Name = "branch.setting.read"
                         },
                         new
                         {
                             Id = 4010,
-                            Name = "branch.update"
+                            Name = "branch.setting.update"
                         });
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Queuing", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Queuing", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -758,7 +758,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Queuing");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Restaurant", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Restaurant", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -793,7 +793,52 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Restaurant");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Role", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManager", b =>
+                {
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MasterId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RestaurantId", "MasterId");
+
+                    b.HasIndex("MasterId");
+
+                    b.ToTable("RestaurantManager");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManagerRole", b =>
+                {
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ManagerId")
+                        .HasColumnType("text");
+
+                    b.Property<short>("RoleId")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RestaurantId", "ManagerId", "RoleId");
+
+                    b.HasIndex("RestaurantId", "RoleId");
+
+                    b.ToTable("RestaurantManagerRole");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.Role", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -819,7 +864,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Role");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.RolePermission", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RolePermission", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -843,7 +888,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("RolePermission");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.SelfOrderingPortal", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.SelfOrderingPortal", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -874,7 +919,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("SelfOrderingPortal");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.StaffPortal", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.StaffPortal", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -911,7 +956,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("StaffPortal");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.StaffRole", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.StaffRole", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -938,7 +983,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("StaffRole");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.StaffUser", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.StaffUser", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -970,7 +1015,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("StaffUser");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Stock", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Stock", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -1000,7 +1045,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Stock");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Table", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Table", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -1028,21 +1073,25 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("Table");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Tag", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Tag", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("RestaurantId", "Name");
+                    b.HasKey("RestaurantId", "Id");
 
                     b.ToTable("Tag");
                 });
@@ -1179,18 +1228,18 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Bill", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Bill", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.ConsumerUser", "Consumer")
+                    b.HasOne("FoodSphere.Common.Entity.ConsumerUser", "Consumer")
                         .WithMany("Bills")
                         .HasForeignKey("ConsumerId");
 
-                    b.HasOne("FoodSphere.Common.Entities.StaffUser", null)
+                    b.HasOne("FoodSphere.Common.Entity.StaffUser", null)
                         .WithMany()
                         .HasForeignKey("RestaurantId", "BranchId", "IssuerId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("FoodSphere.Common.Entities.Table", "Table")
+                    b.HasOne("FoodSphere.Common.Entity.Table", "Table")
                         .WithMany()
                         .HasForeignKey("RestaurantId", "BranchId", "TableId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1201,15 +1250,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Table");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.BillMember", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BillMember", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Bill", "Bill")
+                    b.HasOne("FoodSphere.Common.Entity.Bill", "Bill")
                         .WithMany("Members")
                         .HasForeignKey("BillId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.ConsumerUser", "Consumer")
+                    b.HasOne("FoodSphere.Common.Entity.ConsumerUser", "Consumer")
                         .WithMany()
                         .HasForeignKey("ConsumerId");
 
@@ -1218,13 +1267,13 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Consumer");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Branch", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Branch", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Contact", "Contact")
+                    b.HasOne("FoodSphere.Common.Entity.Contact", "Contact")
                         .WithMany()
                         .HasForeignKey("ContactId");
 
-                    b.HasOne("FoodSphere.Common.Entities.Restaurant", "Restaurant")
+                    b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
                         .WithMany("Branches")
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1235,45 +1284,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Restaurant");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Ingredient", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManager", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Restaurant", "Restaurant")
-                        .WithMany("Ingredient")
-                        .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Restaurant");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entities.IngredientTag", b =>
-                {
-                    b.HasOne("FoodSphere.Common.Entities.Ingredient", "Ingredient")
-                        .WithMany("IngredientTags")
-                        .HasForeignKey("RestaurantId", "IngredientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FoodSphere.Common.Entities.Tag", "Tag")
-                        .WithMany("IngredientTags")
-                        .HasForeignKey("RestaurantId", "TagId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Ingredient");
-
-                    b.Navigation("Tag");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entities.Manager", b =>
-                {
-                    b.HasOne("FoodSphere.Common.Entities.MasterUser", "Master")
+                    b.HasOne("FoodSphere.Common.Entity.MasterUser", "Master")
                         .WithMany("ManagedBranches")
                         .HasForeignKey("MasterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.Branch", "Branch")
+                    b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
                         .WithMany("BranchManagers")
                         .HasForeignKey("RestaurantId", "BranchId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1284,28 +1303,58 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Master");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.ManagerRole", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManagerRole", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Role", "Role")
+                    b.HasOne("FoodSphere.Common.Entity.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RestaurantId", "RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.Manager", "ManagerBranch")
+                    b.HasOne("FoodSphere.Common.Entity.BranchManager", "Manager")
                         .WithMany("Roles")
                         .HasForeignKey("RestaurantId", "BranchId", "ManagerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("ManagerBranch");
+                    b.Navigation("Manager");
 
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Menu", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Ingredient", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Restaurant", "Restaurant")
+                    b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
+                        .WithMany("Ingredient")
+                        .HasForeignKey("RestaurantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Restaurant");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.IngredientTag", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.Ingredient", "Ingredient")
+                        .WithMany("IngredientTags")
+                        .HasForeignKey("RestaurantId", "IngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FoodSphere.Common.Entity.Tag", "Tag")
+                        .WithMany("IngredientTags")
+                        .HasForeignKey("RestaurantId", "TagId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Ingredient");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.Menu", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
                         .WithMany("Menus")
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1314,21 +1363,21 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Restaurant");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.MenuComponent", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.MenuComponent", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Restaurant", "Restaurant")
+                    b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
                         .WithMany()
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.Menu", "ChildMenu")
+                    b.HasOne("FoodSphere.Common.Entity.Menu", "ChildMenu")
                         .WithMany()
                         .HasForeignKey("RestaurantId", "ChildMenuId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.Menu", "ParentMenu")
+                    b.HasOne("FoodSphere.Common.Entity.Menu", "ParentMenu")
                         .WithMany("Components")
                         .HasForeignKey("RestaurantId", "ParentMenuId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1341,15 +1390,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Restaurant");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.MenuIngredient", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.MenuIngredient", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Ingredient", "Ingredient")
+                    b.HasOne("FoodSphere.Common.Entity.Ingredient", "Ingredient")
                         .WithMany("MenuIngredients")
                         .HasForeignKey("RestaurantId", "IngredientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.Menu", "Menu")
+                    b.HasOne("FoodSphere.Common.Entity.Menu", "Menu")
                         .WithMany("MenuIngredients")
                         .HasForeignKey("RestaurantId", "MenuId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1360,15 +1409,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Menu");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.MenuTag", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.MenuTag", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Menu", "Menu")
+                    b.HasOne("FoodSphere.Common.Entity.Menu", "Menu")
                         .WithMany("MenuTags")
                         .HasForeignKey("RestaurantId", "MenuId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.Tag", "Tag")
+                    b.HasOne("FoodSphere.Common.Entity.Tag", "Tag")
                         .WithMany("MenuTags")
                         .HasForeignKey("RestaurantId", "TagId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1379,20 +1428,20 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Order", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Order", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Bill", "Bill")
+                    b.HasOne("FoodSphere.Common.Entity.Bill", "Bill")
                         .WithMany("Orders")
                         .HasForeignKey("BillId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.BillMember", "BillMember")
+                    b.HasOne("FoodSphere.Common.Entity.BillMember", "BillMember")
                         .WithMany("Orders")
                         .HasForeignKey("BillId", "BillMemberId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("FoodSphere.Common.Entities.StaffUser", null)
+                    b.HasOne("FoodSphere.Common.Entity.StaffUser", null)
                         .WithMany()
                         .HasForeignKey("RestaurantId", "BranchId", "IssuerId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1402,15 +1451,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("BillMember");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.OrderItem", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.OrderItem", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Order", "Order")
+                    b.HasOne("FoodSphere.Common.Entity.Order", "Order")
                         .WithMany("Items")
                         .HasForeignKey("BillId", "OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.Menu", "Menu")
+                    b.HasOne("FoodSphere.Common.Entity.Menu", "Menu")
                         .WithMany()
                         .HasForeignKey("RestaurantId", "MenuId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1421,13 +1470,13 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Queuing", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Queuing", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.ConsumerUser", "Consumer")
+                    b.HasOne("FoodSphere.Common.Entity.ConsumerUser", "Consumer")
                         .WithMany()
                         .HasForeignKey("ConsumerId");
 
-                    b.HasOne("FoodSphere.Common.Entities.Branch", "Branch")
+                    b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
                         .WithMany("Queuings")
                         .HasForeignKey("RestaurantId", "BranchId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1438,15 +1487,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Consumer");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Restaurant", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Restaurant", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Contact", "Contact")
+                    b.HasOne("FoodSphere.Common.Entity.Contact", "Contact")
                         .WithMany()
                         .HasForeignKey("ContactId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.MasterUser", "Owner")
+                    b.HasOne("FoodSphere.Common.Entity.MasterUser", "Owner")
                         .WithMany("OwnedRestaurants")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1457,9 +1506,47 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Role", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManager", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Restaurant", "Restaurant")
+                    b.HasOne("FoodSphere.Common.Entity.MasterUser", "Master")
+                        .WithMany("ManagedRestaurants")
+                        .HasForeignKey("MasterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
+                        .WithMany("Managers")
+                        .HasForeignKey("RestaurantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Master");
+
+                    b.Navigation("Restaurant");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManagerRole", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.RestaurantManager", "Manager")
+                        .WithMany("Roles")
+                        .HasForeignKey("RestaurantId", "ManagerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FoodSphere.Common.Entity.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RestaurantId", "RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Manager");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.Role", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
                         .WithMany()
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1468,15 +1555,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Restaurant");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.RolePermission", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RolePermission", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Permission", "Permission")
+                    b.HasOne("FoodSphere.Common.Entity.Permission", "Permission")
                         .WithMany()
                         .HasForeignKey("PermissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.Role", "Role")
+                    b.HasOne("FoodSphere.Common.Entity.Role", "Role")
                         .WithMany("Permissions")
                         .HasForeignKey("RestaurantId", "RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1487,9 +1574,9 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.SelfOrderingPortal", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.SelfOrderingPortal", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Bill", "Bill")
+                    b.HasOne("FoodSphere.Common.Entity.Bill", "Bill")
                         .WithMany("Portals")
                         .HasForeignKey("BillId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1498,9 +1585,9 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Bill");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.StaffPortal", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.StaffPortal", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.StaffUser", "StaffUser")
+                    b.HasOne("FoodSphere.Common.Entity.StaffUser", "StaffUser")
                         .WithMany()
                         .HasForeignKey("RestaurantId", "BranchId", "StaffId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1509,15 +1596,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("StaffUser");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.StaffRole", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.StaffRole", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Role", "Role")
+                    b.HasOne("FoodSphere.Common.Entity.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RestaurantId", "RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.StaffUser", "Staff")
+                    b.HasOne("FoodSphere.Common.Entity.StaffUser", "Staff")
                         .WithMany("Roles")
                         .HasForeignKey("RestaurantId", "BranchId", "StaffId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1528,9 +1615,9 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Staff");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.StaffUser", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.StaffUser", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Branch", "Branch")
+                    b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
                         .WithMany("Staffs")
                         .HasForeignKey("RestaurantId", "BranchId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1539,15 +1626,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Branch");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Stock", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Stock", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Branch", "Branch")
+                    b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
                         .WithMany("IngredientStocks")
                         .HasForeignKey("RestaurantId", "BranchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.Ingredient", "Ingredient")
+                    b.HasOne("FoodSphere.Common.Entity.Ingredient", "Ingredient")
                         .WithMany()
                         .HasForeignKey("RestaurantId", "IngredientId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1558,9 +1645,9 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Ingredient");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Table", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Table", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Branch", "Branch")
+                    b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
                         .WithMany("Tables")
                         .HasForeignKey("RestaurantId", "BranchId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1569,9 +1656,9 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Branch");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Tag", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Tag", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.Restaurant", null)
+                    b.HasOne("FoodSphere.Common.Entity.Restaurant", null)
                         .WithMany("Tags")
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1589,7 +1676,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.MasterUser", null)
+                    b.HasOne("FoodSphere.Common.Entity.MasterUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1598,7 +1685,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.MasterUser", null)
+                    b.HasOne("FoodSphere.Common.Entity.MasterUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1613,7 +1700,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entities.MasterUser", null)
+                    b.HasOne("FoodSphere.Common.Entity.MasterUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1622,14 +1709,14 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entities.MasterUser", null)
+                    b.HasOne("FoodSphere.Common.Entity.MasterUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Bill", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Bill", b =>
                 {
                     b.Navigation("Members");
 
@@ -1638,12 +1725,12 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Portals");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.BillMember", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BillMember", b =>
                 {
                     b.Navigation("Orders");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Branch", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Branch", b =>
                 {
                     b.Navigation("BranchManagers");
 
@@ -1656,31 +1743,33 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("Tables");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.ConsumerUser", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManager", b =>
+                {
+                    b.Navigation("Roles");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.ConsumerUser", b =>
                 {
                     b.Navigation("Bills");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Ingredient", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Ingredient", b =>
                 {
                     b.Navigation("IngredientTags");
 
                     b.Navigation("MenuIngredients");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Manager", b =>
-                {
-                    b.Navigation("Roles");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entities.MasterUser", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.MasterUser", b =>
                 {
                     b.Navigation("ManagedBranches");
+
+                    b.Navigation("ManagedRestaurants");
 
                     b.Navigation("OwnedRestaurants");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Menu", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Menu", b =>
                 {
                     b.Navigation("Components");
 
@@ -1689,33 +1778,40 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     b.Navigation("MenuTags");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Order", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Order", b =>
                 {
                     b.Navigation("Items");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Restaurant", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Restaurant", b =>
                 {
                     b.Navigation("Branches");
 
                     b.Navigation("Ingredient");
+
+                    b.Navigation("Managers");
 
                     b.Navigation("Menus");
 
                     b.Navigation("Tags");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Role", b =>
-                {
-                    b.Navigation("Permissions");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entities.StaffUser", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManager", b =>
                 {
                     b.Navigation("Roles");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entities.Tag", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.Role", b =>
+                {
+                    b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.StaffUser", b =>
+                {
+                    b.Navigation("Roles");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.Tag", b =>
                 {
                     b.Navigation("IngredientTags");
 

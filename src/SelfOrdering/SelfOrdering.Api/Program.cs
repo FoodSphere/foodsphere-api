@@ -46,7 +46,7 @@ builder.Services.AddDomainOrderingOptions();
 builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
     var envConnectionString = sp.GetRequiredService<IOptions<EnvConnectionStrings>>().Value;
 
-    // optionsBuilder.UseLazyLoadingProxies();
+    optionsBuilder.UseLazyLoadingProxies();
     optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(2);

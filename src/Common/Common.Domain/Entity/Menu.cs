@@ -39,6 +39,6 @@ public class MenuTag : TrackableEntityBase
     public short MenuId { get; set; }
     public virtual Menu Menu { get; set; } = null!;
 
-    public required string TagId { get; set; }
+    public short TagId { get; set; }
     public virtual Tag Tag { get; set; } = null!;
 }

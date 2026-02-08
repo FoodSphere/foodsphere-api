@@ -9,10 +9,8 @@ public class RoleService(
 {
     public async Task<Role?> GetRole(Guid restaurantId, short roleId)
     {
-        // Eager Loading
         return await _ctx.Set<Role>()
             .Include(r => r.Permissions)
-            .ThenInclude(rp => rp.Permission)
             .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId && r.Id == roleId);
     }
 
@@ -29,7 +27,7 @@ public class RoleService(
         string? description = null,
         CancellationToken ct = default
     ) {
-        short lastId;
+        int lastId;
         var hasPendingAdds = _ctx.ChangeTracker.Entries<Role>()
             .Any(e => e.State == EntityState.Added && e.Entity.RestaurantId == restaurantId);
 
@@ -37,13 +35,13 @@ public class RoleService(
         {
             lastId = _ctx.Set<Role>().Local
                 .Where(role => role.RestaurantId == restaurantId)
-                .Max(role => (short?)role.Id) ?? 0;
+                .Max(role => (int?)role.Id) ?? 0;
         }
         else
         {
             lastId = await _ctx.Set<Role>()
                 .Where(role => role.RestaurantId == restaurantId)
-                .Select(role => (short?)role.Id)
+                .Select(role => (int?)role.Id)
                 .MaxAsync(ct) ?? 0;
         }
 

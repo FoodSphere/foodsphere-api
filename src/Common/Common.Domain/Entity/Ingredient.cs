@@ -21,6 +21,6 @@ public class IngredientTag: TrackableEntityBase
     public short IngredientId { get; set; }
     public virtual Ingredient Ingredient { get; set; } = null!;
 
-    public required string TagId { get; set; }
+    public short TagId { get; set; }
     public virtual Tag Tag { get; set; } = null!;
 }

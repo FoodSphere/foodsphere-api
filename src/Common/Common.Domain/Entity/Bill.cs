@@ -51,7 +51,7 @@ public class Order : EntityBase<short>
 }
 
 // OrderLineItem
-public class OrderItem : TrackableEntityBase
+public class OrderItem : EntityBase<short>
 {
     public Guid BillId { get; set; }
     public short OrderId { get; set; }

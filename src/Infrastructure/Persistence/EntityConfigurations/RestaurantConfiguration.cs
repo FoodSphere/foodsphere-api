@@ -61,7 +61,7 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
 {
     public void Configure(EntityTypeBuilder<Tag> builder)
     {
-        builder.HasKey(e => new { e.RestaurantId, e.Name });
+        builder.HasKey(e => new { e.RestaurantId, e.Id });
 
         builder.HasOne<Restaurant>()
             .WithMany(e => e.Tags)

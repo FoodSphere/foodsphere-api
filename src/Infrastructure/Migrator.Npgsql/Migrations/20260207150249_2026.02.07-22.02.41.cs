@@ -4,10 +4,12 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace FoodSphere.Migrator.Npgsql.Migrations
 {
     /// <inheritdoc />
-    public partial class _20260127104004 : Migration
+    public partial class _20260207220241 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -111,9 +113,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    CreateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Description = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -338,6 +338,32 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RestaurantManager",
+                columns: table => new
+                {
+                    RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MasterId = table.Column<string>(type: "text", nullable: false),
+                    CreateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RestaurantManager", x => new { x.RestaurantId, x.MasterId });
+                    table.ForeignKey(
+                        name: "FK_RestaurantManager_AspNetUsers_MasterId",
+                        column: x => x.MasterId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RestaurantManager_Restaurant_RestaurantId",
+                        column: x => x.RestaurantId,
+                        principalTable: "Restaurant",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Role",
                 columns: table => new
                 {
@@ -363,6 +389,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 name: "Tag",
                 columns: table => new
                 {
+                    Id = table.Column<short>(type: "smallint", nullable: false),
                     RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     CreateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -370,7 +397,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tag", x => new { x.RestaurantId, x.Name });
+                    table.PrimaryKey("PK_Tag", x => new { x.RestaurantId, x.Id });
                     table.ForeignKey(
                         name: "FK_Tag_Restaurant_RestaurantId",
                         column: x => x.RestaurantId,
@@ -380,7 +407,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Manager",
+                name: "BranchManager",
                 columns: table => new
                 {
                     RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -391,15 +418,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Manager", x => new { x.RestaurantId, x.BranchId, x.MasterId });
+                    table.PrimaryKey("PK_BranchManager", x => new { x.RestaurantId, x.BranchId, x.MasterId });
                     table.ForeignKey(
-                        name: "FK_Manager_AspNetUsers_MasterId",
+                        name: "FK_BranchManager_AspNetUsers_MasterId",
                         column: x => x.MasterId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Manager_Branch_RestaurantId_BranchId",
+                        name: "FK_BranchManager_Branch_RestaurantId_BranchId",
                         columns: x => new { x.RestaurantId, x.BranchId },
                         principalTable: "Branch",
                         principalColumns: new[] { "RestaurantId", "Id" },
@@ -573,6 +600,33 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RestaurantManagerRole",
+                columns: table => new
+                {
+                    RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ManagerId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<short>(type: "smallint", nullable: false),
+                    CreateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RestaurantManagerRole", x => new { x.RestaurantId, x.ManagerId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_RestaurantManagerRole_RestaurantManager_RestaurantId_Manage~",
+                        columns: x => new { x.RestaurantId, x.ManagerId },
+                        principalTable: "RestaurantManager",
+                        principalColumns: new[] { "RestaurantId", "MasterId" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RestaurantManagerRole_Role_RestaurantId_RoleId",
+                        columns: x => new { x.RestaurantId, x.RoleId },
+                        principalTable: "Role",
+                        principalColumns: new[] { "RestaurantId", "Id" },
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RolePermission",
                 columns: table => new
                 {
@@ -605,7 +659,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 {
                     RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
                     IngredientId = table.Column<short>(type: "smallint", nullable: false),
-                    TagId = table.Column<string>(type: "text", nullable: false),
+                    TagId = table.Column<short>(type: "smallint", nullable: false),
                     CreateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -622,7 +676,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                         name: "FK_IngredientTag_Tag_RestaurantId_TagId",
                         columns: x => new { x.RestaurantId, x.TagId },
                         principalTable: "Tag",
-                        principalColumns: new[] { "RestaurantId", "Name" },
+                        principalColumns: new[] { "RestaurantId", "Id" },
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -632,7 +686,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 {
                     RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
                     MenuId = table.Column<short>(type: "smallint", nullable: false),
-                    TagId = table.Column<string>(type: "text", nullable: false),
+                    TagId = table.Column<short>(type: "smallint", nullable: false),
                     CreateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -649,12 +703,12 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                         name: "FK_MenuTag_Tag_RestaurantId_TagId",
                         columns: x => new { x.RestaurantId, x.TagId },
                         principalTable: "Tag",
-                        principalColumns: new[] { "RestaurantId", "Name" },
+                        principalColumns: new[] { "RestaurantId", "Id" },
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ManagerRole",
+                name: "BranchManagerRole",
                 columns: table => new
                 {
                     RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -666,15 +720,15 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ManagerRole", x => new { x.RestaurantId, x.BranchId, x.ManagerId, x.RoleId });
+                    table.PrimaryKey("PK_BranchManagerRole", x => new { x.RestaurantId, x.BranchId, x.ManagerId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_ManagerRole_Manager_RestaurantId_BranchId_ManagerId",
+                        name: "FK_BranchManagerRole_BranchManager_RestaurantId_BranchId_Manag~",
                         columns: x => new { x.RestaurantId, x.BranchId, x.ManagerId },
-                        principalTable: "Manager",
+                        principalTable: "BranchManager",
                         principalColumns: new[] { "RestaurantId", "BranchId", "MasterId" },
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_ManagerRole_Role_RestaurantId_RoleId",
+                        name: "FK_BranchManagerRole_Role_RestaurantId_RoleId",
                         columns: x => new { x.RestaurantId, x.RoleId },
                         principalTable: "Role",
                         principalColumns: new[] { "RestaurantId", "Id" },
@@ -889,6 +943,35 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Permission",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1000, null, "restaurant.setting.read" },
+                    { 1010, null, "restaurant.setting.update" },
+                    { 2000, null, "ingredient.create" },
+                    { 2010, null, "ingredient.read" },
+                    { 2020, null, "ingredient.update" },
+                    { 3000, null, "menu.create" },
+                    { 3010, null, "menu.update" },
+                    { 4000, null, "branch.setting.read" },
+                    { 4010, null, "branch.setting.update" },
+                    { 5000, null, "stock.read" },
+                    { 5010, null, "stock.update" },
+                    { 6000, null, "table.create" },
+                    { 6010, null, "table.update" },
+                    { 7000, null, "order.create" },
+                    { 7010, null, "order.get" },
+                    { 7020, null, "order.list" },
+                    { 7030, null, "order.update" },
+                    { 8000, null, "dashboard.read" },
+                    { 9000, null, "role.create" },
+                    { 9010, null, "role.read" },
+                    { 9020, null, "role.update" },
+                    { 9030, null, "role.delete" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -952,19 +1035,19 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 column: "ContactId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_IngredientTag_RestaurantId_TagId",
-                table: "IngredientTag",
-                columns: new[] { "RestaurantId", "TagId" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Manager_MasterId",
-                table: "Manager",
+                name: "IX_BranchManager_MasterId",
+                table: "BranchManager",
                 column: "MasterId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ManagerRole_RestaurantId_RoleId",
-                table: "ManagerRole",
+                name: "IX_BranchManagerRole_RestaurantId_RoleId",
+                table: "BranchManagerRole",
                 columns: new[] { "RestaurantId", "RoleId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IngredientTag_RestaurantId_TagId",
+                table: "IngredientTag",
+                columns: new[] { "RestaurantId", "TagId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_MenuComponent_RestaurantId_ChildMenuId",
@@ -1017,6 +1100,16 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RestaurantManager_MasterId",
+                table: "RestaurantManager",
+                column: "MasterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RestaurantManagerRole_RestaurantId_RoleId",
+                table: "RestaurantManagerRole",
+                columns: new[] { "RestaurantId", "RoleId" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RolePermission_PermissionId",
                 table: "RolePermission",
                 column: "PermissionId");
@@ -1061,13 +1154,13 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "BranchManagerRole");
+
+            migrationBuilder.DropTable(
                 name: "Coupon");
 
             migrationBuilder.DropTable(
                 name: "IngredientTag");
-
-            migrationBuilder.DropTable(
-                name: "ManagerRole");
 
             migrationBuilder.DropTable(
                 name: "MenuComponent");
@@ -1083,6 +1176,9 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
 
             migrationBuilder.DropTable(
                 name: "Queuing");
+
+            migrationBuilder.DropTable(
+                name: "RestaurantManagerRole");
 
             migrationBuilder.DropTable(
                 name: "RolePermission");
@@ -1103,7 +1199,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Manager");
+                name: "BranchManager");
 
             migrationBuilder.DropTable(
                 name: "Tag");
@@ -1113,6 +1209,9 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
 
             migrationBuilder.DropTable(
                 name: "Order");
+
+            migrationBuilder.DropTable(
+                name: "RestaurantManager");
 
             migrationBuilder.DropTable(
                 name: "Permission");

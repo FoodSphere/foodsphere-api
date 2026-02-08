@@ -105,7 +105,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
     public async Task<Ingredient> SeedIngredient(Guid restaurantId)
     {
         var unique = TestSeedingGenerator.GetUniqueString();
-        var ingredientService = scope.ServiceProvider.GetRequiredService<MenuService>();
+        var ingredientService = scope.ServiceProvider.GetRequiredService<IngredientService>();
 
         var ingredient = await ingredientService.CreateIngredient(
             restaurantId,
@@ -356,18 +356,31 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         Bill bill,
         params IEnumerable<(Menu menu, short quantity)> items
     ) {
+        var unique = TestSeedingGenerator.GetUniqueString();
         var billService = scope.ServiceProvider.GetRequiredService<BillService>();
         var order = await billService.CreateOrder(bill);
 
         foreach (var (menu, quantity) in items)
         {
-            await billService.SetOrderItem(
-                order,
-                menu,
+            await billService.CreateOrderItem(
+                order, menu,
                 quantity,
+                note: $"GENERATED.order-item-note.{unique}",
                 ct);
         }
 
         return order;
+    }
+
+    public async Task<Tag> SeedTag(Restaurant restaurant) {
+        var unique = TestSeedingGenerator.GetUniqueString();
+        var tagService = scope.ServiceProvider.GetRequiredService<TagService>();
+
+        var tag = await tagService.CreateTag(
+            restaurant,
+            name: $"GENERATED.tag-name.{unique}",
+            ct: ct);
+
+        return tag;
     }
 }

@@ -128,6 +128,8 @@ builder.Services.AddScoped<StaffPortalService>();
 builder.Services.AddScoped<RestaurantService>();
 builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();
+builder.Services.AddScoped<IngredientService>();
+builder.Services.AddScoped<TagService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<StaffService>();

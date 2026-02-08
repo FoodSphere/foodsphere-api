@@ -30,6 +30,7 @@ public class TableController(
             branch: branch,
             name: body.name
         );
+
         await branchService.SaveChanges();
 
         return CreatedAtAction(

@@ -14,7 +14,7 @@ public class Branch : EntityBase<short>
     public virtual List<StaffUser> Staffs { get; } = [];
     public virtual List<Queuing> Queuings { get; } = [];
 
-    public required string Name { get; set; }
+    public string? Name { get; set; }
     public string? DisplayName { get; set; }
     public string? Address { get; set; }
     public TimeOnly? OpeningTime { get; set; }

@@ -48,7 +48,7 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
 {
     public void Configure(EntityTypeBuilder<OrderItem> builder)
     {
-        builder.HasKey(e => new { e.BillId, e.RestaurantId, e.OrderId, e.MenuId });
+        builder.HasKey(e => new { e.BillId, e.OrderId, e.Id });
 
         builder.HasOne(e => e.Order)
             .WithMany(e => e.Items)

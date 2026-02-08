@@ -47,6 +47,12 @@ public static class SwaggerGenConfiguration
                 Example = 1
             });
 
+            options.MapType<TimeSpan>(() => new OpenApiSchema
+            {
+                Type = JsonSchemaType.String,
+                Example = "23:59:59"
+            });
+
             options.IncludeXmlComments(xmlPath);
         };
     }

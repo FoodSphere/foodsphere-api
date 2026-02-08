@@ -31,14 +31,14 @@ public class OrderingController(
 
         foreach (var item in body.items)
         {
-            var menu = await menuService.GetMenu(bill.RestaurantId, item.menu_id);
+            var menu = await menuService.FindMenu(bill.RestaurantId, item.menu_id);
 
             if (menu is null)
             {
                 return NotFound();
             }
 
-            await billService.SetOrderItem(order, menu, item.quantity);
+            await billService.CreateOrderItem(order, menu, item.quantity, item.note);
         }
 
         await billService.SaveChanges();
@@ -82,7 +82,7 @@ public class OrderingController(
     }
 
     [HttpPost("{order_id}/items")]
-    public async Task<ActionResult> SetOrderItem(short order_id, OrderItemDto body)
+    public async Task<ActionResult> CreateOrderItem(short order_id, OrderItemDto body)
     {
         var order = await billService.GetOrder(Member.BillId, order_id);
 
@@ -91,14 +91,14 @@ public class OrderingController(
             return NotFound();
         }
 
-        var menu = await menuService.GetMenu(order.Bill.RestaurantId, body.menu_id);
+        var menu = await menuService.FindMenu(order.Bill.RestaurantId, body.menu_id);
 
         if (menu is null)
         {
             return NotFound();
         }
 
-        await billService.SetOrderItem(order, menu, body.quantity);
+        await billService.CreateOrderItem(order, menu, body.quantity, body.note);
         await billService.SaveChanges();
 
         return NoContent();
