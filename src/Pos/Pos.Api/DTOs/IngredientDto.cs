@@ -8,8 +8,6 @@ public class IngredientRequest
     /// <example>เนื้อออส</example>
     public string? description { get; set; }
 
-    public string? image_url { get; set; }
-
     /// <example>กิโล</example>
     public string? unit { get; set; }
 }

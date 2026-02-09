@@ -11,7 +11,7 @@ public enum BillStatus
 public enum OrderStatus
 {
     Pending,
-    Processing,
+    Cooking,
     Completed,
     Canceled,
 }

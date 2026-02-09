@@ -16,7 +16,6 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         {
             name = $"TEST.ingredient-name.{unique}",
             description = $"TEST.ingredient-description.{unique}",
-            image_url = $"http://foodsphere.com/img/{unique}.png",
             unit = TestSeedingGenerator.GetUnit()
         };
 
@@ -34,7 +33,6 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
 
         responseBody.name.Should().Be(requestBody.name);
         responseBody.description.Should().Be(requestBody.description);
-        responseBody.image_url.Should().Be(requestBody.image_url);
         responseBody.unit.Should().Be(requestBody.unit);
 
         responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);

@@ -6,6 +6,9 @@ public class StaffAuthController(
     StaffPortalService staffPortalService
 ) : FoodSphereControllerBase
 {
+    /// <summary>
+    /// login staff user
+    /// </summary>
     [HttpPost("token")]
     public async Task<ActionResult<StaffTokenResponse>> GenerateToken(StaffTokenRequest body)
     {

@@ -7,6 +7,9 @@ public class TagController(
     TagService tagService
 ) : PosControllerBase
 {
+    /// <summary>
+    /// list tags
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<TagResponse>>> ListTags(Guid restaurant_id)
     {
@@ -17,6 +20,9 @@ public class TagController(
             .ToList();
     }
 
+    /// <summary>
+    /// create tag
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<TagResponse>> CreateTag(Guid restaurant_id, TagRequest body)
     {
@@ -41,6 +47,9 @@ public class TagController(
         );
     }
 
+    /// <summary>
+    /// get tag
+    /// </summary>
     [HttpGet("{tag_id}")]
     public async Task<ActionResult<TagResponse>> GetTag(Guid restaurant_id, short tag_id)
     {
@@ -54,6 +63,10 @@ public class TagController(
         return TagResponse.FromModel(tag);
     }
 
+
+    /// <summary>
+    /// update tag
+    /// </summary>
     [HttpPut("{tag_id}")]
     public async Task<ActionResult<TagResponse>> UpdateTag(Guid restaurant_id, short tag_id, TagRequest body)
     {
@@ -70,6 +83,9 @@ public class TagController(
         return TagResponse.FromModel(tag);
     }
 
+    /// <summary>
+    /// delete tag
+    /// </summary>
     [HttpDelete("{tag_id}")]
     public async Task<ActionResult> DeleteTag(Guid restaurant_id, short tag_id)
     {

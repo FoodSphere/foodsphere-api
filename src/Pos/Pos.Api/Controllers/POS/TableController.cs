@@ -6,6 +6,9 @@ public class TableController(
     BranchService branchService
 ) : PosControllerBase
 {
+    /// <summary>
+    /// list tables
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<TableResponse>>> ListTables(Guid restaurant_id, short branch_id)
     {
@@ -16,6 +19,9 @@ public class TableController(
             .ToList();
     }
 
+    /// <summary>
+    /// create table
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<TableResponse>> CreateTable(Guid restaurant_id, short branch_id, TableRequest body)
     {
@@ -40,6 +46,9 @@ public class TableController(
         );
     }
 
+    /// <summary>
+    /// get table
+    /// </summary>
     [HttpGet("{table_id}")]
     public async Task<ActionResult<TableResponse>> GetTable(Guid restaurant_id, short branch_id, short table_id)
     {
@@ -53,6 +62,9 @@ public class TableController(
         return TableResponse.FromModel(table);
     }
 
+    /// <summary>
+    /// delete table
+    /// </summary>
     [HttpDelete("{table_id}")]
     public async Task<ActionResult> DeleteTable(Guid restaurant_id, short branch_id, short table_id)
     {

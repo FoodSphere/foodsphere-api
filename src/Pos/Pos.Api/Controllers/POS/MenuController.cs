@@ -8,6 +8,9 @@ public class MenuController(
     TagService tagService
 ) : PosControllerBase
 {
+    /// <summary>
+    /// list menus
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<MenuResponse>>> ListMenus(Guid restaurant_id)
     {
@@ -18,6 +21,9 @@ public class MenuController(
             .ToList();
     }
 
+    /// <summary>
+    /// create menu
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<MenuResponse>> CreateMenu(Guid restaurant_id, MenuRequest body)
     {
@@ -53,6 +59,9 @@ public class MenuController(
         );
     }
 
+    /// <summary>
+    /// get menu
+    /// </summary>
     [HttpGet("{menu_id}")]
     public async Task<ActionResult<MenuResponse>> GetMenu(Guid restaurant_id, short menu_id)
     {
@@ -66,6 +75,60 @@ public class MenuController(
         return MenuResponse.FromModel(menu);
     }
 
+    /// <summary>
+    /// upload menu image
+    /// </summary>
+    [HttpPost("{menu_id}/image")]
+    public async Task<ActionResult<UploadImageResponse>> UploadImage(Guid restaurant_id, short menu_id, IFormFile file)
+    {
+        // MultipartReader
+
+        var menu = await menuService.FindMenu(restaurant_id, menu_id);
+
+        if (menu is null)
+        {
+            return NotFound();
+        }
+
+        using var stream = file.OpenReadStream();
+        var url = await menuService.UploadImage(menu, stream, file.ContentType);
+        await menuService.SaveChanges();
+
+        if (string.IsNullOrEmpty(url))
+        {
+            return BadRequest("failed to upload image");
+        }
+
+        return new UploadImageResponse
+        {
+            image_url = url
+        };
+    }
+
+    /// <summary>
+    /// get image upload's url
+    /// </summary>
+    [HttpGet("{menu_id}/image/upload-url")]
+    public async Task<ActionResult<PresignUrlResponse>> GetImageUploadUrl(Guid restaurant_id, short menu_id)
+    {
+        var menu = await menuService.FindMenu(restaurant_id, menu_id);
+
+        if (menu is null)
+        {
+            return NotFound();
+        }
+
+        var url = await menuService.GetImageUploadUrl(menu);
+
+        return new PresignUrlResponse
+        {
+            url = url
+        };
+    }
+
+    /// <summary>
+    /// update menu
+    /// </summary>
     [HttpPut("{menu_id}")]
     public async Task<ActionResult> UpdateMenu(Guid restaurant_id, short menu_id, MenuRequest body)
     {
@@ -96,6 +159,9 @@ public class MenuController(
         return NoContent();
     }
 
+    /// <summary>
+    /// update menu ingredient
+    /// </summary>
     [HttpPost("{menu_id}/ingredients")]
     public async Task<ActionResult> UpdateMenuIngredient(Guid restaurant_id, short menu_id, IngredientItemDto body)
     {
@@ -112,6 +178,9 @@ public class MenuController(
         return NoContent();
     }
 
+    /// <summary>
+    /// list menu's ingredients
+    /// </summary>
     [HttpGet("{menu_id}/ingredients")]
     public async Task<ActionResult<IngredientItemDto[]>> ListIngredients(Guid restaurant_id, short menu_id)
     {
@@ -127,6 +196,9 @@ public class MenuController(
             .ToArray();
     }
 
+    /// <summary>
+    /// add tag to menu
+    /// </summary>
     [HttpPost("{menu_id}/tags")]
     public async Task<ActionResult> AddTag(Guid restaurant_id, short menu_id, AssignTagRequest body)
     {
@@ -144,6 +216,9 @@ public class MenuController(
         return NoContent();
     }
 
+    /// <summary>
+    /// delete menu
+    /// </summary>
     [HttpDelete("{menu_id}")]
     public async Task<ActionResult> DeleteMenu(Guid restaurant_id, short menu_id)
     {

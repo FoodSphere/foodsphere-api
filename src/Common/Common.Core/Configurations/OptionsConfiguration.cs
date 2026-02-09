@@ -56,6 +56,17 @@ namespace FoodSphere.Common.Configuration
                     .ValidateOnStart();
             }
 
+            public void AddS3Options()
+            {
+                using var sp = services.BuildServiceProvider();
+                var config = sp.GetRequiredService<IConfiguration>();
+
+                services.AddOptions<EnvS3>()
+                    .Bind(config.GetSection(EnvS3.SectionName))
+                    .ValidateDataAnnotations()
+                    .ValidateOnStart();
+            }
+
             public void AddDomainApiOptions()
             {
                 using var sp = services.BuildServiceProvider();

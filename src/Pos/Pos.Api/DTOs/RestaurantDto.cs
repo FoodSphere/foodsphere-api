@@ -65,7 +65,7 @@ public class QuickRestaurantResponse
     public short branch_id { get; set; }
 
     /// <example>main</example>
-    public required string branch_name { get; set; }
+    public string? branch_name { get; set; }
 
     /// <example>null</example>
     public string? branch_display_name { get; set; }
@@ -93,6 +93,22 @@ public class QuickRestaurantResponse
             branch_address = branch.Address,
             branch_opening_time = branch.OpeningTime,
             branch_closing_time = branch.ClosingTime,
+        };
+    }
+}
+
+public class QuickRestaurantResponse2
+{
+    public required RestaurantResponse restaurant { get; set; }
+
+    public required BranchResponse branch { get; set; }
+
+    public static QuickRestaurantResponse2 FromModel(Restaurant restaurant, Branch branch)
+    {
+        return new QuickRestaurantResponse2
+        {
+            restaurant = RestaurantResponse.FromModel(restaurant),
+            branch = BranchResponse.FromModel(branch),
         };
     }
 }

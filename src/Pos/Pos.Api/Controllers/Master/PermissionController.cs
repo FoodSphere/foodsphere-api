@@ -6,6 +6,9 @@ public class PermissionController(
     PermissionService permissionService
 ) : MasterControllerBase
 {
+    /// <summary>
+    /// list permissions
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<PermissionResponse>>> ListPermissions()
     {

@@ -22,7 +22,7 @@ public class MasterAuthController(
     readonly EmailAddressAttribute emailAddressAttribute = new();
 
     /// <summary>
-    /// Register a master user.
+    /// register a master user
     /// </summary>
     [HttpPost]
     public async Task<Results<
@@ -56,7 +56,7 @@ public class MasterAuthController(
     }
 
     /// <summary>
-    /// Login master user
+    /// login master user
     /// </summary>
     [HttpPost("token")]
     public async Task<Results<

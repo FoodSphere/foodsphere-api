@@ -1,12 +1,15 @@
 namespace FoodSphere.Pos.Api.Controller;
 
 [Route("restaurants/{restaurant_id}")]
-public class StaffAccessController(
-    ILogger<StaffAccessController> logger,
+public class InfoController(
+    ILogger<InfoController> logger,
     RestaurantService restaurantService,
     BranchService branchService
 ) : PosControllerBase
 {
+    /// <summary>
+    /// get restaurant
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<RestaurantResponse>> GetRestaurant(Guid restaurant_id)
     {
@@ -20,6 +23,9 @@ public class StaffAccessController(
         return RestaurantResponse.FromModel(restaurant);
     }
 
+    /// <summary>
+    /// get branch
+    /// </summary>
     [HttpGet("branches/{branch_id}")]
     public async Task<ActionResult<BranchResponse>> GetBranch(Guid restaurant_id, short branch_id)
     {

@@ -6,6 +6,9 @@ public class IngredientController(
     IngredientService ingredientService
 ) : PosControllerBase
 {
+    /// <summary>
+    /// list ingredients
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<IngredientResponse>>> ListIngredients(Guid restaurant_id)
     {
@@ -16,6 +19,9 @@ public class IngredientController(
             .ToList();
     }
 
+    /// <summary>
+    /// create ingredient
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<IngredientResponse>> CreateIngredient(Guid restaurant_id, IngredientRequest body)
     {
@@ -23,7 +29,6 @@ public class IngredientController(
             restaurantId: restaurant_id,
             name: body.name,
             description: body.description,
-            imageUrl: body.image_url,
             unit: body.unit
         );
 
@@ -36,6 +41,9 @@ public class IngredientController(
         );
     }
 
+    /// <summary>
+    /// get ingredient
+    /// </summary>
     [HttpGet("{ingredient_id}")]
     public async Task<ActionResult<IngredientResponse>> GetIngredient(Guid restaurant_id, short ingredient_id)
     {
@@ -49,6 +57,9 @@ public class IngredientController(
         return IngredientResponse.FromModel(ingredient);
     }
 
+    /// <summary>
+    /// update ingredient
+    /// </summary>
     [HttpPut("{ingredient_id}")]
     public async Task<ActionResult> UpdateIngredient(Guid restaurant_id, short ingredient_id, IngredientRequest body)
     {
@@ -61,7 +72,6 @@ public class IngredientController(
 
         ingredient.Name = body.name;
         ingredient.Description = body?.description;
-        ingredient.ImageUrl = body?.image_url;
         ingredient.Unit = body?.unit;
 
         await ingredientService.SaveChanges();
@@ -69,6 +79,9 @@ public class IngredientController(
         return NoContent();
     }
 
+    /// <summary>
+    /// delete ingredient
+    /// </summary>
     [HttpDelete("{ingredient_id}")]
     public async Task<ActionResult> DeleteIngredient(Guid restaurant_id, short ingredient_id)
     {

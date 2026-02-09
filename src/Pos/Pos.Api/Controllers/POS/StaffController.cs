@@ -8,6 +8,9 @@ public class StaffController(
     StaffPortalService staffPortalService
 ) : PosControllerBase
 {
+    /// <summary>
+    /// create staff portal
+    /// </summary>
     [HttpPost("{staff_id}/portal")]
     public async Task<ActionResult<StaffPortalResponse>> CreatePortal(Guid restaurant_id, short branch_id, short staff_id)
     {
@@ -23,6 +26,9 @@ public class StaffController(
         return StaffPortalResponse.FromModel(portal);
     }
 
+    /// <summary>
+    /// list staffs
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<StaffResponse>>> ListStaffs(Guid restaurant_id, short branch_id)
     {
@@ -33,6 +39,9 @@ public class StaffController(
             .ToList();
     }
 
+    /// <summary>
+    /// create staff
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<StaffResponse>> CreateStaff(Guid restaurant_id, short branch_id, StaffRequest body)
     {
@@ -65,6 +74,9 @@ public class StaffController(
         );
     }
 
+    /// <summary>
+    /// get staff
+    /// </summary>
     [HttpGet("{staff_id}")]
     public async Task<ActionResult<StaffResponse>> GetStaff(Guid restaurant_id, short branch_id, short staff_id)
     {
@@ -78,6 +90,9 @@ public class StaffController(
         return StaffResponse.FromModel(staff);
     }
 
+    /// <summary>
+    /// delete staff
+    /// </summary>
     [HttpDelete("{staff_id}")]
     public async Task<ActionResult> DeleteStaff(Guid restaurant_id, short branch_id, short staff_id)
     {

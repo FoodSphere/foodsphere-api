@@ -7,6 +7,9 @@ public class RoleController(
     RoleService roleService
 ) : MasterControllerBase
 {
+    /// <summary>
+    /// create role
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<RoleResponse>> CreateRole(Guid restaurant_id, RoleRequest body)
     {
@@ -39,6 +42,9 @@ public class RoleController(
         );
     }
 
+    /// <summary>
+    /// list roles
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<RoleResponse>>> ListRoles(Guid restaurant_id)
     {
@@ -49,6 +55,9 @@ public class RoleController(
             .ToList();
     }
 
+    /// <summary>
+    /// get role
+    /// </summary>
     [HttpGet("{role_id}")]
     public async Task<ActionResult<RoleResponse>> GetRole(Guid restaurant_id, short role_id)
     {
@@ -62,6 +71,9 @@ public class RoleController(
         return RoleResponse.FromModel(role);
     }
 
+    /// <summary>
+    /// delete role
+    /// </summary>
     [HttpDelete("{role_id}")]
     public async Task<ActionResult> DeleteRole(Guid restaurant_id, short role_id)
     {
@@ -79,6 +91,9 @@ public class RoleController(
         return NoContent();
     }
 
+    /// <summary>
+    /// set role's permissions
+    /// </summary>
     [HttpPut("{role_id}/permissions")]
     public async Task<ActionResult> SetPermissions(Guid restaurant_id, short role_id, PermissionRequest body)
     {

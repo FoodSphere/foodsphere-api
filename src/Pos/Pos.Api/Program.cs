@@ -56,6 +56,7 @@ builder.AddServiceDefaults();
 //     .AddCheck<HealthCheck>("custom_health_check");
 
 builder.Services.AddConnectionStringsOptions();
+builder.Services.AddS3Options();
 builder.Services.AddDomainApiOptions();
 builder.Services.AddDomainMasterOptions();
 builder.Services.AddDomainPosOptions();
@@ -112,6 +113,10 @@ builder.Services.AddAuthorization(AuthorizationConfiguration.Configure());
 
 // lifetime of the application
 builder.Services.AddSingleton<EmailService>();
+builder.Services.AddSingleton<MimeService>();
+
+builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(S3Configuration.Configure);
+builder.Services.AddScoped<IStorageService, S3StorageService>();
 
 // scoped each http request
 builder.Services.AddScoped<IAuthorizationHandler, RestaurantPermissionHandler>();

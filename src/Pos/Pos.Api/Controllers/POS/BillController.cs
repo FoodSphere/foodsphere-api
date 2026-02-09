@@ -9,6 +9,9 @@ public class BillController(
     OrderingPortalService orderingPortalService
 ) : PosControllerBase
 {
+    /// <summary>
+    /// create bill
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<BillResponse>> CreateBill(BillRequest body)
     {
@@ -63,6 +66,9 @@ public class BillController(
         );
     }
 
+    /// <summary>
+    /// get bill
+    /// </summary>
     [HttpGet("{bill_id}")]
     public async Task<ActionResult<BillResponse>> GetBill(Guid bill_id)
     {
@@ -98,6 +104,9 @@ public class BillController(
         return BillResponse.FromModel(bill);
     }
 
+    /// <summary>
+    /// create ordering portal
+    /// </summary>
     [HttpPost("{bill_id}/portals")]
     public async Task<ActionResult<OrderingPortalResponse>> CreatePortal(Guid bill_id, OrderingPortalRequest body)
     {
@@ -118,6 +127,9 @@ public class BillController(
         // );
     }
 
+    /// <summary>
+    /// list ordering portals
+    /// </summary>
     [HttpGet("{bill_id}/portals")]
     public async Task<ActionResult<List<OrderingPortalResponse>>> ListPortals(Guid bill_id, [FromQuery] Guid? portal_id)
     {
@@ -139,6 +151,9 @@ public class BillController(
     //     return NoContent();
     // }
 
+    /// <summary>
+    /// delete bill
+    /// </summary>
     [HttpDelete("{bill_id}")]
     public async Task<ActionResult> DeleteBill(Guid bill_id)
     {
@@ -155,6 +170,9 @@ public class BillController(
         return NoContent();
     }
 
+    /// <summary>
+    /// create order
+    /// </summary>
     [HttpPost("{bill_id}/orders")]
     public async Task<ActionResult<OrderResponse>> CreateOrder(Guid bill_id, OrderDto body)
     {
@@ -188,6 +206,9 @@ public class BillController(
         );
     }
 
+    /// <summary>
+    /// list orders
+    /// </summary>
     [HttpGet("{bill_id}/orders")]
     public async Task<ActionResult<List<OrderResponse>>> ListOrders(Guid bill_id)
     {
@@ -198,6 +219,9 @@ public class BillController(
             .ToList();
     }
 
+    /// <summary>
+    /// get order
+    /// </summary>
     [HttpGet("{bill_id}/orders/{order_id}")]
     public async Task<ActionResult<OrderResponse>> GetOrder(Guid bill_id, short order_id)
     {
@@ -211,6 +235,9 @@ public class BillController(
         return OrderResponse.FromModel(order);
     }
 
+    /// <summary>
+    /// update order status
+    /// </summary>
     [HttpPost("{bill_id}/orders/{order_id}/status")]
     public async Task<ActionResult<OrderResponse>> UpdateOrderStatus(Guid bill_id, short order_id, OrderStatusDTO body)
     {
@@ -227,6 +254,9 @@ public class BillController(
         return OrderResponse.FromModel(order);
     }
 
+    /// <summary>
+    /// add item to order
+    /// </summary>
     [HttpPost("{bill_id}/orders/{order_id}/items")]
     public async Task<ActionResult> CreateOrderItem(Guid bill_id, short order_id, OrderItemDto body)
     {
@@ -250,6 +280,9 @@ public class BillController(
         return NoContent();
     }
 
+    /// <summary>
+    /// delete order
+    /// </summary>
     [HttpDelete("{bill_id}/orders/{order_id}")]
     public async Task<ActionResult> DeleteOrder(Guid bill_id, short order_id)
     {

@@ -6,6 +6,9 @@ public class MasterBranchController(
     BranchService branchService
 ) : MasterControllerBase
 {
+    /// <summary>
+    /// list branches
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<BranchResponse>>> ListBranches(Guid restaurant_id)
     {
@@ -16,6 +19,9 @@ public class MasterBranchController(
             .ToList();
     }
 
+    /// <summary>
+    /// create branch
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<BranchResponse>> CreateBranch(Guid restaurant_id, BranchRequest body)
     {
@@ -36,13 +42,16 @@ public class MasterBranchController(
         await branchService.SaveChanges();
 
         return CreatedAtAction(
-            nameof(StaffAccessController.GetBranch),
-            GetControllerName(nameof(StaffAccessController)),
+            nameof(InfoController.GetBranch),
+            GetControllerName(nameof(InfoController)),
             new { restaurant_id, branch_id = branch.Id },
             BranchResponse.FromModel(branch)
         );
     }
 
+    /// <summary>
+    /// list branch managers
+    /// </summary>
     [HttpGet("managers")]
     public async Task<ActionResult<List<BranchManagerResponse>>> ListManagers(Guid restaurant_id, short branch_id)
     {
@@ -53,6 +62,9 @@ public class MasterBranchController(
             .ToList();
     }
 
+    /// <summary>
+    /// not done
+    /// </summary>
     [HttpPost("managers")]
     public async Task<ActionResult<BranchManagerResponse>> CreateManager(Guid restaurant_id, short branch_id, BranchManagerRequest body)
     {
@@ -63,6 +75,9 @@ public class MasterBranchController(
         return BranchManagerResponse.FromModel(manager);
     }
 
+    /// <summary>
+    /// delete branch
+    /// </summary>
     [HttpDelete("{branch_id}")]
     public async Task<ActionResult> DeleteBranch(Guid restaurant_id, short branch_id)
     {

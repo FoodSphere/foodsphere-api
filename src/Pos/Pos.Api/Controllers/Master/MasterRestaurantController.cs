@@ -7,6 +7,9 @@ public class RestaurantController(
     BranchService branchService
 ) : MasterControllerBase
 {
+    /// <summary>
+    /// create restaurant
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<QuickRestaurantResponse>> CreateRestaurant(QuickRestaurantRequest body)
     {
@@ -32,13 +35,16 @@ public class RestaurantController(
         await branchService.SaveChanges();
 
         return CreatedAtAction(
-            nameof(StaffAccessController.GetRestaurant),
-            GetControllerName(nameof(StaffAccessController)),
+            nameof(InfoController.GetRestaurant),
+            GetControllerName(nameof(InfoController)),
             new { restaurant_id = restaurant.Id },
             QuickRestaurantResponse.FromModel(restaurant, branch)
         );
     }
 
+    /// <summary>
+    /// list owned restaurants
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<RestaurantResponse>>> ListMyRestaurants()
     {
@@ -49,6 +55,9 @@ public class RestaurantController(
             .ToList();
     }
 
+    /// <summary>
+    /// get restaurant
+    /// </summary>
     [HttpPost("{restaurant_id}/contact")]
     public async Task<ActionResult<RestaurantResponse>> SetContact(Guid restaurant_id, ContactDto body)
     {
@@ -70,6 +79,9 @@ public class RestaurantController(
         return NoContent();
     }
 
+    /// <summary>
+    /// delete restaurant
+    /// </summary>
     [HttpDelete("{restaurant_id}")]
     public async Task<ActionResult> DeleteRestaurant(Guid restaurant_id)
     {

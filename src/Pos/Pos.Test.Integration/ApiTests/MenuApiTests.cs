@@ -30,7 +30,6 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
             name = $"TEST.menu-name.{unique}",
             display_name = $"TEST.menu-display_name.{unique}",
             description = $"TEST.menu-description.{unique}",
-            // image_url = $"http://foodsphere.com/img/{unique}.png",
             price = Random.Shared.Next(300),
             ingredients = ingredients,
         };
@@ -88,7 +87,6 @@ public class MenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
             name = $"TEST.menu-name.{unique}",
             display_name = $"TEST.menu-display_name.{unique}",
             description = $"TEST.menu-description.{unique}",
-            // image_url = $"http://foodsphere.com/img/{unique}.png",
             price = Random.Shared.Next(300),
             ingredients = ingredients,
         };

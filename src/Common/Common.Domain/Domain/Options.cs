@@ -44,6 +44,23 @@ public class EnvKeyVault : IEnvOptions
     public required string uri { get; init; }
 }
 
+public class EnvS3 : IEnvOptions
+{
+    public const string SectionName = "S3";
+
+    [Required]
+    public required string access_key { get; init; }
+
+    [Required]
+    public required string secret_key { get; init; }
+
+    [Required]
+    public required string endpoint_url { get; init; }
+
+    // [Required]
+    // public required string region { get; init; }
+}
+
 public class NestedDomain : IEnvOptions
 {
     [Required]
