@@ -1,28 +1,29 @@
 <Solution>
-  <Folder Name="/Aspire/">
+  <Folder Name="/Orchestrator/">
     <Project Path="src/Aspire/Aspire.AppHost/FoodSphere.Aspire.AppHost.csproj" />
-    <Project Path="src/Aspire/Aspire.ServiceDefaults/FoodSphere.Aspire.ServiceDefaults.csproj" />
   </Folder>
-  <Folder Name="/Common/">
+  <Folder Name="/Shared/">
     <Project Path="src/Common/Common.Core/FoodSphere.Common.Core.csproj" />
     <Project Path="src/Common/Common.Domain/FoodSphere.Common.Domain.csproj" />
-  </Folder>
-  <Folder Name="/Infrastructure/">
     <Project Path="src/Infrastructure/Persistence/FoodSphere.Infrastructure.Persistence.csproj" />
   </Folder>
-  <Folder Name="/Applications/">
+  <Folder Name="/API/">
     <Project Path="src/Resource/Resource.Api/FoodSphere.Resource.Api.csproj" />
     <Project Path="src/Pos/Pos.Api/FoodSphere.Pos.Api.csproj" />
     <Project Path="src/SelfOrdering/SelfOrdering.Api/FoodSphere.SelfOrdering.Api.csproj" />
     <Project Path="src/Consumer/Consumer.Api/FoodSphere.Consumer.Api.csproj" />
   </Folder>
-  <Folder Name="/Tests/">
+  <Folder Name="/Test/">
     <Project Path="src/Pos/Pos.Test.Unit/FoodSphere.Pos.Test.Unit.csproj" />
     <Project Path="src/Pos/Pos.Test.Integration/FoodSphere.Pos.Test.Integration.csproj" />
     <!-- <Project Path="src/Consumer/Consumer.Test.Unit/FoodSphere.Consumer.Test.Unit.csproj" />
     <Project Path="src/Consumer/Consumer.Test.Integration/FoodSphere.Consumer.Test.Integration.csproj" /> -->
   </Folder>
-  <Folder Name="/Workers/">
-    <Project Path="src/Infrastructure/Migrator.Npgsql/FoodSphere.Migrator.Npgsql.csproj" />
+  <Folder Name="/Worker/">
+    <Project Path="src/Infrastructure/Npgsql.Migrator/FoodSphere.Npgsql.Migrator.csproj" />
+  </Folder>
+  <Folder Name="/Helper/">
+    <Project Path="src/Aspire/Aspire.ServiceDefaults/FoodSphere.Aspire.ServiceDefaults.csproj" />
+    <Project Path="src/Infrastructure/Npgsql.Helper/FoodSphere.Npgsql.Helper.csproj" />
   </Folder>
 </Solution>

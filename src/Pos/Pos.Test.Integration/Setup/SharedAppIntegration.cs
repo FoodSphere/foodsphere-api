@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 using FoodSphere.Infrastructure.Persistence;
+using FoodSphere.Infrastructure.Npgsql;
 using FoodSphere.Pos.Api.Service;
 
 [assembly: AssemblyFixture(typeof(FoodSphere.Pos.Test.Integration.SharedAppFixture))]
@@ -16,14 +17,21 @@ namespace FoodSphere.Pos.Test.Integration;
 public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
     readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18-alpine")
+        // .WithAutoRemove(true)
+        // .WithCleanUp(true)
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
+
+        // # ERROR: builder.ConfigureAppConfiguration();
+        // in minimal hosting
+        // HostApplicationBuilder.Build()
+        // -> Transfers state from ConfigurationManager to ConfigurationRoot
+        // -> Disposes ConfigurationManager
         Environment.SetEnvironmentVariable("ConnectionStrings__default",
-            _dbContainer.GetConnectionString() + ";Include Error Detail=true"
-        );
+            _dbContainer.GetConnectionString() + ";Include Error Detail=true");
 
         builder.ConfigureTestServices(services =>
         {
@@ -36,7 +44,10 @@ public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
         await _dbContainer.StartAsync(TestContext.Current.CancellationToken);
 
         using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<FoodSphereDbContext>();
+
+        var optionsBuilder = new DbContextOptionsBuilder<FoodSphereDbContext>();
+        DbContextConfiguration.Configure()(scope.ServiceProvider, optionsBuilder);
+        using var dbContext = new FoodSphereDbContext(optionsBuilder.Options);
 
         await dbContext.Database.MigrateAsync(TestContext.Current.CancellationToken);
     }

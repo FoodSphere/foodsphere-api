@@ -14,8 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 if (builder.Environment.IsDevelopment())
 {
-    // Testcontainers in dev -> too slow?
-    DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
+    DotNetEnv.Env.NoClobber().Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
     builder.Configuration.AddEnvironmentVariables();
 
     // https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/implementation/key-storage-ephemeral
@@ -133,6 +132,7 @@ builder.Services.AddScoped<StaffPortalService>();
 builder.Services.AddScoped<RestaurantService>();
 builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();
+builder.Services.AddScoped<MenuUpdateService>();
 builder.Services.AddScoped<IngredientService>();
 builder.Services.AddScoped<TagService>();
 builder.Services.AddScoped<PermissionService>();

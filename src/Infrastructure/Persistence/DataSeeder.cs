@@ -1,4 +1,20 @@
-namespace FoodSphere.Worker.Migration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+namespace FoodSphere.Infrastructure.Persistence;
+
+public static class DbContextOptionsBuilderExtension
+{
+    extension(DbContextOptionsBuilder optionsBuilder)
+    {
+        public DbContextOptionsBuilder UseFoodSphereSeeding(IServiceProvider sp)
+        {
+            return optionsBuilder
+                .UseSeeding(DataSeeder.Seed(sp))
+                .UseAsyncSeeding(DataSeeder.SeedAsync(sp)); // depend on .ensureAsync()?
+        }
+    }
+}
 
 public static class DataSeeder
 {

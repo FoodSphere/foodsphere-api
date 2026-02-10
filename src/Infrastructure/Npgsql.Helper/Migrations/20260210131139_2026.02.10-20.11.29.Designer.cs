@@ -3,17 +3,20 @@ using System;
 using FoodSphere.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodSphere.Migrator.Npgsql.Migrations
+namespace FoodSphere.Npgsql.Helper.Migrations
 {
     [DbContext(typeof(FoodSphereDbContext))]
-    partial class FoodSphereDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260210131139_2026.02.10-20.11.29")]
+    partial class _20260210201129
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

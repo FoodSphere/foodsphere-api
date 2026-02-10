@@ -7,7 +7,8 @@ public static class TestSeedingGenerator
 {
     static readonly string[] units = ["kg", "g", "lb", "oz", "l", "ml", "cup", "tbsp", "tsp", "piece"];
 
-    public static string GetUniqueString() => DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff");
+    // DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff") too close
+    public static string GetUniqueString() => Guid.CreateVersion7().ToString();
 
     public static string GetUnit() => units[Random.Shared.Next(units.Length)];
 

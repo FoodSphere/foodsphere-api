@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 if (builder.Environment.IsDevelopment())
 {
-    DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
+    DotNetEnv.Env.NoClobber().Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
     builder.Configuration.AddEnvironmentVariables();
 
     builder.Services.AddSwaggerGen(SwaggerGenConfiguration.Configure());

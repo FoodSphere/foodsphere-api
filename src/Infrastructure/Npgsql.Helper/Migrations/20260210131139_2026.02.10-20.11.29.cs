@@ -6,10 +6,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace FoodSphere.Migrator.Npgsql.Migrations
+namespace FoodSphere.Npgsql.Helper.Migrations
 {
     /// <inheritdoc />
-    public partial class _20260207220241 : Migration
+    public partial class _20260210201129 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -262,7 +262,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                     Id = table.Column<short>(type: "smallint", nullable: false),
                     RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
                     ContactId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Name = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: true),
                     DisplayName = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
                     OpeningTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
@@ -916,6 +916,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 name: "OrderItem",
                 columns: table => new
                 {
+                    Id = table.Column<short>(type: "smallint", nullable: false),
                     BillId = table.Column<Guid>(type: "uuid", nullable: false),
                     OrderId = table.Column<short>(type: "smallint", nullable: false),
                     RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -928,7 +929,7 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderItem", x => new { x.BillId, x.RestaurantId, x.OrderId, x.MenuId });
+                    table.PrimaryKey("PK_OrderItem", x => new { x.BillId, x.OrderId, x.Id });
                     table.ForeignKey(
                         name: "FK_OrderItem_Menu_RestaurantId_MenuId",
                         columns: x => new { x.RestaurantId, x.MenuId },
@@ -1073,11 +1074,6 @@ namespace FoodSphere.Migrator.Npgsql.Migrations
                 name: "IX_Order_RestaurantId_BranchId_IssuerId",
                 table: "Order",
                 columns: new[] { "RestaurantId", "BranchId", "IssuerId" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrderItem_BillId_OrderId",
-                table: "OrderItem",
-                columns: new[] { "BillId", "OrderId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItem_RestaurantId_MenuId",

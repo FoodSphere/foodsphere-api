@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -23,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../Persistence/FoodSphere.Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="../Npgsql.Helper/FoodSphere.Npgsql.Helper.csproj" />
     <ProjectReference Include="../../Common/Common.Core/FoodSphere.Common.Core.csproj" />
     <ProjectReference Include="../../Aspire/Aspire.ServiceDefaults/FoodSphere.Aspire.ServiceDefaults.csproj" />
     <Content Include="../../../.env.development" Link=".env.development" CopyToOutputDirectory="PreserveNewest" Condition="Exists('../../../.env.development')" />

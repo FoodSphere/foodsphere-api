@@ -21,7 +21,7 @@ if (builder.Environment.IsDevelopment())
     //
     var pgDb = pgServer.AddDatabase("default");
 
-    var pgMigrator = builder.AddProject<Projects.FoodSphere_Migrator_Npgsql>("migrator")
+    var pgMigrator = builder.AddProject<Projects.FoodSphere_Npgsql_Migrator>("migrator")
         .WithReference(pgDb)
         .WaitFor(pgDb);
 

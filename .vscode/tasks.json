@@ -23,35 +23,33 @@
     {
       "label": "drop database",
       "type": "shell",
-      "command": "dotnet ef database drop --force --project src/Infrastructure/Migrator.Npgsql/FoodSphere.Migrator.Npgsql.csproj"
+      "command": "dotnet ef database drop --force --project src/Infrastructure/Npgsql.Helper/FoodSphere.Npgsql.Helper.csproj --startup-project src/Infrastructure/Npgsql.Migrator/FoodSphere.Npgsql.Migrator.csproj"
     },
     {
       "label": "remove migrations",
       "type": "shell",
-
       "windows": {
-        "command": "if (Test-Path src/Infrastructure/Migrator.Npgsql/Migrations) { Remove-Item src/Infrastructure/Migrator.Npgsql/Migrations -Recurse -Force }"
+        "command": "if (Test-Path src/Infrastructure/Npgsql.Helper/Migrations) { Remove-Item src/Infrastructure/Npgsql.Helper/Migrations -Recurse -Force }"
       },
       "linux": {
-        "command": "rm -rf src/Infrastructure/Migrator.Npgsql/Migrations"
-        // if [ -d src/Infrastructure/Migrator.Npgsql/Migrations ]; then rm -rf src/Infrastructure/Migrator.Npgsql/Migrations; fi
+        "command": "rm -rf src/Infrastructure/Npgsql.Helper/Migrations"
+        // if [ -d src/Infrastructure/Npgsql.Helper/Migrations ]; then rm -rf src/Infrastructure/Npgsql.Helper/Migrations; fi
       }
     },
     {
       "label": "add new migration",
       "type": "shell",
-
       "windows": {
-        "command": "dotnet ef migrations add $(Get-Date -Format yyyy.MM.dd-HH.mm.ss) --project src/Infrastructure/Migrator.Npgsql/FoodSphere.Migrator.Npgsql.csproj"
+        "command": "dotnet ef migrations add $(Get-Date -Format yyyy.MM.dd-HH.mm.ss) --project src/Infrastructure/Npgsql.Helper/FoodSphere.Npgsql.Helper.csproj --startup-project src/Infrastructure/Npgsql.Migrator/FoodSphere.Npgsql.Migrator.csproj"
       },
       "linux": {
-        "command": "dotnet ef migrations add $(date +\"%Y.%m.%d-%H.%M.%S\") --project src/Infrastructure/Migrator.Npgsql/FoodSphere.Migrator.Npgsql.csproj"
+        "command": "dotnet ef migrations add $(date +\"%Y.%m.%d-%H.%M.%S\") --project src/Infrastructure/Npgsql.Helper/FoodSphere.Npgsql.Helper.csproj --startup-project src/Infrastructure/Npgsql.Migrator/FoodSphere.Npgsql.Migrator.csproj"
       }
     },
     {
       "label": "update database",
       "type": "shell",
-      "command": "dotnet ef database update --project src/Infrastructure/Migrator.Npgsql/FoodSphere.Migrator.Npgsql.csproj"
+      "command": "dotnet ef database update --project src/Infrastructure/Npgsql.Helper/FoodSphere.Npgsql.Helper.csproj --startup-project src/Infrastructure/Npgsql.Migrator/FoodSphere.Npgsql.Migrator.csproj"
     },
     {
       "label": "redeploy",

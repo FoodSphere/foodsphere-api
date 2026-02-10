@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../Pos.Api/FoodSphere.Pos.Api.csproj" />
+    <ProjectReference Include="../../Infrastructure/Npgsql.Helper/FoodSphere.Npgsql.Helper.csproj" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../../.env.development" Link=".env.development" CopyToOutputDirectory="PreserveNewest" Condition="Exists('../../../.env.development')" />
   </ItemGroup>

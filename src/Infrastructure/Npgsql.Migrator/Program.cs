@@ -2,12 +2,13 @@ using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using FoodSphere.Common.Configuration;
 using FoodSphere.Worker.Migration;
+using FoodSphere.Infrastructure.Npgsql;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 if (builder.Environment.IsDevelopment())
 {
-    DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
+    DotNetEnv.Env.NoClobber().Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
     builder.Configuration.AddEnvironmentVariables();
     builder.AddServiceDefaults();
 }
@@ -31,23 +32,7 @@ else
 }
 
 builder.Services.AddConnectionStringsOptions();
-builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
-    var envConnectionString = sp.GetRequiredService<IOptions<EnvConnectionStrings>>().Value;
-
-    optionsBuilder.UseSeeding(DataSeeder.Seed(sp));
-    optionsBuilder.UseAsyncSeeding(DataSeeder.SeedAsync(sp)); // depend on .ensureAsync()?
-    optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
-    {
-        sqlOptions.MigrationsAssembly(typeof(Program).Assembly);
-        sqlOptions.EnableRetryOnFailure(2);
-        // sqlOptions.UseAdminDatabase(builder.Configuration.GetConnectionString("admin"));
-    });
-
-    if (builder.Environment.IsDevelopment())
-    {
-        optionsBuilder.EnableSensitiveDataLogging();
-    }
-});
+builder.Services.AddDbContext<FoodSphereDbContext>(DbContextConfiguration.Configure());
 
 builder.Services.AddHostedService<NpgsqlMigrationWorker>();
 builder.Services.AddOpenTelemetry()
