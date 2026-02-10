@@ -50,7 +50,7 @@ public class IngredientService(FoodSphereDbContext context) : ServiceBase(contex
             Unit = unit
         };
 
-        await _ctx.AddAsync(ingredient, ct);
+        _ctx.Add(ingredient);
 
         return ingredient;
     }
@@ -88,7 +88,7 @@ public class IngredientService(FoodSphereDbContext context) : ServiceBase(contex
             Tag = tag
         };
 
-        await _ctx.AddAsync(ingredientTag);
+        _ctx.Add(ingredientTag);
     }
 
     public async Task DeleteTag(IngredientTag ingredientTag)

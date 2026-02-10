@@ -3,7 +3,11 @@ using FoodSphere.Infrastructure.Persistence;
 
 namespace FoodSphere.Common.Service;
 
-public class MenuService(FoodSphereDbContext context) : ServiceBase(context){
+public class MenuUpdateService(
+    FoodSphereDbContext context,
+    IStorageService storageService
+) : ServiceBase(context)
+{
     public async Task<Menu> CreateMenu(
         Guid restaurantId,
         string name,
@@ -72,6 +76,29 @@ public class MenuService(FoodSphereDbContext context) : ServiceBase(context){
             .FirstOrDefault(e =>
                 e.RestaurantId == restaurantId &&
                 e.Id == menuId);
+    }
+
+    public async Task<string?> UploadImage(Menu menu, Stream fileStream, string contentType)
+    {
+        var result = await storageService.Upload("public", "menu", fileStream, contentType);
+
+        if (result.Successed)
+        {
+            menu.ImageUrl = result.ObjectUrl;
+
+            return result.ObjectUrl;
+        }
+
+        return null;
+    }
+
+    public async Task<string> GetImageUploadUrl(Menu menu)
+    {
+        var result = await storageService.GetUploadPreSignedUrl("public", "menu");
+
+        menu.ImageUrl = result.ObjectUrl;
+
+        return result.Url;
     }
 
     public async Task DeleteMenu(Menu menu)

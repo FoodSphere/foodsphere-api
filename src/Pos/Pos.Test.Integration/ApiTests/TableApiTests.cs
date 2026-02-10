@@ -3,13 +3,13 @@ namespace FoodSphere.Pos.Test.Integration;
 public class TableApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
 {
     [Fact]
-    public async Task Post_Table_Should_Succeed()
+    public async Task Post_Table_Succeed()
     {
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUser();
-        var restaurant = await builder.SeedRestaurant(masterUser);
+        var (owner, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(owner);
         var branch = await builder.SeedBranch(restaurant);
 
         await builder.Commit();
@@ -18,7 +18,7 @@ public class TableApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
             name = $"TEST.table-name.{unique}",
         };
 
-        await Authenticate(masterUser);
+        await Authenticate(owner);
 
         var response = await _client.PostAsJsonAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/tables", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -39,7 +39,7 @@ public class TableApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
     }
 
     [Fact]
-    public async Task Get_Table_Should_Succeed()
+    public async Task Get_Table_Succeed()
     {
         using var builder = CreateTestSeeder();
 

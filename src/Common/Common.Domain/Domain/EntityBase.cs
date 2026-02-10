@@ -31,7 +31,7 @@ public abstract class EntityBase : EntityBase<Guid>
 {
     public EntityBase()
     {
-        Id = Guid.NewGuid();
+        Id = Guid.CreateVersion7();
     }
 }
 

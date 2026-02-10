@@ -29,7 +29,7 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
             ClosingTime = closingTime,
         };
 
-        await _ctx.AddAsync(branch, ct);
+        _ctx.Add(branch);
 
         return branch;
     }
@@ -43,7 +43,7 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
             MasterId = masterId,
         };
 
-        await _ctx.AddAsync(manager);
+        _ctx.Add(manager);
 
         return manager;
     }
@@ -136,7 +136,7 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
             Name = name
         };
 
-        await _ctx.AddAsync(table, ct);
+        _ctx.Add(table);
 
         return table;
     }
@@ -229,7 +229,7 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
         if (branch.Contact is null)
         {
             branch.Contact = new Contact();
-            await _ctx.AddAsync(branch.Contact);
+            _ctx.Add(branch.Contact);
         }
 
         branch.Contact.Name = contact?.name;

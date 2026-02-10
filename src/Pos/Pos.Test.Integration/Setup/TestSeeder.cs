@@ -7,7 +7,7 @@ public static class TestSeedingGenerator
 {
     static readonly string[] units = ["kg", "g", "lb", "oz", "l", "ml", "cup", "tbsp", "tsp", "piece"];
 
-    public static string GetUniqueString() => Guid.NewGuid().ToString();
+    public static string GetUniqueString() => DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff");
 
     public static string GetUnit() => units[Random.Shared.Next(units.Length)];
 
@@ -163,7 +163,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return await SeedTable(branch.RestaurantId, branch.Id);
     }
 
-    public async Task<Permission[]> SeedPermission()
+    public async Task<Permission[]> SeedPermissions()
     {
         var permissionsIds = PERMISSION.GetAll()
             .ToArray();
@@ -195,6 +195,21 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
     public async Task<Role> SeedRole(Restaurant restaurant, params IEnumerable<Permission> permissions)
     {
         return await SeedRole(restaurant.Id, permissions);
+    }
+
+    public async Task<Role[]> SeedRoles(Restaurant restaurant)
+    {
+        var permissions = await SeedPermissions();
+        var roles = new List<Role>();
+
+        for (var i = 0; i < Random.Shared.Next(1, 3); i++)
+        {
+            var role = await SeedRole(restaurant, permissions);
+
+            roles.Add(role);
+        }
+
+        return roles.ToArray();
     }
 
     public async Task<RestaurantManager> SeedRestaurantManager(

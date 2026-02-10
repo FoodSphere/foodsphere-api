@@ -53,7 +53,7 @@ public class RoleService(
             Description = description,
         };
 
-        await _ctx.AddAsync(role, ct);
+        _ctx.Add(role);
 
         return role;
     }

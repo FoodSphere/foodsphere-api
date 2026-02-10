@@ -41,7 +41,7 @@ public class StaffPortalService(
             StaffId = staffId,
         };
 
-        await _ctx.AddAsync(portal);
+        _ctx.Add(portal);
 
         return portal;
     }

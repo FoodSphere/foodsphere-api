@@ -10,6 +10,7 @@ public enum BillStatus
 
 public enum OrderStatus
 {
+    Draft,
     Pending,
     Cooking,
     Completed,

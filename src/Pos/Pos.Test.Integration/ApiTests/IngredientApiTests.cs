@@ -3,13 +3,13 @@ namespace FoodSphere.Pos.Test.Integration;
 public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
 {
     [Fact]
-    public async Task Post_Ingredient_Should_Succeed()
+    public async Task Post_Ingredient_Succeed()
     {
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUser();
-        var restaurant = await builder.SeedRestaurant(masterUser);
+        var (owner, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(owner);
 
         await builder.Commit();
         var requestBody = new IngredientRequest
@@ -19,7 +19,7 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
             unit = TestSeedingGenerator.GetUnit()
         };
 
-        await Authenticate(masterUser);
+        await Authenticate(owner);
 
         var response = await _client.PostAsJsonAsync($"restaurants/{restaurant.Id}/ingredients", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -40,16 +40,16 @@ public class IngredientApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
     }
 
     [Fact]
-    public async Task Get_Ingredient_Should_Succeed()
+    public async Task Get_Ingredient_Succeed()
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUser();
-        var restaurant = await builder.SeedRestaurant(masterUser);
+        var (owner, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(owner);
         var ingredient = await builder.SeedIngredient(restaurant);
 
         await builder.Commit();
-        await Authenticate(masterUser);
+        await Authenticate(owner);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}/ingredients/{ingredient.Id}", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);

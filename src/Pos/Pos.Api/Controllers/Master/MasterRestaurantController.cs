@@ -56,7 +56,7 @@ public class RestaurantController(
     }
 
     /// <summary>
-    /// get restaurant
+    /// set restaurant's contact
     /// </summary>
     [HttpPost("{restaurant_id}/contact")]
     public async Task<ActionResult<RestaurantResponse>> SetContact(Guid restaurant_id, ContactDto body)

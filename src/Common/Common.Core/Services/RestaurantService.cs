@@ -24,7 +24,7 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
         // we don't have to `_ctx.Add(contact)`,
         // because the contact was set in restaurant
         // before the restaurant is added to DbContext
-        await _ctx.AddAsync(restaurant, ct);
+        _ctx.Add(restaurant);
 
         return restaurant;
     }
@@ -40,7 +40,7 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
             MasterId = masterId,
         };
 
-        await _ctx.AddAsync(manager, ct);
+        _ctx.Add(manager);
 
         return manager;
     }

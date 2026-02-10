@@ -1,5 +1,3 @@
-using FoodSphere.Common.Constant;
-
 namespace FoodSphere.Worker.Migration;
 
 public static class DataSeeder

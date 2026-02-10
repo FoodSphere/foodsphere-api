@@ -55,7 +55,7 @@ public class NpgsqlMigrationWorker(
             Name = "Menu.Read",
         };
 
-        await dbContext.Set<Permission>().AddAsync(p1, ct);
+        dbContext.Set<Permission>().Add(p1);
         await dbContext.SaveChangesAsync(ct);
 
         await transaction.CommitAsync(ct);

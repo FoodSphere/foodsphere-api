@@ -45,7 +45,7 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
             ConsumerId = consumerId,
         };
 
-        await _ctx.AddAsync(bill, ct);
+        _ctx.Add(bill);
 
         return bill;
     }
@@ -99,7 +99,7 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
             Name = name
         };
 
-        await _ctx.AddAsync(member);
+        _ctx.Add(member);
 
         return member;
     }

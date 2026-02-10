@@ -4,7 +4,7 @@ namespace FoodSphere.Pos.Api.Controller;
 public class MenuController(
     ILogger<MenuController> logger,
     AccessControlService accessControlService,
-    MenuService menuService,
+    MenuUpdateService menuService,
     TagService tagService
 ) : PosControllerBase
 {

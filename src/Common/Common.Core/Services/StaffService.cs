@@ -39,7 +39,7 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
             Phone = phone
         };
 
-        await _ctx.AddAsync(staff, ct);
+        _ctx.Add(staff);
 
         return staff;
     }

@@ -46,7 +46,7 @@ public class TagService(FoodSphereDbContext context) : ServiceBase(context)
             Name = name,
         };
 
-        await _ctx.AddAsync(tag, ct);
+        _ctx.Add(tag);
 
         return tag;
     }

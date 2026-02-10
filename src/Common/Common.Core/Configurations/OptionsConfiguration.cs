@@ -14,107 +14,72 @@ namespace FoodSphere.Common.Configuration
         {
             public void AddConnectionStringsOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvConnectionStrings>()
-                    .Bind(config.GetSection(EnvConnectionStrings.SectionName))
+                    .BindConfiguration(EnvConnectionStrings.SectionName)
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             public void AddGoogleOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvGoogle>()
-                    .Bind(config.GetSection(EnvGoogle.SectionName))
+                    .BindConfiguration(EnvGoogle.SectionName)
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             public void AddMagicLinkOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvMagicLink>()
-                    .Bind(config.GetSection(EnvMagicLink.SectionName))
+                    .BindConfiguration(EnvMagicLink.SectionName)
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             public void AddKeyVaultOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvKeyVault>()
-                    .Bind(config.GetSection(EnvKeyVault.SectionName))
+                    .BindConfiguration(EnvKeyVault.SectionName)
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             public void AddS3Options()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvS3>()
-                    .Bind(config.GetSection(EnvS3.SectionName))
+                    .BindConfiguration(EnvS3.SectionName)
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             public void AddDomainApiOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvDomainApi>()
-                    .Bind(config
-                        .GetSection(EnvDomainApi.ParentSectionName)
-                        .GetSection(EnvDomainApi.SectionName))
+                    .BindConfiguration($"{EnvDomainApi.ParentSectionName}:{EnvDomainApi.SectionName}")
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             public void AddDomainResourceOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvDomainResource>()
-                    .Bind(config
-                        .GetSection(EnvDomainResource.ParentSectionName)
-                        .GetSection(EnvDomainResource.SectionName))
+                    .BindConfiguration($"{EnvDomainResource.ParentSectionName}:{EnvDomainResource.SectionName}")
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             public void AddDomainPosOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvDomainPos>()
-                    .Bind(config
-                        .GetSection(EnvDomainPos.ParentSectionName)
-                        .GetSection(EnvDomainPos.SectionName))
+                    .BindConfiguration($"{EnvDomainPos.ParentSectionName}:{EnvDomainPos.SectionName}")
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             public void AddDomainMasterOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvDomainMaster>()
-                    .Bind(config
-                        .GetSection(EnvDomainMaster.ParentSectionName)
-                        .GetSection(EnvDomainMaster.SectionName))
+                    .BindConfiguration($"{EnvDomainMaster.ParentSectionName}:{EnvDomainMaster.SectionName}")
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
 
@@ -122,51 +87,36 @@ namespace FoodSphere.Common.Configuration
 
             public void AddDomainConsumerOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvDomainConsumer>()
-                    .Bind(config
-                        .GetSection(EnvDomainConsumer.ParentSectionName)
-                        .GetSection(EnvDomainConsumer.SectionName))
+                    .BindConfiguration($"{EnvDomainConsumer.ParentSectionName}:{EnvDomainConsumer.SectionName}")
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             public void AddDomainOrderingOptions()
             {
-                using var sp = services.BuildServiceProvider();
-                var config = sp.GetRequiredService<IConfiguration>();
-
                 services.AddOptions<EnvDomainOrdering>()
-                    .Bind(config
-                        .GetSection(EnvDomainOrdering.ParentSectionName)
-                        .GetSection(EnvDomainOrdering.SectionName))
+                    .BindConfiguration($"{EnvDomainOrdering.ParentSectionName}:{EnvDomainOrdering.SectionName}")
                     .ValidateDataAnnotations()
                     .ValidateOnStart();
             }
 
             // public void AddEnvOptions(params Type[] types)
             // {
-            //     using var sp = services.BuildServiceProvider();
-            //     var config = sp.GetRequiredService<IConfiguration>();
-
             //     foreach (var type in types)
             //     {
             //         if (type == typeof(IEnvOptions))
             //         {
             //             services.AddOptions<EnvDomainApi>()
-            //                 .Bind(config
-            //                     .GetSection(EnvDomainApi.ParentSectionName)
-            //                     .GetSection(EnvDomainApi.SectionName))
+            //                 .BindConfiguration($"{EnvDomainApi.ParentSectionName}:{EnvDomainApi.SectionName}")
             //                 .ValidateDataAnnotations()
             //                 .ValidateOnStart();
 
             //             continue;
             //         }
+
             //         services.AddOptions<EnvDomainOrdering>()
-            //             .Bind(config
-            //                 .GetSection(EnvDomainOrdering.ParentSectionName)
+            //             .BindConfiguration($"{EnvDomainOrdering.ParentSectionName}:{EnvDomainOrdering.SectionName}")
             //                 .GetSection(EnvDomainOrdering.SectionName))
             //             .ValidateDataAnnotations()
             //             .ValidateOnStart();

@@ -171,7 +171,7 @@ public class StatefulMagicLinkService(FoodSphereDbContext context) : IMagicLinkS
 {
     public async Task<string> Generate<TPayload>(TPayload payload) where TPayload : class
     {
-        await context.Set<TPayload>().AddAsync(payload);
+        context.Set<TPayload>().Add(payload);
         await context.SaveChangesAsync();
 
         return payload.ToString()!;

@@ -3,12 +3,12 @@
 public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
 {
     [Fact]
-    public async Task Post_Restaurant_Should_Succeed()
+    public async Task Post_Restaurant_Succeed()
     {
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUser();
+        var (owner, _) = await builder.SeedMasterUser();
 
         await builder.Commit();
         var requestBody = new QuickRestaurantRequest
@@ -26,7 +26,7 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
             },
         };
 
-        await Authenticate(masterUser);
+        await Authenticate(owner);
 
         var response = await _client.PostAsJsonAsync("restaurants", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -48,15 +48,15 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
     }
 
     [Fact]
-    public async Task Get_Restaurant_Should_Succeed()
+    public async Task Get_Restaurant_Succeed()
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUser();
-        var restaurant = await builder.SeedRestaurant(masterUser.Id);
+        var (owner, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(owner.Id);
 
         await builder.Commit();
-        await Authenticate(masterUser);
+        await Authenticate(owner);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);

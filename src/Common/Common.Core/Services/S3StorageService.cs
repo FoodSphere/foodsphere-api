@@ -14,7 +14,7 @@ public class S3StorageService(
 
     async Task<string> Getkey(string path, string? contentType = null)
     {
-        var filename = Guid.NewGuid();
+        var filename = Guid.CreateVersion7();
         var fileExtension = contentType is null ? null : mimeService.GetExtensionFromContentType(contentType);
 
         return $"{path}/{filename}{fileExtension}";

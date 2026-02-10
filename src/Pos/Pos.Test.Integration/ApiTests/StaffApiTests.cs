@@ -3,24 +3,15 @@ namespace FoodSphere.Pos.Test.Integration;
 public class StaffApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
 {
     [Fact]
-    public async Task Post_Staff_Should_Succeed()
+    public async Task Post_Staff_Succeed()
     {
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUser();
-        var restaurant = await builder.SeedRestaurant(masterUser);
+        var (owner, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(owner);
         var branch = await builder.SeedBranch(restaurant);
-        var permissions = await builder.SeedPermission();
-
-        List<Role> roles = [];
-
-        for (var i = 0; i < Random.Shared.Next(1, 3); i++)
-        {
-            var role = await builder.SeedRole(restaurant.Id, permissions);
-
-            roles.Add(role);
-        }
+        var roles = await builder.SeedRoles(restaurant);
 
         await builder.Commit();
         var requestBody = new StaffRequest
@@ -30,7 +21,7 @@ public class StaffApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
             phone = TestSeedingGenerator.GetPhone(),
         };
 
-        await Authenticate(masterUser);
+        await Authenticate(owner);
 
         var response = await _client.PostAsJsonAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/staffs", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -53,32 +44,18 @@ public class StaffApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
     }
 
     [Fact]
-    public async Task Get_Staff_Should_Succeed()
+    public async Task Get_Staff_Succeed()
     {
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUser();
-        var restaurant = await builder.SeedRestaurant(masterUser);
+        var (owner, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(owner);
         var branch = await builder.SeedBranch(restaurant);
-        var permissions = await builder.SeedPermission();
-
-        List<Role> roles = [];
-
-        for (var i = 0; i < Random.Shared.Next(1, 3); i++)
-        {
-            var role = await builder.SeedRole(restaurant.Id, permissions);
-
-            roles.Add(role);
-        }
-
-        var staff = await builder.SeedStaff(
-            restaurant.Id,
-            branch.Id,
-            roles: roles
-        );
+        var roles = await builder.SeedRoles(restaurant);
+        var staff = await builder.SeedStaff(branch, roles);
 
         await builder.Commit();
-        await Authenticate(masterUser);
+        await Authenticate(owner);
 
         var response = await _client.GetAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/staffs/{staff.Id}", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);

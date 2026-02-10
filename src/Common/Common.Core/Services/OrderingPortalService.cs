@@ -23,7 +23,7 @@ public class OrderingPortalService(
             ValidDuration = validDuration
         };
 
-        await _ctx.AddAsync(portal);
+        _ctx.Add(portal);
 
         return portal;
     }

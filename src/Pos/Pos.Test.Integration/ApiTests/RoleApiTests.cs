@@ -3,14 +3,14 @@ namespace FoodSphere.Pos.Test.Integration;
 public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture)
 {
     [Fact]
-    public async Task Post_Role_Should_Succeed()
+    public async Task Post_Role_Succeed()
     {
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
-        var (masterUser, _) = await builder.SeedMasterUser();
-        var restaurant = await builder.SeedRestaurant(masterUser);
-        var permissions = await builder.SeedPermission();
+        var (owner, _) = await builder.SeedMasterUser();
+        var restaurant = await builder.SeedRestaurant(owner);
+        var permissions = await builder.SeedPermissions();
 
         await builder.Commit();
         var requestBody = new RoleRequest
@@ -20,7 +20,7 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
             permission_ids = [.. permissions.Select(p => p.Id)],
         };
 
-        await Authenticate(masterUser);
+        await Authenticate(owner);
 
         var response = await _client.PostAsJsonAsync($"restaurants/{restaurant.Id}/roles", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -42,13 +42,13 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
     }
 
     [Fact]
-    public async Task Get_Role_Should_Succeed()
+    public async Task Get_Role_Succeed()
     {
         using var builder = CreateTestSeeder();
 
         var (masterUser, _) = await builder.SeedMasterUser();
         var restaurant = await builder.SeedRestaurant(masterUser);
-        var permissions = await builder.SeedPermission();
+        var permissions = await builder.SeedPermissions();
         var role = await builder.SeedRole(restaurant, permissions);
 
         await builder.Commit();
