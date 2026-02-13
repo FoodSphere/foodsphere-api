@@ -105,7 +105,7 @@ public class MenuService(FoodSphereDbContext context) : ServiceBase(context){
         return await _ctx.FindAsync<MenuIngredient>(restaurantId, menuId, ingredientId);
     }
 
-    public async Task UpdateIngredient(Guid restaurantId, short menuId, short ingredientId, decimal amount)
+    public async Task<MenuIngredient?> SetIngredient(Guid restaurantId, short menuId, short ingredientId, decimal amount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(amount);
 
@@ -115,7 +115,7 @@ public class MenuService(FoodSphereDbContext context) : ServiceBase(context){
         {
             if (amount == 0)
             {
-                return;
+                return null;
             }
             else
             {
@@ -135,6 +135,8 @@ public class MenuService(FoodSphereDbContext context) : ServiceBase(context){
             if (amount == 0)
             {
                 _ctx.Remove(item);
+
+                return null;
             }
             else
             {
@@ -142,5 +144,7 @@ public class MenuService(FoodSphereDbContext context) : ServiceBase(context){
                 // _ctx.Entry(item).State = EntityState.Modified;
             }
         }
+
+        return item;
     }
 }

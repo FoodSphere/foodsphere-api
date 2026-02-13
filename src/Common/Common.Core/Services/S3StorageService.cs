@@ -47,8 +47,8 @@ public class S3StorageService(
 
         return new UploadResult
         {
+            Successed = response.HttpStatusCode == HttpStatusCode.OK,
             ObjectUrl = objectUrl,
-            Successed = response.HttpStatusCode == HttpStatusCode.OK
         };
     }
 
@@ -112,8 +112,9 @@ public class S3StorageService(
 
         return new PresignedUrlResult
         {
+            Successed = true,
+            ObjectUrl = objectUrl,
             Url = url,
-            ObjectUrl = objectUrl
         };
     }
 }

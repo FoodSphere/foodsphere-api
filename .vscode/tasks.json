@@ -7,12 +7,12 @@
       "dependsOn": [
         "drop database",
         "remove migrations",
-        "update migration",
       ],
-      "dependsOrder": "sequence"
+      "dependsOrder": "sequence",
+      "problemMatcher": []
     },
     {
-      "label": "update migration",
+      "label": "push new migration",
       "detail": "add migration and update database",
       "dependsOn": [
         "add new migration",
@@ -32,8 +32,7 @@
         "command": "if (Test-Path src/Infrastructure/Npgsql.Helper/Migrations) { Remove-Item src/Infrastructure/Npgsql.Helper/Migrations -Recurse -Force }"
       },
       "linux": {
-        "command": "rm -rf src/Infrastructure/Npgsql.Helper/Migrations"
-        // if [ -d src/Infrastructure/Npgsql.Helper/Migrations ]; then rm -rf src/Infrastructure/Npgsql.Helper/Migrations; fi
+        "command": "if [ -d src/Infrastructure/Npgsql.Helper/Migrations ]; then rm -rf src/Infrastructure/Npgsql.Helper/Migrations; fi"
       }
     },
     {

@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodSphere.Npgsql.Helper.Migrations
 {
     /// <inheritdoc />
-    public partial class _20260210201129 : Migration
+    public partial class _20260211162940 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -262,7 +262,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     Id = table.Column<short>(type: "smallint", nullable: false),
                     RestaurantId = table.Column<Guid>(type: "uuid", nullable: false),
                     ContactId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Name = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: false),
                     DisplayName = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
                     OpeningTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),

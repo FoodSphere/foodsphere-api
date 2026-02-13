@@ -1,6 +1,6 @@
 namespace FoodSphere.Pos.Api.DTO;
 
-public class QuickRestaurantRequest
+public class RestaurantRequest
 {
     public ContactDto? contact { get; set; }
 
@@ -9,15 +9,6 @@ public class QuickRestaurantRequest
 
     /// <example>ร้านบิ๊กบัง</example>
     public string? display_name { get; set; }
-
-    /// <example>71 Lat Krabang Rd, Lat Krabang, Bangkok 10520</example>
-    public string? address { get; set; }
-
-    /// <example>10:00</example>
-    public TimeOnly? opening_time { get; set; }
-
-    /// <example>22:00</example>
-    public TimeOnly? closing_time { get; set; }
 }
 
 public class RestaurantResponse
@@ -49,66 +40,58 @@ public class RestaurantResponse
     }
 }
 
-public class QuickRestaurantResponse
+public class SingleRestaurantRequest
+{
+    public ContactDto? contact { get; set; }
+
+    /// <example>bigbang restaurant</example>
+    public required string name { get; set; }
+
+    /// <example>ร้านบิ๊กบัง</example>
+    public string? display_name { get; set; }
+
+    /// <example>71 Lat Krabang Rd, Lat Krabang, Bangkok 10520</example>
+    public string? address { get; set; }
+
+    /// <example>10:00</example>
+    public TimeOnly? opening_time { get; set; }
+
+    /// <example>22:00</example>
+    public TimeOnly? closing_time { get; set; }
+}
+
+public class SingleRestaurantResponse
 {
     public Guid restaurant_id { get; set; }
 
-    /// <inheritdoc />
-    public required ContactDto restaurant_contact { get; set; }
+    public required ContactDto contact { get; set; }
 
     /// <example>bigbang restaurant</example>
-    public required string restaurant_name { get; set; }
+    public required string name { get; set; }
 
     /// <example>ร้านบิ๊กบัง</example>
-    public string? restaurant_display_name { get; set; }
-
-    public short branch_id { get; set; }
-
-    /// <example>main</example>
-    public string? branch_name { get; set; }
-
-    /// <example>null</example>
-    public string? branch_display_name { get; set; }
+    public string? display_name { get; set; }
 
     /// <example>71 Lat Krabang Rd, Lat Krabang, Bangkok 10520</example>
-    public string? branch_address { get; set; }
+    public string? address { get; set; }
 
     /// <example>10:00</example>
-    public TimeOnly? branch_opening_time { get; set; }
+    public TimeOnly? opening_time { get; set; }
 
     /// <example>22:00</example>
-    public TimeOnly? branch_closing_time { get; set; }
+    public TimeOnly? closing_time { get; set; }
 
-    public static QuickRestaurantResponse FromModel(Restaurant restaurant, Branch branch)
+    public static SingleRestaurantResponse FromModel(Branch branch)
     {
-        return new QuickRestaurantResponse
+        return new SingleRestaurantResponse
         {
-            restaurant_id = restaurant.Id,
-            restaurant_contact = ContactDto.FromModel(restaurant.Contact)!,
-            restaurant_name = restaurant.Name,
-            restaurant_display_name = restaurant.DisplayName,
-            branch_id = branch.Id,
-            branch_name = branch.Name,
-            branch_display_name = branch.DisplayName,
-            branch_address = branch.Address,
-            branch_opening_time = branch.OpeningTime,
-            branch_closing_time = branch.ClosingTime,
-        };
-    }
-}
-
-public class QuickRestaurantResponse2
-{
-    public required RestaurantResponse restaurant { get; set; }
-
-    public required BranchResponse branch { get; set; }
-
-    public static QuickRestaurantResponse2 FromModel(Restaurant restaurant, Branch branch)
-    {
-        return new QuickRestaurantResponse2
-        {
-            restaurant = RestaurantResponse.FromModel(restaurant),
-            branch = BranchResponse.FromModel(branch),
+            restaurant_id = branch.RestaurantId,
+            contact = ContactDto.FromModel(branch.Restaurant.Contact)!,
+            name = branch.Restaurant.Name,
+            display_name = branch.Restaurant.DisplayName,
+            address = branch.Address,
+            opening_time = branch.OpeningTime,
+            closing_time = branch.ClosingTime,
         };
     }
 }

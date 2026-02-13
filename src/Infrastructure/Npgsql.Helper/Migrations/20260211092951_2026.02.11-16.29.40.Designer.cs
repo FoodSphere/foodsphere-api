@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodSphere.Npgsql.Helper.Migrations
 {
     [DbContext(typeof(FoodSphereDbContext))]
-    [Migration("20260210131139_2026.02.10-20.11.29")]
-    partial class _20260210201129
+    [Migration("20260211092951_2026.02.11-16.29.40")]
+    partial class _20260211162940
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -120,6 +120,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<TimeOnly?>("OpeningTime")

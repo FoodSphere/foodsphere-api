@@ -95,9 +95,9 @@ public class RoleController(
     /// set role's permissions
     /// </summary>
     [HttpPut("{role_id}/permissions")]
-    public async Task<ActionResult> SetPermissions(Guid restaurant_id, short role_id, PermissionRequest body)
+    public async Task<ActionResult> SetPermissions(Guid restaurant_id, short role_id, int[] permission_ids)
     {
-        await roleService.SetPermissions(restaurant_id, role_id, body.permission_ids);
+        await roleService.SetPermissions(restaurant_id, role_id, permission_ids);
 
         await roleService.SaveChanges();
 

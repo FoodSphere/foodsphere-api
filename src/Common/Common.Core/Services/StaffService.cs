@@ -100,16 +100,27 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
         return await _ctx.FindAsync<StaffUser>(restaurantId, branchId, staffId);
     }
 
-    public async Task<List<StaffUser>> ListStaffs(Guid restaurantId, short branchId)
+    public async Task<StaffUser?> GetDefaultStaff(Guid restaurantId, short staffId)
+    {
+        return await _ctx.FindAsync<StaffUser>(restaurantId, 1, staffId);
+    }
+
+    public async Task<StaffUser[]> ListStaffs(Guid restaurantId, short branchId)
     {
         return await _ctx.Set<StaffUser>()
             .Where(staff => staff.RestaurantId == restaurantId && staff.BranchId == branchId)
-            .ToListAsync();
+            .ToArrayAsync();
+    }
+
+    public async Task<StaffUser[]> ListDefaultStaffs(Guid restaurantId)
+    {
+        return await _ctx.Set<StaffUser>()
+            .Where(staff => staff.RestaurantId == restaurantId && staff.BranchId == 1)
+            .ToArrayAsync();
     }
 
     public async Task DeleteStaff(StaffUser staff)
     {
         _ctx.Remove(staff);
     }
-
 }

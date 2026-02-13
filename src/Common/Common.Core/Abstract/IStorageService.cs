@@ -22,12 +22,13 @@ public interface IStorageService
 
 public record PresignedUrlResult
 {
-    public required string Url;
+    public required bool Successed;
     public required string ObjectUrl;
+    public required string Url;
 }
 
 public record UploadResult
 {
-    public required string ObjectUrl;
     public required bool Successed;
+    public required string ObjectUrl;
 }

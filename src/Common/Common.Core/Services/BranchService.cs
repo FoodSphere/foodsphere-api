@@ -107,6 +107,13 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
         return await _ctx.FindAsync<Table>(restaurantId, branchId, tableId);
     }
 
+    public async Task<Table?> GetDefaultTable(
+        Guid restaurantId,
+        short tableId
+    ) {
+        return await _ctx.FindAsync<Table>(restaurantId, 1, tableId);
+    }
+
     public async Task<Table> CreateTable(
         Branch branch,
         string? name = null
@@ -141,23 +148,46 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
         return table;
     }
 
-    public async Task<List<Table>> ListTables(Guid restaurantId, short branchId)
+    public async Task<Table[]> ListTables(Guid restaurantId, short branchId)
     {
         return await _ctx.Set<Table>()
             .Where(table => table.RestaurantId == restaurantId && table.BranchId == branchId)
-            .ToListAsync();
+            .ToArrayAsync();
     }
 
-    public async Task<List<BranchManager>> ListManagers(Guid restaurantId, short branchId)
+    public async Task<Table[]> ListDefaultTables(Guid restaurantId)
+    {
+        return await _ctx.Set<Table>()
+            .Where(table => table.RestaurantId == restaurantId && table.BranchId == 1)
+            .ToArrayAsync();
+    }
+
+    public async Task<BranchManager[]> ListManagers(Guid restaurantId, short branchId)
     {
         return await _ctx.Set<BranchManager>()
             .Where(manager => manager.RestaurantId == restaurantId && manager.BranchId == branchId)
-            .ToListAsync();
+            .ToArrayAsync();
     }
 
     public async Task<Branch?> GetBranch(Guid restaurantId, short branchId)
     {
         return await _ctx.FindAsync<Branch>(restaurantId, branchId);
+    }
+
+    public async Task<Branch?> GetDefaultBranch(Guid restaurantId)
+    {
+        return await _ctx.Set<Branch>()
+            .Where(branch => branch.RestaurantId == restaurantId && branch.Id == 1)
+            .Include(branch => branch.Restaurant)
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<Branch[]> ListDefaultBranches(string ownerId)
+    {
+        return await _ctx.Set<Branch>()
+            .Include(branch => branch.Restaurant)
+            .Where(branch => branch.Restaurant.OwnerId == ownerId && branch.Id == 1)
+            .ToArrayAsync();
     }
 
     public async Task<List<Branch>> ListBranches(Guid restaurantId)
@@ -182,12 +212,35 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
         return await _ctx.FindAsync<Stock>(restaurantId, branchId, ingredientId);
     }
 
+    public async Task<Stock[]> ListDefaultStocks(Guid restaurantId)
+    {
+        return await _ctx.Set<Stock>()
+            .Where(stock => stock.RestaurantId == restaurantId && stock.BranchId == 1)
+            .Include(stock => stock.Ingredient)
+                .ThenInclude(ingredient => ingredient.IngredientTags)
+                    .ThenInclude(ingredientTag => ingredientTag.Tag)
+            .ToArrayAsync();
+    }
+
+    public async Task<Stock?> GetDefaultStock(Guid restaurantId, short ingredientId)
+    {
+        return await _ctx.Set<Stock>()
+            .Where(stock =>
+                stock.RestaurantId == restaurantId &&
+                stock.BranchId == 1 &&
+                stock.IngredientId == ingredientId)
+            .Include(stock => stock.Ingredient)
+                .ThenInclude(ingredient => ingredient.IngredientTags)
+                    .ThenInclude(ingredientTag => ingredientTag.Tag)
+            .SingleOrDefaultAsync();
+    }
+
     public async Task<Stock?> GetStock(Branch branch, short ingredientId)
     {
         return await GetStock(branch.RestaurantId, branch.Id, ingredientId);
     }
 
-    public async Task SetStock(Branch branch, short ingredientId, decimal amount)
+    public async Task<Stock> SetStock(Branch branch, short ingredientId, decimal amount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(amount);
 
@@ -195,28 +248,23 @@ public class BranchService(FoodSphereDbContext context) : ServiceBase(context)
 
         if (item is null)
         {
-            if (amount == 0)
+            item = new Stock
             {
-                return;
-            }
-            else
-            {
-                item = new Stock
-                {
-                    RestaurantId = branch.RestaurantId,
-                    BranchId = branch.Id,
-                    IngredientId = ingredientId,
-                    Amount = amount
-                };
+                RestaurantId = branch.RestaurantId,
+                BranchId = branch.Id,
+                IngredientId = ingredientId,
+                Amount = amount
+            };
 
-                _ctx.Add(item);
-            }
+            _ctx.Add(item);
         }
         else
         {
             item.Amount = amount;
             // _ctx.Entry(item).State = EntityState.Modified;
         }
+
+        return item;
     }
 
     public async Task DeleteStock(Stock stock)

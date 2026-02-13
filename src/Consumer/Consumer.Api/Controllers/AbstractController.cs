@@ -20,6 +20,9 @@ public abstract class ConsumerControllerBase : FoodSphereControllerBase
 [Route("current")]
 public class CurrentController : FoodSphereControllerBase
 {
+    /// <summary>
+    /// inspect claims in token
+    /// </summary>
     [ConsumerAuthorize]
     [HttpGet("claims")]
     public ActionResult<string> GetClaims()

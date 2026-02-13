@@ -32,13 +32,20 @@ public class StaffPortalService(
         return token;
     }
 
-    public async Task<StaffPortal> CreateStaffPortal(Guid restaurantId, short branchId, short staffId)
-    {
+    public async Task<StaffPortal> CreateStaffPortal(
+        Guid restaurantId,
+        short branchId,
+        short staffId,
+        TimeSpan? validDuration = null,
+        short maxUsage = 1
+    ) {
         var portal = new StaffPortal
         {
             RestaurantId = restaurantId,
             BranchId = branchId,
             StaffId = staffId,
+            ValidDuration = validDuration,
+            MaxUsage = maxUsage,
         };
 
         _ctx.Add(portal);
@@ -46,8 +53,8 @@ public class StaffPortalService(
         return portal;
     }
 
-    public async Task<StaffPortal> CreateStaffPortal(StaffUser staff)
+    public async Task<StaffPortal> CreateStaffPortal(StaffUser staff, TimeSpan? validDuration = null)
     {
-        return await CreateStaffPortal(staff.RestaurantId, staff.BranchId, staff.Id);
+        return await CreateStaffPortal(staff.RestaurantId, staff.BranchId, staff.Id, validDuration);
     }
 }

@@ -42,6 +42,11 @@ public abstract class PortalBase : EntityBase
     public short? MaxUsage { get; set; }
     public override string ToString() => Id.ToString();
 
+    public PortalBase()
+    {
+        Id = Guid.NewGuid();
+    }
+
     public bool IsExpired()
     {
         if (ValidDuration is null)

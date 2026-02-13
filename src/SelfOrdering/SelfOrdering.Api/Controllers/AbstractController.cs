@@ -24,6 +24,9 @@ public abstract class SelfOrderingControllerBase : FoodSphereControllerBase
 [Route("current")]
 public class CurrentController : FoodSphereControllerBase
 {
+    /// <summary>
+    /// inspect claims in token
+    /// </summary>
     [SelfOrderingAuthorize]
     [HttpGet("claims")]
     public ActionResult<string> GetClaims()

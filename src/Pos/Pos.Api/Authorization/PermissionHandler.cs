@@ -8,9 +8,10 @@ namespace FoodSphere.Pos.Api.Authorization;
 // in IAuthorizationService.AuthorizeAsync()
 public record PermissionRequirement(params Permission[] Permissions) : IAuthorizationRequirement;
 
-// should I make class/record of keys for every EF Core entity?
+// should I make class/record of primary keys for every EF Core entity?
 public record RestaurantKeys(Guid RestaurantId);
 public record BranchKeys(Guid RestaurantId, short BranchId);
+public record BillKeys(Guid BillId);
 
 public class RestaurantPermissionHandler(
     ILogger<RestaurantPermissionHandler> logger,
@@ -192,6 +193,19 @@ public class BranchPermissionHandler(
         }
 
         context.Fail();
+    }
+}
+
+public class BillPermissionHandler(
+    ILogger<BillPermissionHandler> logger,
+    AuthorizeService authorizeService
+) : AuthorizationHandler<PermissionRequirement, BillKeys>
+{
+    protected override async Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        PermissionRequirement requirement,
+        BillKeys resource
+    ) {
     }
 }
 

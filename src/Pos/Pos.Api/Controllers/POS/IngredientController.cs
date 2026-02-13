@@ -10,13 +10,13 @@ public class IngredientController(
     /// list ingredients
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<List<IngredientResponse>>> ListIngredients(Guid restaurant_id)
+    public async Task<ActionResult<IngredientResponse[]>> ListIngredients(Guid restaurant_id)
     {
         var ingredients = await ingredientService.ListIngredients(restaurant_id);
 
         return ingredients
             .Select(IngredientResponse.FromModel)
-            .ToList();
+            .ToArray();
     }
 
     /// <summary>

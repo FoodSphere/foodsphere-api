@@ -28,7 +28,7 @@ public class MenuController(
 
         foreach (var ingredient in body.ingredients)
         {
-            await menuService.UpdateIngredient(restaurant_id, menu.Id, ingredient.ingredient_id, ingredient.amount);
+            await menuService.SetIngredient(restaurant_id, menu.Id, ingredient.ingredient_id, ingredient.amount);
         }
 
         await menuService.SaveChanges();
@@ -84,7 +84,7 @@ public class MenuController(
             return NotFound();
         }
 
-        await menuService.UpdateIngredient(restaurant_id, menu.Id, body.ingredient_id, body.amount);
+        await menuService.SetIngredient(restaurant_id, menu.Id, body.ingredient_id, body.amount);
         await menuService.SaveChanges();
 
         return NoContent();

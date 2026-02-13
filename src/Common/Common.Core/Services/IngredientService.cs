@@ -5,13 +5,13 @@ namespace FoodSphere.Common.Service;
 
 public class IngredientService(FoodSphereDbContext context) : ServiceBase(context)
 {
-    public async Task<List<Ingredient>> ListIngredients(Guid restaurantId)
+    public async Task<Ingredient[]> ListIngredients(Guid restaurantId)
     {
         return await _ctx.Set<Ingredient>()
             .Where(ingredient => ingredient.RestaurantId == restaurantId)
             .Include(e => e.IngredientTags)
                 .ThenInclude(e => e.Tag)
-            .ToListAsync();
+            .ToArrayAsync();
     }
 
     public async Task<Ingredient> CreateIngredient(

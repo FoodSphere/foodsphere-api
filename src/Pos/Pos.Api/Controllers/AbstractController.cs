@@ -84,6 +84,9 @@ public abstract class MasterControllerBase : FoodSphereControllerBase
 [Route("current")]
 public class CurrentController : FoodSphereControllerBase
 {
+    /// <summary>
+    /// inspect claims in token
+    /// </summary>
     [PosAuthorize]
     [HttpGet("claims")]
     public async Task<ActionResult<string>> GetClaims()

@@ -1,16 +1,29 @@
 namespace FoodSphere.Pos.Api.Controller;
 
-[Route("restaurants/{restaurant_id}")]
 public class InfoController(
     ILogger<InfoController> logger,
+    PermissionService permissionService,
     RestaurantService restaurantService,
     BranchService branchService
 ) : PosControllerBase
 {
     /// <summary>
+    /// list permissions
+    /// </summary>
+    [HttpGet("permissions")]
+    public async Task<ActionResult<List<PermissionResponse>>> ListPermissions()
+    {
+        var permissions = await permissionService.ListPermissions();
+
+        return permissions
+            .Select(PermissionResponse.FromModel)
+            .ToList();
+    }
+
+    /// <summary>
     /// get restaurant
     /// </summary>
-    [HttpGet]
+    [HttpGet("restaurants/{restaurant_id}")]
     public async Task<ActionResult<RestaurantResponse>> GetRestaurant(Guid restaurant_id)
     {
         var restaurant = await restaurantService.GetRestaurant(restaurant_id);
@@ -26,7 +39,7 @@ public class InfoController(
     /// <summary>
     /// get branch
     /// </summary>
-    [HttpGet("branches/{branch_id}")]
+    [HttpGet("restaurants/{restaurant_id}/branches/{branch_id}")]
     public async Task<ActionResult<BranchResponse>> GetBranch(Guid restaurant_id, short branch_id)
     {
         var branch = await branchService.GetBranch(restaurant_id, branch_id);

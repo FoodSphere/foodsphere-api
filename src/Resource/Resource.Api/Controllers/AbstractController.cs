@@ -31,6 +31,9 @@ public abstract class ResourceControllerBase : FoodSphereControllerBase
 [Route("current")]
 public class CurrentController : FoodSphereControllerBase
 {
+    /// <summary>
+    /// inspect claims in token
+    /// </summary>
     [ResourceAuthorize]
     [HttpGet("claims")]
     public ActionResult<string> GetClaims()

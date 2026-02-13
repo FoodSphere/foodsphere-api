@@ -1,10 +1,5 @@
 namespace FoodSphere.Pos.Api.DTO;
 
-public class PermissionRequest
-{
-    public int[] permission_ids { get; set; } = [];
-}
-
 public class PermissionResponse
 {
     public int id { get; set; }

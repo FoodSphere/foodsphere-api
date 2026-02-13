@@ -22,7 +22,7 @@ public class MasterAuthController(
     readonly EmailAddressAttribute emailAddressAttribute = new();
 
     /// <summary>
-    /// register a master user
+    /// register master user
     /// </summary>
     [HttpPost]
     public async Task<Results<

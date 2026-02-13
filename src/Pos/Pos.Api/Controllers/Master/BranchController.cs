@@ -1,8 +1,8 @@
 namespace FoodSphere.Pos.Api.Controller;
 
 [Route("restaurants/{restaurant_id}/branches")]
-public class MasterBranchController(
-    ILogger<MasterBranchController> logger,
+public class BranchController(
+    ILogger<BranchController> logger,
     BranchService branchService
 ) : MasterControllerBase
 {
@@ -50,32 +50,6 @@ public class MasterBranchController(
     }
 
     /// <summary>
-    /// list branch managers
-    /// </summary>
-    [HttpGet("managers")]
-    public async Task<ActionResult<List<BranchManagerResponse>>> ListManagers(Guid restaurant_id, short branch_id)
-    {
-        var managers = await branchService.ListManagers(restaurant_id, branch_id);
-
-        return managers
-            .Select(BranchManagerResponse.FromModel)
-            .ToList();
-    }
-
-    /// <summary>
-    /// not done
-    /// </summary>
-    [HttpPost("managers")]
-    public async Task<ActionResult<BranchManagerResponse>> CreateManager(Guid restaurant_id, short branch_id, BranchManagerRequest body)
-    {
-        var manager = await branchService.CreateManager(restaurant_id, branch_id, body.master_id);
-
-        await branchService.SaveChanges();
-
-        return BranchManagerResponse.FromModel(manager);
-    }
-
-    /// <summary>
     /// delete branch
     /// </summary>
     [HttpDelete("{branch_id}")]
@@ -92,5 +66,31 @@ public class MasterBranchController(
         await branchService.SaveChanges();
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// create branch's manager
+    /// </summary>
+    [HttpPost("{branch_id}/managers")]
+    public async Task<ActionResult<BranchManagerResponse>> CreateManager(Guid restaurant_id, short branch_id, ManagerRequest body)
+    {
+        var manager = await branchService.CreateManager(restaurant_id, branch_id, body.master_id);
+
+        await branchService.SaveChanges();
+
+        return BranchManagerResponse.FromModel(manager);
+    }
+
+    /// <summary>
+    /// list branch's managers
+    /// </summary>
+    [HttpGet("{branch_id}/managers")]
+    public async Task<ActionResult<BranchManagerResponse[]>> ListManagers(Guid restaurant_id, short branch_id)
+    {
+        var managers = await branchService.ListManagers(restaurant_id, branch_id);
+
+        return managers
+            .Select(BranchManagerResponse.FromModel)
+            .ToArray();
     }
 }

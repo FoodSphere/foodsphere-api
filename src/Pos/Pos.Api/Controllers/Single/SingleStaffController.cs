@@ -1,8 +1,8 @@
 namespace FoodSphere.Pos.Api.Controller;
 
-[Route("restaurants/{restaurant_id}/branches/{branch_id}/staffs")]
-public class StaffController(
-    ILogger<StaffController> logger,
+[Route("s/restaurants/{restaurant_id}/staffs")]
+public class SingleStaffController(
+    ILogger<SingleStaffController> logger,
     BranchService branchService,
     StaffService staffService,
     StaffPortalService staffPortalService
@@ -12,9 +12,9 @@ public class StaffController(
     /// create staff's portal
     /// </summary>
     [HttpPost("{staff_id}/portal")]
-    public async Task<ActionResult<StaffPortalResponse>> CreatePortal(Guid restaurant_id, short branch_id, short staff_id, StaffPortalRequest body)
+    public async Task<ActionResult<SingleStaffPortalResponse>> CreatePortal(Guid restaurant_id, short staff_id, StaffPortalRequest body)
     {
-        var staff = await staffService.GetStaff(restaurant_id, branch_id, staff_id);
+        var staff = await staffService.GetDefaultStaff(restaurant_id, staff_id);
 
         if (staff is null)
         {
@@ -23,29 +23,29 @@ public class StaffController(
 
         var portal = await staffPortalService.CreateStaffPortal(staff, body.valid_duration);
 
-        return StaffPortalResponse.FromModel(portal);
+        return SingleStaffPortalResponse.FromModel(portal);
     }
 
     /// <summary>
     /// list staffs
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<List<StaffResponse>>> ListStaffs(Guid restaurant_id, short branch_id)
+    public async Task<ActionResult<SingleStaffResponse[]>> ListStaffs(Guid restaurant_id)
     {
-        var staffs = await staffService.ListStaffs(restaurant_id, branch_id);
+        var staffs = await staffService.ListDefaultStaffs(restaurant_id);
 
         return staffs
-            .Select(StaffResponse.FromModel)
-            .ToList();
+            .Select(SingleStaffResponse.FromModel)
+            .ToArray();
     }
 
     /// <summary>
     /// create staff
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<StaffResponse>> CreateStaff(Guid restaurant_id, short branch_id, StaffRequest body)
+    public async Task<ActionResult<SingleStaffResponse>> CreateStaff(Guid restaurant_id, StaffRequest body)
     {
-        var branch = await branchService.GetBranch(restaurant_id, branch_id);
+        var branch = await branchService.GetDefaultBranch(restaurant_id);
 
         if (branch is null)
         {
@@ -69,8 +69,8 @@ public class StaffController(
 
         return CreatedAtAction(
             nameof(GetStaff),
-            new { restaurant_id, branch_id, staff_id = staff.Id },
-            StaffResponse.FromModel(staff)
+            new { restaurant_id, staff_id = staff.Id },
+            SingleStaffResponse.FromModel(staff)
         );
     }
 
@@ -78,25 +78,25 @@ public class StaffController(
     /// get staff
     /// </summary>
     [HttpGet("{staff_id}")]
-    public async Task<ActionResult<StaffResponse>> GetStaff(Guid restaurant_id, short branch_id, short staff_id)
+    public async Task<ActionResult<SingleStaffResponse>> GetStaff(Guid restaurant_id, short staff_id)
     {
-        var staff = await staffService.GetStaff(restaurant_id, branch_id, staff_id);
+        var staff = await staffService.GetDefaultStaff(restaurant_id, staff_id);
 
         if (staff is null)
         {
             return NotFound();
         }
 
-        return StaffResponse.FromModel(staff);
+        return SingleStaffResponse.FromModel(staff);
     }
 
     /// <summary>
     /// delete staff
     /// </summary>
     [HttpDelete("{staff_id}")]
-    public async Task<ActionResult> DeleteStaff(Guid restaurant_id, short branch_id, short staff_id)
+    public async Task<ActionResult> DeleteStaff(Guid restaurant_id, short staff_id)
     {
-        var staff = await staffService.GetStaff(restaurant_id, branch_id, staff_id);
+        var staff = await staffService.GetDefaultStaff(restaurant_id, staff_id);
 
         if (staff is null)
         {

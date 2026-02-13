@@ -36,3 +36,26 @@ public class TableResponse
         };
     }
 }
+
+public class SingleTableResponse
+{
+    public short id { get; set; }
+
+    public Guid restaurant_id { get; set; }
+
+    /// <example>"A1"</example>
+    public string? name { get; set; }
+
+    public TableStatus status { get; set; }
+
+    public static SingleTableResponse FromModel(Table model)
+    {
+        return new SingleTableResponse
+        {
+            id = model.Id,
+            restaurant_id = model.RestaurantId,
+            name = model.Name,
+            status = model.Status,
+        };
+    }
+}

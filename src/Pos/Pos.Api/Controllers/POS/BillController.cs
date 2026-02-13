@@ -105,7 +105,7 @@ public class BillController(
     }
 
     /// <summary>
-    /// create ordering portal
+    /// create ordering's portal
     /// </summary>
     [HttpPost("{bill_id}/portals")]
     public async Task<ActionResult<OrderingPortalResponse>> CreatePortal(Guid bill_id, OrderingPortalRequest body)
@@ -128,7 +128,7 @@ public class BillController(
     }
 
     /// <summary>
-    /// list ordering portals
+    /// list ordering's portals
     /// </summary>
     [HttpGet("{bill_id}/portals")]
     public async Task<ActionResult<List<OrderingPortalResponse>>> ListPortals(Guid bill_id, [FromQuery] Guid? portal_id)

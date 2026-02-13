@@ -97,16 +97,17 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
         return await _ctx.FindAsync<Restaurant>(restaurantId);
     }
 
-    public async Task<List<Restaurant>> ListRestaurants()
+    public async Task<Restaurant[]> ListRestaurants()
     {
-        return await _ctx.Set<Restaurant>().ToListAsync();
+        return await _ctx.Set<Restaurant>()
+            .ToArrayAsync();
     }
 
-    public async Task<List<Restaurant>> ListRestaurants(string ownerId)
+    public async Task<Restaurant[]> ListRestaurants(string ownerId)
     {
         return await _ctx.Set<Restaurant>()
             .Where(restaurant => restaurant.OwnerId == ownerId)
-            .ToListAsync();
+            .ToArrayAsync();
     }
 
     public async Task<RestaurantManager[]> ListManagers(Guid restaurantId)
