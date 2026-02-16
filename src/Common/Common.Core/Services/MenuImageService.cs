@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using FoodSphere.Infrastructure.Persistence;
-
 namespace FoodSphere.Common.Service;
 
 public class MenuImageService(

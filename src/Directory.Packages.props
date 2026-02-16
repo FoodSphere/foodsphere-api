@@ -4,7 +4,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <!-- object storage -->
+    <!-- storage -->
     <PackageVersion Include="AWSSDK.S3" Version="4.0.18.3" />
     <!-- EF Core -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" />
@@ -12,7 +12,11 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.2" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageVersion Include="LinqKit.Microsoft.EntityFrameworkCore" Version="10.0.11" />
     <!-- env -->
     <PackageVersion Include="Azure.Identity" Version="1.17.1" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.8.0" />
@@ -25,6 +29,8 @@
     <!-- api -->
     <PackageVersion Include="Microsoft.AspNetCore.JsonPatch.SystemTextJson" Version="10.0.2" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.0" />
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="MessagePack" Version="3.1.4" />
     <PackageVersion Include="protobuf-net" Version="3.2.56" />
     <!-- testing -->
@@ -39,11 +45,11 @@
     <PackageVersion Include="Moq" Version="4.20.72" />
     <!-- aspire -->
     <PackageVersion Include="Aspire.Hosting.Docker" Version="13.1.0-preview.1.25616.3" />
-    <PackageVersion Include="Aspire.Hosting.Kubernetes" Version="13.1.0-preview.1.25616.3" />
-    <PackageVersion Include="Aspire.Hosting.Azure.AppContainers" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Hosting.Kubernetes" Version="13.1.1-preview.1.26105.8" />
+    <PackageVersion Include="Aspire.Hosting.Azure.AppContainers" Version="13.1.1" />
     <PackageVersion Include="Aspire.Hosting.Azure.AppService" Version="13.1.0-preview.1.25616.3" />
-    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.1.0" />
-    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.1.1" />
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.1.1" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.2.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.0" />

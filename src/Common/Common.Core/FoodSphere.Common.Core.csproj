@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
     <PackageReference Include="AWSSDK.S3" />
 
     <PackageReference Include="Azure.Identity" />
@@ -16,13 +20,16 @@
     <PackageReference Include="Azure.Security.KeyVault.Secrets" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" />
 
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch.SystemTextJson" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
+    <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" />
     <PackageReference Include="MessagePack" />
     <PackageReference Include="protobuf-net" />
     <PackageReference Include="DotNetEnv" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 
     <!-- NSwag vs Swashbuckle? -->
     <!-- <PackageReference Include="NSwag.AspNetCore" /> -->

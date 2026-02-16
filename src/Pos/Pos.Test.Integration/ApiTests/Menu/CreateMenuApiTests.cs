@@ -10,19 +10,9 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
 
         var (owner, _) = await builder.SeedMasterUser();
         var restaurant = await builder.SeedRestaurant(owner);
-
-        List<IngredientItemDto> ingredients = [];
-
-        for (var i = 0; i < Random.Shared.Next(10); i++)
-        {
-            var ingredient = await builder.SeedIngredient(restaurant.Id);
-
-            ingredients.Add(new()
-            {
-                ingredient_id = ingredient.Id,
-                amount = TestSeedingGenerator.GetAmount(),
-            });
-        }
+        var tags = await builder.SeedTags(restaurant);
+        var ingredients = await builder.SeedIngredients(restaurant);
+        var ingredientItemsResponses = ingredients.ToIngredientItemResponses();
 
         await builder.Commit();
         var requestBody = new MenuRequest
@@ -31,7 +21,8 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
             display_name = $"TEST.menu-display_name.{unique}",
             description = $"TEST.menu-description.{unique}",
             price = Random.Shared.Next(300),
-            ingredients = ingredients,
+            ingredients = ingredientItemsResponses.ToIngredientItemDtos(),
+            tags = tags.ToAssignTagRequests(),
         };
 
         await Authenticate(owner);
@@ -45,12 +36,15 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
 
         responseBody.id.Should().Be(1);
         responseBody.restaurant_id.Should().Be(restaurant.Id);
-        responseBody.ingredients.Should().BeEquivalentTo(ingredients);
+
+        responseBody.ingredients.Should().BeEquivalentTo(ingredientItemsResponses);
+        responseBody.tags.Should().BeEquivalentTo(tags.ToTagDtos());
 
         responseBody.name.Should().Be(requestBody.name);
+        responseBody.price.Should().Be(requestBody.price);
         responseBody.display_name.Should().Be(requestBody.display_name);
         responseBody.description.Should().Be(requestBody.description);
-        responseBody.price.Should().Be(requestBody.price);
+        responseBody.image_url.Should().BeNull();
         responseBody.status.Should().Be(MenuStatus.Active);
 
         responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
@@ -66,20 +60,11 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         var (owner, _) = await builder.SeedMasterUser();
         var (manager, _) = await builder.SeedMasterUser();
         var restaurant = await builder.SeedRestaurant(owner);
+        var tags = await builder.SeedTags(restaurant);
+        var ingredients = await builder.SeedIngredients(restaurant);
+        var ingredientItemsResponses = ingredients.ToIngredientItemResponses();
+
         await builder.SeedRestaurantManager(restaurant, manager, PERMISSION.Menu.CREATE);
-
-        List<IngredientItemDto> ingredients = [];
-
-        for (var i = 0; i < Random.Shared.Next(10); i++)
-        {
-            var ingredient = await builder.SeedIngredient(restaurant.Id);
-
-            ingredients.Add(new()
-            {
-                ingredient_id = ingredient.Id,
-                amount = TestSeedingGenerator.GetAmount(),
-            });
-        }
 
         await builder.Commit();
         var requestBody = new MenuRequest
@@ -88,7 +73,8 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
             display_name = $"TEST.menu-display_name.{unique}",
             description = $"TEST.menu-description.{unique}",
             price = Random.Shared.Next(300),
-            ingredients = ingredients,
+            ingredients = ingredientItemsResponses.ToIngredientItemDtos(),
+            tags = tags.ToAssignTagRequests(),
         };
 
         await Authenticate(manager);
@@ -102,12 +88,15 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
 
         responseBody.id.Should().Be(1);
         responseBody.restaurant_id.Should().Be(restaurant.Id);
-        responseBody.ingredients.Should().BeEquivalentTo(ingredients);
+
+        responseBody.ingredients.Should().BeEquivalentTo(ingredientItemsResponses);
+        responseBody.tags.Should().BeEquivalentTo(tags.ToTagDtos());
 
         responseBody.name.Should().Be(requestBody.name);
+        responseBody.price.Should().Be(requestBody.price);
         responseBody.display_name.Should().Be(requestBody.display_name);
         responseBody.description.Should().Be(requestBody.description);
-        responseBody.price.Should().Be(requestBody.price);
+        responseBody.image_url.Should().BeNull();
         responseBody.status.Should().Be(MenuStatus.Active);
 
         responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
@@ -123,29 +112,14 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         var (owner, _) = await builder.SeedMasterUser();
         var (manager, _) = await builder.SeedMasterUser();
         var restaurant = await builder.SeedRestaurant(owner);
+
         await builder.SeedRestaurantManager(restaurant, manager);
-
-        List<IngredientItemDto> ingredients = [];
-
-        for (var i = 0; i < Random.Shared.Next(10); i++)
-        {
-            var ingredient = await builder.SeedIngredient(restaurant.Id);
-
-            ingredients.Add(new()
-            {
-                ingredient_id = ingredient.Id,
-                amount = TestSeedingGenerator.GetAmount(),
-            });
-        }
 
         await builder.Commit();
         var requestBody = new MenuRequest
         {
             name = $"TEST.menu-name.{unique}",
-            display_name = $"TEST.menu-display_name.{unique}",
-            description = $"TEST.menu-description.{unique}",
             price = Random.Shared.Next(300),
-            ingredients = ingredients,
         };
 
         await Authenticate(manager);

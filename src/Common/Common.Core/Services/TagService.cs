@@ -51,21 +51,52 @@ public class TagService(FoodSphereDbContext context) : ServiceBase(context)
         return tag;
     }
 
+    public Tag GetTagStub(Guid restaurantId, short tagId)
+    {
+        var tag = new Tag
+        {
+            Id = tagId,
+            RestaurantId = restaurantId,
+            Name = default!,
+        };
+
+        _ctx.Attach(tag);
+
+        return tag;
+    }
+
+    public IQueryable<Tag> QueryTags()
+    {
+        return _ctx.Set<Tag>()
+            .AsExpandable();
+    }
+
+    public IQueryable<Tag> QuerySingleTag(Guid restaurantId, short tagId)
+    {
+        return _ctx.Set<Tag>()
+            .Where(tag =>
+                tag.RestaurantId == restaurantId &&
+                tag.Id == tagId);
+    }
+
+    public async Task<TDto?> GetTag<TDto>(Guid restaurantId, short tagId, Expression<Func<Tag, TDto>> projection)
+    {
+        return await QuerySingleTag(restaurantId, tagId)
+            .Select(projection)
+            .SingleOrDefaultAsync();
+    }
+
     public async Task<Tag?> GetTag(Guid restaurantId, short tagId)
     {
-        return await _ctx.FindAsync<Tag>(restaurantId, tagId);
-    }
+        var existed = await QuerySingleTag(restaurantId, tagId)
+            .AnyAsync();
 
-    public async Task<Tag[]> ListTags(Guid restaurantId)
-    {
-        return await _ctx.Set<Tag>()
-            .Where(tag => tag.RestaurantId == restaurantId)
-            .ToArrayAsync();
-    }
+        if (!existed)
+        {
+            return null;
+        }
 
-    public async Task UpdateTag(Tag tag, string name)
-    {
-        tag.Name = name;
+        return GetTagStub(restaurantId, tagId);
     }
 
     public async Task DeleteTag(Tag tag)

@@ -13,13 +13,15 @@ public class SingleInfoController(
     [HttpGet]
     public async Task<ActionResult<SingleRestaurantResponse>> GetRestaurant(Guid restaurant_id)
     {
-        var branch = await branchService.GetDefaultBranch(restaurant_id);
+        var response = await branchService.GetBranch(
+            restaurant_id, 1,
+            SingleRestaurantResponse.Projection);
 
-        if (branch is null)
+        if (response is null)
         {
             return NotFound();
         }
 
-        return SingleRestaurantResponse.FromModel(branch);
+        return response;
     }
 }

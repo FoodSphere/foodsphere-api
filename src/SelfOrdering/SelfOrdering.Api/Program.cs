@@ -76,6 +76,7 @@ builder.Services.AddScoped<SelfOrderingAuthService>();
 builder.Services.AddScoped<OrderingAuthService>();
 builder.Services.AddScoped<OrderingPortalService>();
 
+builder.Services.AddScoped<ConsumerService>();
 builder.Services.AddScoped<BillService>();
 builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();

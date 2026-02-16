@@ -22,9 +22,10 @@ public class TableResponse
 
     public TableStatus status { get; set; }
 
-    public static TableResponse FromModel(Table model)
-    {
-        return new TableResponse
+    public static readonly Func<Table, TableResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Table, TableResponse>> Projection =>
+        model => new TableResponse
         {
             id = model.Id,
             create_time = model.CreateTime,
@@ -34,7 +35,6 @@ public class TableResponse
             name = model.Name,
             status = model.Status,
         };
-    }
 }
 
 public class SingleTableResponse
@@ -48,14 +48,14 @@ public class SingleTableResponse
 
     public TableStatus status { get; set; }
 
-    public static SingleTableResponse FromModel(Table model)
-    {
-        return new SingleTableResponse
+    public static readonly Func<Table, SingleTableResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Table, SingleTableResponse>> Projection =>
+        model => new SingleTableResponse
         {
             id = model.Id,
             restaurant_id = model.RestaurantId,
             name = model.Name,
             status = model.Status,
         };
-    }
 }

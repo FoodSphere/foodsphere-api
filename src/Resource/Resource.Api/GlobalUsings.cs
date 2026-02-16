@@ -1,6 +1,10 @@
+global using System.Linq.Expressions;
 global using Microsoft.Extensions.Options;
+global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Mvc;
+global using FluentValidation;
+global using LinqKit;
 global using FoodSphere.Common.Entity;
 global using FoodSphere.Common.Constant;
 global using FoodSphere.Common.DTO;

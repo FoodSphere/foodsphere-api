@@ -25,6 +25,71 @@ public static class TestSeedingGenerator
     });
 }
 
+public static class TestDtoExtension
+{
+    extension(IEnumerable<Ingredient> ingredients)
+    {
+        public IReadOnlyCollection<IngredientItemResponse> ToIngredientItemResponses()
+        {
+            return ingredients
+                .Select(ingredient =>
+                    new IngredientItemResponse
+                    {
+                        ingredient = new MenuIngredientResponse
+                        {
+                            id = ingredient.Id,
+                            name = ingredient.Name,
+                            unit = ingredient.Unit,
+                            image_url = ingredient.ImageUrl,
+                        },
+                        amount = TestSeedingGenerator.GetAmount(),
+                    })
+                .ToArray();
+        }
+    }
+
+    extension(IEnumerable<IngredientItemResponse> responses)
+    {
+        public IReadOnlyCollection<IngredientItemDto> ToIngredientItemDtos()
+        {
+            return responses
+                .Select(res =>
+                    new IngredientItemDto
+                    {
+                        ingredient_id = res.ingredient.id,
+                        amount = res.amount,
+                    })
+                .ToArray();
+        }
+    }
+
+    extension(IEnumerable<Tag> tags)
+    {
+        public IReadOnlyCollection<AssignTagRequest> ToAssignTagRequests()
+        {
+            return tags
+                .Select(tag =>
+                    new AssignTagRequest
+                    {
+                        tag_id = tag.Id,
+                    })
+                .ToArray();
+        }
+
+        public IReadOnlyCollection<TagDto> ToTagDtos()
+        {
+            return tags
+                .Select(tag =>
+                    new TagDto
+                    {
+                        tag_id = tag.Id,
+                        name = tag.Name,
+                    })
+                .ToArray();
+        }
+    }
+}
+
 public class TestSeeder(IServiceScope scope, bool disposeScope = false, CancellationToken ct = default) : IDisposable
 {
     public async Task<int> Commit()
@@ -124,6 +189,20 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return await SeedIngredient(restaurant.Id);
     }
 
+    public async Task<IReadOnlyCollection<Ingredient>> SeedIngredients(Restaurant restaurant)
+    {
+        var ingredients = new List<Ingredient>();
+
+        for (var i = 0; i < Random.Shared.Next(6); i++)
+        {
+            var ingredient = await SeedIngredient(restaurant);
+
+            ingredients.Add(ingredient);
+        }
+
+        return ingredients;
+    }
+
     public async Task<Branch> SeedBranch(Guid restaurantId)
     {
         var unique = TestSeedingGenerator.GetUniqueString();
@@ -164,10 +243,9 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return await SeedTable(branch.RestaurantId, branch.Id);
     }
 
-    public async Task<Permission[]> SeedPermissions()
+    public async Task<IReadOnlyCollection<Permission>> SeedPermissions()
     {
-        var permissionsIds = PERMISSION.GetAll()
-            .ToArray();
+        var permissionsIds = PERMISSION.GetAll();
 
         Random.Shared.Shuffle(permissionsIds);
 
@@ -198,7 +276,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return await SeedRole(restaurant.Id, permissions);
     }
 
-    public async Task<Role[]> SeedRoles(Restaurant restaurant)
+    public async Task<IReadOnlyCollection<Role>> SeedRoles(Restaurant restaurant)
     {
         var permissions = await SeedPermissions();
         var roles = new List<Role>();
@@ -210,7 +288,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             roles.Add(role);
         }
 
-        return roles.ToArray();
+        return roles;
     }
 
     public async Task<RestaurantManager> SeedRestaurantManager(
@@ -378,7 +456,7 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
 
         foreach (var (menu, quantity) in items)
         {
-            await billService.CreateOrderItem(
+            await billService.CreateItem(
                 order, menu,
                 quantity,
                 note: $"GENERATED.order-item-note.{unique}",
@@ -388,7 +466,8 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
         return order;
     }
 
-    public async Task<Tag> SeedTag(Restaurant restaurant) {
+    public async Task<Tag> SeedTag(Restaurant restaurant)
+    {
         var unique = TestSeedingGenerator.GetUniqueString();
         var tagService = scope.ServiceProvider.GetRequiredService<TagService>();
 
@@ -398,5 +477,19 @@ public class TestSeeder(IServiceScope scope, bool disposeScope = false, Cancella
             ct: ct);
 
         return tag;
+    }
+
+    public async Task<IReadOnlyCollection<Tag>> SeedTags(Restaurant restaurant)
+    {
+        var tags = new List<Tag>();
+
+        for (var i = 0; i < Random.Shared.Next(6); i++)
+        {
+            var tag = await SeedTag(restaurant);
+
+            tags.Add(tag);
+        }
+
+        return tags;
     }
 }

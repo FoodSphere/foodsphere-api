@@ -46,13 +46,14 @@ public static class JwtAuthentication
         var principal = context.Principal!;
         var sp = context.HttpContext.RequestServices;
 
-        var billId = principal.FindFirstValue(FoodSphereClaimType.BillClaimType);
-        var memberId = principal.FindFirstValue(FoodSphereClaimType.BillMemberClaimType);
+        var billIdClaim = principal.FindFirstValue(FoodSphereClaimType.BillClaimType);
+        var memberIdClaim = principal.FindFirstValue(FoodSphereClaimType.BillMemberClaimType);
 
         var logger = sp.GetRequiredService<ILoggerFactory>()
             .CreateLogger(nameof(JwtAuthentication));
 
-        if (billId is null || memberId is null)
+        if (!Guid.TryParse(billIdClaim, out var billId) ||
+            !short.TryParse(memberIdClaim, out var memberId))
         {
             context.Fail("invalid claims");
             return;
@@ -60,16 +61,7 @@ public static class JwtAuthentication
 
         var billService = sp.GetRequiredService<BillService>();
 
-        var member = await billService.GetBillMember(
-            Guid.Parse(billId),
-            short.Parse(memberId)
-        );
-
-        if (member is null)
-        {
-            context.Fail("bill member not found.");
-            return;
-        }
+        var member = billService.GetMemberStub(billId, memberId);
 
         context.HttpContext.Items[nameof(BillMember)] = member;
     }

@@ -10,13 +10,16 @@ public class TableController(
     /// list tables
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<List<TableResponse>>> ListTables(Guid restaurant_id, short branch_id)
+    public async Task<ActionResult<ICollection<TableResponse>>> ListTables(Guid restaurant_id, short branch_id)
     {
-        var tables = await branchService.ListTables(restaurant_id, branch_id);
+        var responses = await branchService.QueryTables()
+            .Where(e =>
+                e.RestaurantId == restaurant_id &&
+                e.BranchId == branch_id)
+            .Select(TableResponse.Projection)
+            .ToArrayAsync();
 
-        return tables
-            .Select(TableResponse.FromModel)
-            .ToList();
+        return responses;
     }
 
     /// <summary>
@@ -25,12 +28,7 @@ public class TableController(
     [HttpPost]
     public async Task<ActionResult<TableResponse>> CreateTable(Guid restaurant_id, short branch_id, TableRequest body)
     {
-        var branch = await branchService.GetBranch(restaurant_id, branch_id);
-
-        if (branch is null)
-        {
-            return NotFound();
-        }
+        var branch = branchService.GetBranchStub(restaurant_id, branch_id);
 
         var table = await branchService.CreateTable(
             branch: branch,
@@ -39,11 +37,15 @@ public class TableController(
 
         await branchService.SaveChanges();
 
+        var response = await branchService.GetTable(
+            restaurant_id, branch_id, table.Id,
+            TableResponse.Projection
+        );
+
         return CreatedAtAction(
             nameof(GetTable),
             new { restaurant_id, branch_id, table_id = table.Id },
-            TableResponse.FromModel(table)
-        );
+            response);
     }
 
     /// <summary>
@@ -52,14 +54,16 @@ public class TableController(
     [HttpGet("{table_id}")]
     public async Task<ActionResult<TableResponse>> GetTable(Guid restaurant_id, short branch_id, short table_id)
     {
-        var table = await branchService.GetTable(restaurant_id, branch_id, table_id);
+        var response = await branchService.GetTable(
+            restaurant_id, branch_id, table_id,
+            TableResponse.Projection);
 
-        if (table is null)
+        if (response is null)
         {
             return NotFound();
         }
 
-        return TableResponse.FromModel(table);
+        return response;
     }
 
     /// <summary>

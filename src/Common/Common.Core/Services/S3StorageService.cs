@@ -90,7 +90,7 @@ public class S3StorageService(
             Verb = HttpVerb.GET
         };
 
-        var url = s3Client.GetPreSignedURL(request);
+        var url = await s3Client.GetPreSignedURLAsync(request);
 
         return url;
     }

@@ -23,14 +23,18 @@ public class ReadMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fix
 
         responseBody.id.Should().Be(menu.Id).And.Be(1);
         responseBody.restaurant_id.Should().Be(restaurant.Id);
+
         responseBody.ingredients.Should().BeEquivalentTo(
-            menu.MenuIngredients.Select(IngredientItemDto.FromModel));
+            menu.MenuIngredients.Select(IngredientItemDto.Project));
+
+        responseBody.tags.Should().BeEquivalentTo(
+            menu.MenuTags.Select(TagDto.MenuTagProject));
 
         responseBody.name.Should().Be(menu.Name);
+        responseBody.price.Should().Be(menu.Price);
         responseBody.display_name.Should().Be(menu.DisplayName);
         responseBody.description.Should().Be(menu.Description);
         responseBody.image_url.Should().Be(menu.ImageUrl);
-        responseBody.price.Should().Be(menu.Price);
         responseBody.status.Should().Be(menu.Status);
 
         responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);

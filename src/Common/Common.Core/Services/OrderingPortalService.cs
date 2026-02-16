@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using FoodSphere.Infrastructure.Persistence;
-
 namespace FoodSphere.Common.Service;
 
 public class OrderingPortalService(
@@ -9,12 +6,29 @@ public class OrderingPortalService(
     BillService billService
 ) : ServiceBase(context)
 {
+    public async Task<string> GenerateToken(
+        SelfOrderingPortal portal,
+        Guid? consumerId = null)
+    {
+        if (!portal.IsValid())
+        {
+            throw new Exception("Ordering link invalid.");
+        }
+
+        portal.Use();
+
+        var member = await billService.CreateMember(portal.BillId, consumerId);
+        var token = await orderingAuthService.GenerateToken(member);
+
+        return token;
+    }
+
     public async Task<SelfOrderingPortal> CreatePortal(
         Guid billId,
         short? maxUsage = null,
-        TimeSpan? validDuration = null
         // Guid? issuerId = null
-    ) {
+        TimeSpan? validDuration = null)
+    {
         var portal = new SelfOrderingPortal
         {
             BillId = billId,
@@ -28,39 +42,49 @@ public class OrderingPortalService(
         return portal;
     }
 
+    public SelfOrderingPortal GetPortalStub(Guid portalId)
+    {
+        var portal = new SelfOrderingPortal
+        {
+            Id = portalId
+        };
+
+        _ctx.Attach(portal);
+
+        return portal;
+    }
+
+    public IQueryable<SelfOrderingPortal> QueryPortals()
+    {
+        return _ctx.Set<SelfOrderingPortal>()
+            .AsExpandable();
+    }
+
+    public IQueryable<SelfOrderingPortal> QuerySinglePortal(Guid portalId)
+    {
+        return QueryPortals()
+            .Where(e =>
+                e.Id == portalId);
+    }
+
+    public async Task<TDto?> GetPortal<TDto>(Guid portal_id, Expression<Func<SelfOrderingPortal, TDto>> projection)
+    {
+        return await QuerySinglePortal(portal_id)
+            .Select(projection)
+            .SingleOrDefaultAsync();
+    }
+
     public async Task<SelfOrderingPortal?> GetPortal(Guid portal_id)
     {
-        return await _ctx.FindAsync<SelfOrderingPortal>(portal_id);
-    }
+        var existed = await _ctx.Set<SelfOrderingPortal>()
+            .AnyAsync(e =>
+                e.Id == portal_id);
 
-    public async Task<List<SelfOrderingPortal>> ListPortals(Guid billId)
-    {
-        return await _ctx.Set<SelfOrderingPortal>()
-            .Where(portal => portal.BillId == billId)
-            .ToListAsync();
-    }
-
-    public async Task<List<SelfOrderingPortal>> ListPortals(Bill bill)
-    {
-        return await _ctx.Set<SelfOrderingPortal>()
-            .Where(portal => portal.BillId == bill.Id)
-            .ToListAsync();
-    }
-
-    public async Task<string> GenerateToken(
-        SelfOrderingPortal portal,
-        Guid? consumerId = null
-    ) {
-        if (!portal.IsValid())
+        if (!existed)
         {
-            throw new Exception("Ordering link invalid.");
+            return null;
         }
 
-        portal.Use();
-
-        var member = await billService.AddBillMember(portal.BillId, consumerId);
-        var token = await orderingAuthService.GenerateToken(member);
-
-        return token;
+        return GetPortalStub(portal_id);
     }
 }

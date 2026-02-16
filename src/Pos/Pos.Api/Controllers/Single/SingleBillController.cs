@@ -1,8 +1,8 @@
 namespace FoodSphere.Pos.Api.Controller;
 
-[Route("restaurants/{restaurant_id}/branches/{branch_id}/bills")]
-public class BillController(
-    ILogger<BillController> logger,
+[Route("restaurants/{restaurant_id}/bills")]
+public class SingleBillController(
+    ILogger<SingleBillController> logger,
     BillService billService,
     MenuService menuService,
     BranchService branchService,
@@ -13,12 +13,12 @@ public class BillController(
     /// list bills in this branch
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ICollection<BillResponse>>> ListBills(Guid restaurant_id, short branch_id)
+    public async Task<ActionResult<ICollection<BillResponse>>> ListBills(Guid restaurant_id)
     {
         var responses = await billService.QueryBills()
             .Where(e =>
                 e.RestaurantId == restaurant_id &&
-                e.BranchId == branch_id)
+                e.BranchId == 1)
             .Select(BillResponse.Projection)
             .ToArrayAsync();
 
@@ -29,9 +29,9 @@ public class BillController(
     /// create bill
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<BillResponse>> CreateBill(Guid restaurant_id, short branch_id, BillRequest body)
+    public async Task<ActionResult<BillResponse>> CreateBill(Guid restaurant_id, BillRequest body)
     {
-        var table = branchService.GetTableStub(restaurant_id, branch_id, body.table_id);
+        var table = branchService.GetTableStub(restaurant_id, 1, body.table_id);
 
         var bill = await billService.CreateBill(
             table: table,
@@ -45,7 +45,7 @@ public class BillController(
 
         return CreatedAtAction(
             nameof(GetBill),
-            new { restaurant_id, branch_id, bill_id = bill.Id },
+            new { restaurant_id, bill_id = bill.Id },
             response);
     }
 
@@ -53,12 +53,12 @@ public class BillController(
     /// get bill
     /// </summary>
     [HttpGet("{bill_id}")]
-    public async Task<ActionResult<BillResponse>> GetBill(Guid restaurant_id, short branch_id, Guid bill_id)
+    public async Task<ActionResult<BillResponse>> GetBill(Guid restaurant_id, Guid bill_id)
     {
         var response = await billService.QuerySingleBill(bill_id)
             .Where(e =>
                 e.RestaurantId == restaurant_id &&
-                e.BranchId == branch_id)
+                e.BranchId == 1)
             .Select(BillResponse.Projection)
             .SingleOrDefaultAsync();
 
@@ -71,12 +71,12 @@ public class BillController(
     }
 
     [HttpPut("{bill_id}")]
-    public async Task<ActionResult> UpdateBill(Guid restaurant_id, short branch_id, Guid bill_id, BillRequest body)
+    public async Task<ActionResult> UpdateBill(Guid restaurant_id, Guid bill_id, BillRequest body)
     {
         var foundBill = await billService.QuerySingleBill(bill_id)
             .AnyAsync(e =>
                 e.RestaurantId == restaurant_id &&
-                e.BranchId == branch_id);
+                e.BranchId == 1);
 
         if (!foundBill)
         {
@@ -98,12 +98,12 @@ public class BillController(
     /// delete bill
     /// </summary>
     [HttpDelete("{bill_id}")]
-    public async Task<ActionResult> DeleteBill(Guid restaurant_id, short branch_id, Guid bill_id)
+    public async Task<ActionResult> DeleteBill(Guid restaurant_id, Guid bill_id)
     {
         var affected = await billService.QuerySingleBill(bill_id)
             .Where(e =>
                 e.RestaurantId == restaurant_id &&
-                e.BranchId == branch_id)
+                e.BranchId == 1)
             .ExecuteDeleteAsync();
 
         if (affected == 0)
@@ -119,13 +119,13 @@ public class BillController(
     /// </summary>
     [HttpGet("{bill_id}/portals")]
     public async Task<ActionResult<ICollection<OrderingPortalResponse>>> ListPortals(
-        Guid restaurant_id, short branch_id, Guid bill_id)
+        Guid restaurant_id, Guid bill_id)
     {
         var responses = await orderingPortalService.QueryPortals()
             .Where(e =>
                 e.BillId == bill_id &&
                 e.Bill.RestaurantId == restaurant_id &&
-                e.Bill.BranchId == branch_id)
+                e.Bill.BranchId == 1)
             .Select(OrderingPortalResponse.Projection)
             .ToArrayAsync();
 
@@ -137,13 +137,13 @@ public class BillController(
     /// </summary>
     [HttpPost("{bill_id}/portals")]
     public async Task<ActionResult<OrderingPortalResponse>> CreatePortal(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, OrderingPortalRequest body)
     {
         var foundBill = await billService.QuerySingleBill(bill_id)
             .AnyAsync(e =>
                 e.RestaurantId == restaurant_id &&
-                e.BranchId == branch_id);
+                e.BranchId == 1);
 
         if (!foundBill)
         {
@@ -162,7 +162,7 @@ public class BillController(
 
         return CreatedAtAction(
             nameof(GetPortal),
-            new { restaurant_id, branch_id, bill_id, portal_id = portal.Id },
+            new { restaurant_id, bill_id, portal_id = portal.Id },
             response);
     }
 
@@ -171,14 +171,14 @@ public class BillController(
     /// </summary>
     [HttpGet("{bill_id}/portals/{portal_id}")]
     public async Task<ActionResult<OrderingPortalResponse>> GetPortal(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, Guid portal_id)
     {
         var response = await orderingPortalService.QuerySinglePortal(portal_id)
             .Where(e =>
                 e.BillId == bill_id &&
                 e.Bill.RestaurantId == restaurant_id &&
-                e.Bill.BranchId == branch_id)
+                e.Bill.BranchId == 1)
             .Select(OrderingPortalResponse.Projection)
             .SingleOrDefaultAsync();
 
@@ -195,12 +195,12 @@ public class BillController(
     /// </summary>
     [HttpGet("{bill_id}/orders")]
     public async Task<ActionResult<ICollection<OrderResponse>>> ListOrders(
-        Guid restaurant_id, short branch_id, Guid bill_id)
+        Guid restaurant_id, Guid bill_id)
     {
         var responses = await billService.QueryOrders(bill_id)
             .Where(e =>
                 e.RestaurantId == restaurant_id &&
-                e.BranchId == branch_id)
+                e.BranchId == 1)
             .Select(OrderResponse.Projection)
             .ToArrayAsync();
 
@@ -212,7 +212,7 @@ public class BillController(
     /// </summary>
     [HttpPost("{bill_id}/orders")]
     public async Task<ActionResult<OrderResponse>> CreateOrder(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, OrderRequest body)
     {
         await using var transaction = await billService.GetTransaction();
@@ -220,7 +220,7 @@ public class BillController(
         var foundBill = await billService.QuerySingleBill(bill_id)
             .AnyAsync(e =>
                 e.RestaurantId == restaurant_id &&
-                e.BranchId == branch_id);
+                e.BranchId == 1);
 
         if (!foundBill)
         {
@@ -244,7 +244,7 @@ public class BillController(
 
         return CreatedAtAction(
             nameof(GetOrder),
-            new { restaurant_id, branch_id, bill_id, order_id = order.Id },
+            new { restaurant_id, bill_id, order_id = order.Id },
             response);
     }
 
@@ -253,13 +253,13 @@ public class BillController(
     /// </summary>
     [HttpGet("{bill_id}/orders/{order_id}")]
     public async Task<ActionResult<OrderResponse>> GetOrder(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, short order_id)
     {
         var response = await billService.QuerySingleOrder(bill_id, order_id)
             .Where(e =>
                 e.Bill.RestaurantId == restaurant_id &&
-                e.Bill.BranchId == branch_id)
+                e.Bill.BranchId == 1)
             .Select(OrderResponse.Projection)
             .SingleOrDefaultAsync();
 
@@ -276,14 +276,14 @@ public class BillController(
     /// </summary>
     [HttpPut("{bill_id}/orders/{order_id}/status")]
     public async Task<ActionResult<OrderResponse>> UpdateOrderStatus(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, short order_id,
         OrderStatusRequest body)
     {
         var found = await billService.QuerySingleOrder(bill_id, order_id)
             .AnyAsync(e =>
                 e.Bill.RestaurantId == restaurant_id &&
-                e.Bill.BranchId == branch_id);
+                e.Bill.BranchId == 1);
 
         if (!found)
         {
@@ -303,12 +303,12 @@ public class BillController(
     /// delete order
     /// </summary>
     [HttpDelete("{bill_id}/orders/{order_id}")]
-    public async Task<ActionResult> DeleteOrder(Guid restaurant_id, short branch_id, Guid bill_id, short order_id)
+    public async Task<ActionResult> DeleteOrder(Guid restaurant_id, Guid bill_id, short order_id)
     {
         var affected = await billService.QuerySingleOrder(bill_id, order_id)
             .Where(e =>
                 e.Bill.RestaurantId == restaurant_id &&
-                e.Bill.BranchId == branch_id)
+                e.Bill.BranchId == 1)
             .ExecuteDeleteAsync();
 
         if (affected == 0)
@@ -324,13 +324,13 @@ public class BillController(
     /// </summary>
     [HttpGet("{bill_id}/orders/{order_id}/items")]
     public async Task<ActionResult<ICollection<OrderItemResponse>>> ListOrderItems(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, short order_id)
     {
         var responses = await billService.QueryItems(bill_id, order_id)
             .Where(e =>
                 e.Order.Bill.RestaurantId == restaurant_id &&
-                e.Order.Bill.BranchId == branch_id)
+                e.Order.Bill.BranchId == 1)
             .Select(OrderItemResponse.Projection)
             .ToArrayAsync();
 
@@ -342,14 +342,14 @@ public class BillController(
     /// </summary>
     [HttpPut("{bill_id}/orders/{order_id}/items")]
     public async Task<ActionResult> UpdateOrderItems(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, short order_id,
         IReadOnlyCollection<OrderItemRequest> body)
     {
         var foundOrder = await billService.QuerySingleOrder(bill_id, order_id)
             .AnyAsync(e =>
                 e.Bill.RestaurantId == restaurant_id &&
-                e.Bill.BranchId == branch_id);
+                e.Bill.BranchId == 1);
 
         if (!foundOrder)
         {
@@ -381,14 +381,14 @@ public class BillController(
     /// </summary>
     [HttpPost("{bill_id}/orders/{order_id}/items")]
     public async Task<ActionResult> CreateOrderItem(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, short order_id,
         OrderItemRequest body)
     {
         var foundOrder = await billService.QuerySingleOrder(bill_id, order_id)
             .AnyAsync(e =>
                 e.Bill.RestaurantId == restaurant_id &&
-                e.Bill.BranchId == branch_id);
+                e.Bill.BranchId == 1);
 
         if (!foundOrder)
         {
@@ -405,7 +405,7 @@ public class BillController(
 
         return CreatedAtAction(
             nameof(GetOrderItem),
-            new { restaurant_id, branch_id, bill_id, order_id, item_id = item.Id },
+            new { restaurant_id, bill_id, order_id, item_id = item.Id },
             response);
     }
 
@@ -414,13 +414,13 @@ public class BillController(
     /// </summary>
     [HttpGet("{bill_id}/orders/{order_id}/items/{item_id}")]
     public async Task<ActionResult<OrderItemResponse>> GetOrderItem(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, short order_id, short item_id)
     {
         var response = await billService.QuerySingleItem(bill_id, order_id, item_id)
             .Where(e =>
                 e.Order.Bill.RestaurantId == restaurant_id &&
-                e.Order.Bill.BranchId == branch_id)
+                e.Order.Bill.BranchId == 1)
             .Select(OrderItemResponse.Projection)
             .SingleOrDefaultAsync();
 
@@ -437,14 +437,14 @@ public class BillController(
     /// </summary>
     [HttpPut("{bill_id}/orders/{order_id}/items/{item_id}")]
     public async Task<ActionResult<OrderItemResponse>> UpdateOrderItem(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, short order_id, short item_id,
         OrderItemUpdateRequest body)
     {
         var found = await billService.QuerySingleItem(bill_id, order_id, item_id)
             .AnyAsync(e =>
                 e.Order.Bill.RestaurantId == restaurant_id &&
-                e.Order.Bill.BranchId == branch_id);
+                e.Order.Bill.BranchId == 1);
 
         if (!found)
         {
@@ -466,13 +466,13 @@ public class BillController(
     /// </summary>
     [HttpDelete("{bill_id}/orders/{order_id}/items/{item_id}")]
     public async Task<ActionResult> DeleteOrderItem(
-        Guid restaurant_id, short branch_id,
+        Guid restaurant_id,
         Guid bill_id, short order_id, short item_id)
     {
         var affected = await billService.QuerySingleItem(bill_id, order_id, item_id)
             .Where(e =>
                 e.Order.Bill.RestaurantId == restaurant_id &&
-                e.Order.Bill.BranchId == branch_id)
+                e.Order.Bill.BranchId == 1)
             .ExecuteDeleteAsync();
 
         if (affected == 0)

@@ -7,12 +7,12 @@ public class StockDto
     /// <example>20</example>
     public decimal amount { get; set; }
 
-    public static StockDto FromModel(Stock model)
-    {
-        return new StockDto
+    public static readonly Func<Stock, StockDto> Project = Projection.Compile();
+
+    public static Expression<Func<Stock, StockDto>> Projection =>
+        model => new StockDto
         {
             ingredient_id = model.IngredientId,
             amount = model.Amount,
         };
-    }
 }

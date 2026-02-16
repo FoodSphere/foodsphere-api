@@ -6,13 +6,13 @@ public class PermissionResponse
     public string name { get; set; } = null!;
     public string? description { get; set; }
 
-    public static PermissionResponse FromModel(Permission model)
-    {
-        return new PermissionResponse
+    public static readonly Func<Permission, PermissionResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Permission, PermissionResponse>> Projection =>
+        model => new PermissionResponse
         {
             id = model.Id,
             name = model.Name,
             description = model.Description
         };
-    }
 }

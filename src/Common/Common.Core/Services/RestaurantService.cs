@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using FoodSphere.Infrastructure.Persistence;
-
 namespace FoodSphere.Common.Service;
 
 public class RestaurantService(FoodSphereDbContext context) : ServiceBase(context)
@@ -19,14 +16,77 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
             DisplayName = displayName,
         };
 
-        // await SeedRole(); ?
-
         // we don't have to `_ctx.Add(contact)`,
         // because the contact was set in restaurant
         // before the restaurant is added to DbContext
         _ctx.Add(restaurant);
 
         return restaurant;
+    }
+
+    public Restaurant GetRestaurantStub(Guid restaurantId)
+    {
+        var restaurant = new Restaurant
+        {
+            Id = restaurantId,
+            Name = default!,
+        };
+
+        _ctx.Attach(restaurant);
+
+        return restaurant;
+    }
+
+    public IQueryable<Restaurant> QueryRestaurants()
+    {
+        return _ctx.Set<Restaurant>()
+            .AsExpandable();
+    }
+
+    public IQueryable<Restaurant> QuerySingleRestaurant(Guid restaurantId)
+    {
+        return QueryRestaurants()
+            .Where(e =>
+                e.Id == restaurantId);
+    }
+
+    public async Task<TDto?> GetRestaurant<TDto>(Guid restaurantId, Expression<Func<Restaurant, TDto>> projection)
+    {
+        return await QuerySingleRestaurant(restaurantId)
+            .Select(projection)
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<Restaurant?> GetRestaurant(Guid restaurantId)
+    {
+        var existed = await _ctx.Set<Restaurant>()
+            .AnyAsync(e =>
+                e.Id == restaurantId);
+
+        if (!existed)
+        {
+            return null;
+        }
+
+        return GetRestaurantStub(restaurantId);
+    }
+
+    public async Task DeleteRestaurant(Restaurant restaurant)
+    {
+        _ctx.Remove(restaurant);
+    }
+
+    public async Task SetContact(Restaurant restaurant, ContactDto contact)
+    {
+        restaurant.Contact.Name = contact.name;
+        restaurant.Contact.Email = contact.email;
+        restaurant.Contact.Phone = contact.phone;
+    }
+
+    public async Task SetContact(Guid restaurantId, ContactDto contact)
+    {
+        var restaurant = await GetRestaurant(restaurantId);
+        await SetContact(restaurant!, contact);
     }
 
     public async Task<RestaurantManager> CreateManager(
@@ -43,6 +103,60 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
         _ctx.Add(manager);
 
         return manager;
+    }
+
+    public RestaurantManager GetManagerStub(Guid restaurantId, string masterId)
+    {
+        var manager = new RestaurantManager
+        {
+            RestaurantId = restaurantId,
+            MasterId = masterId,
+        };
+
+        _ctx.Attach(manager);
+
+        return manager;
+    }
+
+    public IQueryable<RestaurantManager> QueryManagers()
+    {
+        return _ctx.Set<RestaurantManager>()
+            .AsExpandable();
+    }
+
+    public IQueryable<RestaurantManager> QuerySingleManager(Guid restaurantId, string masterId)
+    {
+        return QueryManagers()
+            .Where(e =>
+                e.RestaurantId == restaurantId &&
+                e.MasterId == masterId);
+    }
+
+    public async Task<RestaurantManager?> GetManager(Guid restaurantId, string masterId)
+    {
+        var existed = await _ctx.Set<RestaurantManager>()
+            .AnyAsync(e =>
+                e.RestaurantId == restaurantId &&
+                e.MasterId == masterId);
+
+        if (!existed)
+        {
+            return null;
+        }
+
+        return GetManagerStub(restaurantId, masterId);
+    }
+
+    public async Task<TDto?> GetManager<TDto>(Guid restaurantId, string masterId, Expression<Func<RestaurantManager, TDto>> projection)
+    {
+        return await QuerySingleManager(restaurantId, masterId)
+            .Select(projection)
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task DeleteManager(RestaurantManager manager)
+    {
+        _ctx.Remove(manager);
     }
 
     public async Task SetManagerRoles(
@@ -90,55 +204,5 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
 
         _ctx.RemoveRange(toRemove);
         await _ctx.AddRangeAsync(newEntities, ct);
-    }
-
-    public async Task<Restaurant?> GetRestaurant(Guid restaurantId)
-    {
-        return await _ctx.FindAsync<Restaurant>(restaurantId);
-    }
-
-    public async Task<Restaurant[]> ListRestaurants()
-    {
-        return await _ctx.Set<Restaurant>()
-            .ToArrayAsync();
-    }
-
-    public async Task<Restaurant[]> ListRestaurants(string ownerId)
-    {
-        return await _ctx.Set<Restaurant>()
-            .Where(restaurant => restaurant.OwnerId == ownerId)
-            .ToArrayAsync();
-    }
-
-    public async Task<RestaurantManager[]> ListManagers(Guid restaurantId)
-    {
-        return await _ctx.Set<RestaurantManager>()
-            .Where(manager => manager.RestaurantId == restaurantId)
-            .ToArrayAsync();
-    }
-
-    public async Task DeleteRestaurant(Restaurant restaurant)
-    {
-        _ctx.Remove(restaurant);
-        _ctx.Remove(restaurant.Contact);
-    }
-
-    public async Task DeleteRestaurant(Guid restaurantId)
-    {
-        var restaurant = await GetRestaurant(restaurantId);
-        await DeleteRestaurant(restaurant!);
-    }
-
-    public async Task SetContact(Restaurant restaurant, ContactDto contact)
-    {
-        restaurant.Contact.Name = contact?.name;
-        restaurant.Contact.Email = contact?.email;
-        restaurant.Contact.Phone = contact?.phone;
-    }
-
-    public async Task SetContact(Guid restaurantId, ContactDto contact)
-    {
-        var restaurant = await GetRestaurant(restaurantId);
-        await SetContact(restaurant!, contact);
     }
 }

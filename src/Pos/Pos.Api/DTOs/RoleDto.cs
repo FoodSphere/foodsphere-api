@@ -4,7 +4,7 @@ public class RoleRequest
 {
     public required string name { get; set; }
     public string? description { get; set; }
-    public int[] permission_ids { get; set; } = [];
+    public IReadOnlyCollection<int> permission_ids { get; set; } = [];
 }
 
 public class RoleResponse
@@ -18,11 +18,12 @@ public class RoleResponse
 
     public required string name { get; set; }
     public string? description { get; set; }
-    public int[] permission_ids { get; set; } = [];
+    public IReadOnlyCollection<int> permission_ids { get; set; } = [];
 
-    public static RoleResponse FromModel(Role model)
-    {
-        return new RoleResponse
+    public static readonly Func<Role, RoleResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Role, RoleResponse>> Projection =>
+        model => new RoleResponse
         {
             restaurant_id = model.RestaurantId,
             id = model.Id,
@@ -30,7 +31,8 @@ public class RoleResponse
             update_time = model.UpdateTime,
             name = model.Name,
             description = model.Description,
-            permission_ids = [.. model.Permissions.Select(rp => rp.PermissionId)]
+            permission_ids = model.Permissions
+                .Select(rp => rp.PermissionId)
+                .ToArray()
         };
-    }
 }

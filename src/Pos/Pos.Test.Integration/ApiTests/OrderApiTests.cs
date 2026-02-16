@@ -13,7 +13,7 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         var table = await builder.SeedTable(branch);
         var bill = await builder.SeedBill(table);
 
-        List<OrderItemDto> items = [];
+        List<OrderItemRequest> items = [];
 
         for (var i = 0; i < Random.Shared.Next(1, 10); i++)
         {
@@ -27,14 +27,14 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         }
 
         await builder.Commit();
-        var requestBody = new OrderDto
+        var requestBody = new OrderRequest
         {
             items = items,
         };
 
         await Authenticate(owner);
 
-        var response = await _client.PostAsJsonAsync($"bills/{bill.Id}/orders", requestBody, TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/bills/{bill.Id}/orders", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created, content);
 
@@ -51,7 +51,7 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
     }
 
     [Fact]
-    public async Task Get_Bill_Succeed()
+    public async Task Get_Order_Succeed()
     {
         using var builder = CreateTestSeeder();
 
@@ -65,7 +65,7 @@ public class OrderApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         await builder.Commit();
         await Authenticate(masterUser);
 
-        var response = await _client.GetAsync($"bills/{bill.Id}/orders/{order.Id}", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/bills/{bill.Id}/orders/{order.Id}", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.OK, content);
 

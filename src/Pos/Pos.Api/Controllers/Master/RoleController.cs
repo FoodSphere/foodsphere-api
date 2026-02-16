@@ -8,6 +8,21 @@ public class RoleController(
 ) : MasterControllerBase
 {
     /// <summary>
+    /// list roles
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<ICollection<RoleResponse>>> ListRoles(Guid restaurant_id)
+    {
+        var responses = await roleService.QueryRoles()
+            .Where(e =>
+                e.RestaurantId == restaurant_id)
+            .Select(RoleResponse.Projection)
+            .ToArrayAsync();
+
+        return responses;
+    }
+
+    /// <summary>
     /// create role
     /// </summary>
     [HttpPost]
@@ -33,26 +48,14 @@ public class RoleController(
 
         await roleService.SaveChanges();
 
-        var populatedRole = await roleService.GetRole(restaurant_id, role.Id);
+        var response = await roleService.GetRole(
+            restaurant_id, role.Id,
+            RoleResponse.Projection);
 
         return CreatedAtAction(
             nameof(GetRole),
             new { restaurant_id, role_id = role.Id },
-            RoleResponse.FromModel(populatedRole!)
-        );
-    }
-
-    /// <summary>
-    /// list roles
-    /// </summary>
-    [HttpGet]
-    public async Task<ActionResult<List<RoleResponse>>> ListRoles(Guid restaurant_id)
-    {
-        var roles = await roleService.ListRoles(restaurant_id);
-
-        return roles
-            .Select(RoleResponse.FromModel)
-            .ToList();
+            response);
     }
 
     /// <summary>
@@ -61,14 +64,14 @@ public class RoleController(
     [HttpGet("{role_id}")]
     public async Task<ActionResult<RoleResponse>> GetRole(Guid restaurant_id, short role_id)
     {
-        var role = await roleService.GetRole(restaurant_id, role_id);
+        var response = await roleService.GetRole(restaurant_id, role_id, RoleResponse.Projection);
 
-        if (role is null)
+        if (response is null)
         {
             return NotFound();
         }
 
-        return RoleResponse.FromModel(role);
+        return response;
     }
 
     /// <summary>
@@ -77,18 +80,7 @@ public class RoleController(
     [HttpDelete("{role_id}")]
     public async Task<ActionResult> DeleteRole(Guid restaurant_id, short role_id)
     {
-        var result = await roleService.DeleteRole(restaurant_id, role_id);
-
-        if (result == false)
-        {
-            return NotFound();
-        }
-        else
-        {
-            await roleService.SaveChanges();
-        }
-
-        return NoContent();
+        throw new NotImplementedException();
     }
 
     /// <summary>

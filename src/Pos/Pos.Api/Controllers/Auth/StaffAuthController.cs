@@ -12,7 +12,7 @@ public class StaffAuthController(
     [HttpPost("token")]
     public async Task<ActionResult<StaffTokenResponse>> GenerateToken(StaffTokenRequest body)
     {
-        var portal = await staffPortalService.GetStaffPortal(body.portal_id);
+        var portal = await staffPortalService.GetPortal(body.portal_id);
 
         if (portal is null)
         {

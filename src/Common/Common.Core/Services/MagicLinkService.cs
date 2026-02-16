@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
-using FoodSphere.Infrastructure.Persistence;
 using MessagePack;
 
 namespace FoodSphere.Common.Service;

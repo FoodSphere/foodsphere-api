@@ -1,8 +1,12 @@
+global using System.Linq.Expressions;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
+global using Microsoft.EntityFrameworkCore;
+global using LinqKit;
 global using FoodSphere.Common.Entity;
 global using FoodSphere.Common.Constant;
 global using FoodSphere.Common.DTO;
 global using FoodSphere.Common.Options;
+global using FoodSphere.Infrastructure.Persistence;

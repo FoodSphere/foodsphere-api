@@ -46,20 +46,20 @@ public class BranchResponse //: IDTO<Branch, BranchResponse>
     /// <example>22:00</example>
     public TimeOnly? closing_time { get; set; }
 
-    public static BranchResponse FromModel(Branch model)
-    {
-        return new BranchResponse
+    public static readonly Func<Branch, BranchResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Branch, BranchResponse>> Projection =>
+        model => new BranchResponse
         {
             id = model.Id,
             create_time = model.CreateTime,
             update_time = model.UpdateTime,
             restaurant_id = model.RestaurantId,
-            contact = ContactDto.FromModel(model.Contact),
+            contact = model.Contact == null ? null : ContactDto.Projection.Invoke(model.Contact),
             name = model.Name,
             display_name = model.DisplayName,
             address = model.Address,
             opening_time = model.OpeningTime,
             closing_time = model.ClosingTime,
         };
-    }
 }

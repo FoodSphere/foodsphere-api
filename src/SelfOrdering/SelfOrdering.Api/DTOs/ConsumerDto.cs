@@ -7,16 +7,16 @@ public class ConsumerResponse
     public string? name { get; set; }
     public string? phone { get; set; }
 
-    public static ConsumerResponse FromModel(ConsumerUser model)
-    {
-        return new ConsumerResponse
+    public static readonly Func<ConsumerUser, ConsumerResponse> Project = Projection.Compile();
+
+    public static Expression<Func<ConsumerUser, ConsumerResponse>> Projection =>
+        model => new ConsumerResponse
         {
             id = model.Id,
             email = model.Email,
             name = model.Name,
             phone = model.Phone,
         };
-    }
 }
 
 public class SetConsumerRequest

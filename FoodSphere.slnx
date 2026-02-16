@@ -8,7 +8,7 @@
     <Project Path="src/Infrastructure/Persistence/FoodSphere.Infrastructure.Persistence.csproj" />
   </Folder>
   <Folder Name="/API/">
-    <Project Path="src/Resource/Resource.Api/FoodSphere.Resource.Api.csproj" />
+    <!-- <Project Path="src/Resource/Resource.Api/FoodSphere.Resource.Api.csproj" /> -->
     <Project Path="src/Pos/Pos.Api/FoodSphere.Pos.Api.csproj" />
     <Project Path="src/SelfOrdering/SelfOrdering.Api/FoodSphere.SelfOrdering.Api.csproj" />
     <Project Path="src/Consumer/Consumer.Api/FoodSphere.Consumer.Api.csproj" />

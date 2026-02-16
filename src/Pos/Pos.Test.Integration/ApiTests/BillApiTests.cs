@@ -15,8 +15,6 @@ public class BillApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         await builder.Commit();
         var requestBody = new BillRequest
         {
-            restaurant_id = restaurant.Id,
-            branch_id = branch.Id,
             table_id = table.Id,
             // consumer_id = null,
             pax = (short)Random.Shared.Next(1, 20),
@@ -24,15 +22,15 @@ public class BillApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
 
         await Authenticate(owner);
 
-        var response = await _client.PostAsJsonAsync($"bills", requestBody, TestContext.Current.CancellationToken);
+        var response = await _client.PostAsJsonAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/bills", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created, content);
 
         var responseBody = await response.Content.ReadFromJsonAsync<BillResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
-        responseBody.restaurant_id.Should().Be(requestBody.restaurant_id);
-        responseBody.branch_id.Should().Be(requestBody.branch_id);
+        responseBody.restaurant_id.Should().Be(restaurant.Id);
+        responseBody.branch_id.Should().Be(branch.Id);
         responseBody.table_id.Should().Be(requestBody.table_id);
         responseBody.consumer_id.Should().Be(requestBody.consumer_id);
 
@@ -56,7 +54,7 @@ public class BillApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         await builder.Commit();
         await Authenticate(owner);
 
-        var response = await _client.GetAsync($"bills/{bill.Id}", TestContext.Current.CancellationToken);
+        var response = await _client.GetAsync($"restaurants/{restaurant.Id}/branches/{branch.Id}/bills/{bill.Id}", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.OK, content);
 

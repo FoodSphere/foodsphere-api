@@ -22,14 +22,15 @@ public class BillResponse
     public short branch_id { get; set; }
     public short table_id { get; set; }
 
-    public List<OrderResponse> orders { get; set; } = [];
+    public IReadOnlyCollection<OrderResponse> orders { get; set; } = [];
 
     public short? pax { get; set; }
     public BillStatus status { get; set; }
 
-    public static BillResponse FromModel(Bill model)
-    {
-        return new BillResponse
+    public static readonly Func<Bill, BillResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Bill, BillResponse>> Projection =>
+        model => new BillResponse
         {
             id = model.Id,
             create_time = model.CreateTime,
@@ -38,9 +39,10 @@ public class BillResponse
             restaurant_id = model.RestaurantId,
             branch_id = model.BranchId,
             table_id = model.TableId,
-            orders = [.. model.Orders.Select(OrderResponse.FromModel)],
+            orders = model.Orders
+                .Select(e => OrderResponse.Projection.Invoke(e))
+                .ToArray(),
             pax = model.Pax,
             status = model.Status,
         };
-    }
 }

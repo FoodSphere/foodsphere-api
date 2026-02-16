@@ -11,13 +11,13 @@ public class InfoController(
     /// list permissions
     /// </summary>
     [HttpGet("permissions")]
-    public async Task<ActionResult<List<PermissionResponse>>> ListPermissions()
+    public async Task<ActionResult<ICollection<PermissionResponse>>> ListPermissions()
     {
         var permissions = await permissionService.ListPermissions();
 
         return permissions
-            .Select(PermissionResponse.FromModel)
-            .ToList();
+            .Select(PermissionResponse.Project)
+            .ToArray();
     }
 
     /// <summary>
@@ -26,14 +26,14 @@ public class InfoController(
     [HttpGet("restaurants/{restaurant_id}")]
     public async Task<ActionResult<RestaurantResponse>> GetRestaurant(Guid restaurant_id)
     {
-        var restaurant = await restaurantService.GetRestaurant(restaurant_id);
+        var response = await restaurantService.GetRestaurant(restaurant_id, RestaurantResponse.Projection);
 
-        if (restaurant is null)
+        if (response is null)
         {
             return NotFound();
         }
 
-        return RestaurantResponse.FromModel(restaurant);
+        return response;
     }
 
     /// <summary>
@@ -42,13 +42,13 @@ public class InfoController(
     [HttpGet("restaurants/{restaurant_id}/branches/{branch_id}")]
     public async Task<ActionResult<BranchResponse>> GetBranch(Guid restaurant_id, short branch_id)
     {
-        var branch = await branchService.GetBranch(restaurant_id, branch_id);
+        var response = await branchService.GetBranch(restaurant_id, branch_id, BranchResponse.Projection);
 
-        if (branch is null)
+        if (response is null)
         {
             return NotFound();
         }
 
-        return BranchResponse.FromModel(branch);
+        return response;
     }
 }

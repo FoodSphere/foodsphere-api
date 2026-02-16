@@ -34,25 +34,31 @@ public class SingleRestaurantController(
 
         await branchService.SaveChanges();
 
+        var response = await branchService.GetBranch(
+            restaurant.Id, 1,
+            SingleRestaurantResponse.Projection);
+
         return CreatedAtAction(
             nameof(SingleInfoController.GetRestaurant),
             GetControllerName(nameof(SingleInfoController)),
             new { restaurant_id = restaurant.Id },
-            SingleRestaurantResponse.FromModel(branch)
-        );
+            response);
     }
 
     /// <summary>
     /// list owned restaurants
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<SingleRestaurantResponse[]>> ListMyRestaurants()
+    public async Task<ActionResult<ICollection<SingleRestaurantResponse>>> ListOwnedRestaurants()
     {
-        var branches = await branchService.ListDefaultBranches(MasterId);
+        var responses = await branchService.QueryBranches()
+            .Where(e =>
+                e.Restaurant.OwnerId == MasterId &&
+                e.Id == 1)
+            .Select(SingleRestaurantResponse.Projection)
+            .ToArrayAsync();
 
-        return branches
-            .Select(SingleRestaurantResponse.FromModel)
-            .ToArray();
+        return responses;
     }
 
     /// <summary>
@@ -61,17 +67,7 @@ public class SingleRestaurantController(
     [HttpPut("{restaurant_id}")]
     public async Task<ActionResult<SingleRestaurantResponse>> UpdateRestaurant(Guid restaurant_id, SingleRestaurantRequest body)
     {
-        var branch = await branchService.GetDefaultBranch(restaurant_id);
-
-        if (branch is null)
-        {
-            return NotFound();
-        }
-
-        if (body.contact is not null)
-        {
-            await restaurantService.SetContact(branch.Restaurant, body.contact);
-        }
+        var branch = branchService.GetBranchStub(restaurant_id, 1);
 
         branch.Restaurant.Name = body.name;
         branch.Restaurant.DisplayName = body.display_name;
@@ -79,8 +75,19 @@ public class SingleRestaurantController(
         branch.OpeningTime = body.opening_time;
         branch.ClosingTime = body.closing_time;
 
-        await restaurantService.SaveChanges();
+        if (body.contact is not null)
+        {
+            var restaurant = restaurantService.GetRestaurantStub(restaurant_id);
+            await restaurantService.SetContact(restaurant, body.contact);
+        }
 
-        return SingleRestaurantResponse.FromModel(branch);
+        var affected = await branchService.SaveChanges();
+
+        if (affected == 0)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
     }
 }

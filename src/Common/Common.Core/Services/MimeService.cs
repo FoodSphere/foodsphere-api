@@ -9,7 +9,7 @@ public class MimeService
         var provider = new FileExtensionContentTypeProvider();
         var extensionName = provider.Mappings.FirstOrDefault(x => x.Value == contentType).Key;
 
-        if (extensionName != null)
+        if (extensionName is not null)
         {
             return extensionName;
         }

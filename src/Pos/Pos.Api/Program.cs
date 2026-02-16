@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -11,6 +10,12 @@ using FoodSphere.Pos.Api.Configuration;
 using FoodSphere.Pos.Api.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// builder.Services.AddHealthChecks() vs app.MapHealthChecks() vs app.MapdefaultEndpoints()
+builder.AddServiceDefaults();
+
+// builder.Services.AddHealthChecks()
+//     .AddCheck<HealthCheck>("custom_health_check");
 
 if (builder.Environment.IsDevelopment())
 {
@@ -48,12 +53,6 @@ else
     throw new InvalidOperationException("unsupported environment");
 }
 
-// builder.Services.AddHealthChecks() vs app.MapHealthChecks() vs app.MapdefaultEndpoints()
-builder.AddServiceDefaults();
-
-// builder.Services.AddHealthChecks()
-//     .AddCheck<HealthCheck>("custom_health_check");
-
 builder.Services.AddConnectionStringsOptions();
 builder.Services.AddS3Options();
 builder.Services.AddDomainApiOptions();
@@ -79,7 +78,7 @@ builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
     optionsBuilder.UseLazyLoadingProxies();
     optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
     {
-        sqlOptions.EnableRetryOnFailure(2);
+        // sqlOptions.EnableRetryOnFailure(2);
     });
 
     if (builder.Environment.IsDevelopment())
@@ -132,8 +131,11 @@ builder.Services.AddScoped<StaffPortalService>();
 builder.Services.AddScoped<RestaurantService>();
 builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();
-builder.Services.AddScoped<MenuUpdateService>();
+builder.Services.AddScoped<MenuService>();
+builder.Services.AddScoped<MenuImageService>();
 builder.Services.AddScoped<IngredientService>();
+builder.Services.AddScoped<IngredientService>();
+builder.Services.AddScoped<IngredientImageService>();
 builder.Services.AddScoped<TagService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<RoleService>();
@@ -150,6 +152,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(JsonConfiguration.Configure());
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 // builder.Services.AddProblemDetails(); // RFC 9457, Result.Problem()
 // builder.Services.AddOpenApi();
 

@@ -7,18 +7,6 @@ public class StaffPortalService(
     StaffAuthService staffAuthService
 ) : ServiceBase(context)
 {
-    public async Task<StaffPortal?> GetStaffPortal(Guid portal_id)
-    {
-        var portal = await _ctx.FindAsync<StaffPortal>(portal_id);
-
-        if (portal is null || !portal.IsValid())
-        {
-            return null;
-        }
-
-        return portal;
-    }
-
     public async Task<string> GenerateToken(StaffPortal portal) {
         if (!portal.IsValid())
         {
@@ -32,7 +20,7 @@ public class StaffPortalService(
         return token;
     }
 
-    public async Task<StaffPortal> CreateStaffPortal(
+    public async Task<StaffPortal> CreatePortal(
         Guid restaurantId,
         short branchId,
         short staffId,
@@ -53,8 +41,44 @@ public class StaffPortalService(
         return portal;
     }
 
-    public async Task<StaffPortal> CreateStaffPortal(StaffUser staff, TimeSpan? validDuration = null)
+    public StaffPortal GetPortalStub(Guid portalId)
     {
-        return await CreateStaffPortal(staff.RestaurantId, staff.BranchId, staff.Id, validDuration);
+        var portal = new StaffPortal
+        {
+            Id = portalId,
+        };
+
+        _ctx.Attach(portal);
+
+        return portal;
+    }
+
+    public async Task<StaffPortal> CreatePortal(StaffUser staff, TimeSpan? validDuration = null)
+    {
+        return await CreatePortal(staff.RestaurantId, staff.BranchId, staff.Id, validDuration);
+    }
+
+    public IQueryable<StaffPortal> QueryPortals()
+    {
+        return _ctx.Set<StaffPortal>()
+            .AsExpandable();
+    }
+
+    public IQueryable<StaffPortal> QuerySinglePortal(Guid portalId)
+    {
+        return QueryPortals()
+            .Where(e => e.Id == portalId);
+    }
+
+    public async Task<TDto?> GetPortal<TDto>(Guid portal_id, Expression<Func<StaffPortal, TDto>> projection)
+    {
+        return await QuerySinglePortal(portal_id)
+            .Select(projection)
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<StaffPortal?> GetPortal(Guid portal_id)
+    {
+        return await _ctx.FindAsync<StaffPortal>(portal_id);
     }
 }

@@ -19,9 +19,10 @@ public class PortalResponse
     public short usage_count { get; set; }
     public TimeSpan? valid_duration { get; set; }
 
-    public static PortalResponse FromModel(SelfOrderingPortal model)
-    {
-        return new PortalResponse
+    public static readonly Func<SelfOrderingPortal, PortalResponse> Project = Projection.Compile();
+
+    public static Expression<Func<SelfOrderingPortal, PortalResponse>> Projection =>
+        model => new PortalResponse
         {
             id = model.Id,
             bill_id = model.BillId,
@@ -31,5 +32,4 @@ public class PortalResponse
             usage_count = model.UsageCount,
             valid_duration = model.ValidDuration
         };
-    }
 }

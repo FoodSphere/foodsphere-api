@@ -30,7 +30,7 @@ public class BranchResponse //: IDTO<Branch, BranchResponse>
             create_time = model.CreateTime,
             update_time = model.UpdateTime,
             restaurant_id = model.RestaurantId,
-            contact = ContactDto.FromModel(model.Contact),
+            contact = model.Contact is null ? null : ContactDto.Project(model.Contact),
             name = model.Name,
             display_name = model.DisplayName,
         };

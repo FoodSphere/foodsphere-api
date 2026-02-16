@@ -19,16 +19,16 @@ public class RestaurantBranchResponse
     /// <example>22:00</example>
     public TimeOnly? closing_time { get; set; }
 
-    public static RestaurantBranchResponse FromModel(Restaurant restaurant, Branch branch)
-    {
-        return new RestaurantBranchResponse
+    public static readonly Func<Branch, RestaurantBranchResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Branch, RestaurantBranchResponse>> Projection =>
+        model => new RestaurantBranchResponse
         {
-            contact = ContactDto.FromModel(branch.Contact ?? restaurant.Contact)!,
-            restaurant_name = restaurant.DisplayName ?? restaurant.Name,
-            branch_name = branch.DisplayName ?? branch.Name,
-            address = branch.Address,
-            opening_time = branch.OpeningTime,
-            closing_time = branch.ClosingTime,
+            contact = ContactDto.Projection.Invoke(model.Contact ?? model.Restaurant.Contact),
+            restaurant_name = model.Restaurant.DisplayName ?? model.Restaurant.Name,
+            branch_name = model.DisplayName ?? model.Name,
+            address = model.Address,
+            opening_time = model.OpeningTime,
+            closing_time = model.ClosingTime,
         };
-    }
 }

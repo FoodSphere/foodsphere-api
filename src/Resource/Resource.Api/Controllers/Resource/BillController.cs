@@ -1,190 +1,34 @@
-namespace FoodSphere.Resource.Api.Controller;
+// namespace FoodSphere.Resource.Api.Controller;
 
-[Route("bills")]
-public class BillController(
-    ILogger<BillController> logger,
-    BillService billService,
-    MenuService menuService,
-    BranchService branchService
-) : ResourceControllerBase
-{
-    [HttpGet]
-    public async Task<ActionResult<List<BillResponse>>> ListBills()
-    {
-        var bills = await billService.ListBills();
+// [Route("bills")]
+// public class BillController(
+//     ILogger<BillController> logger,
+//     BillService billService,
+//     MenuUpdateService menuService,
+//     BranchService branchService
+// ) : ResourceControllerBase
+// {
+//     [HttpGet]
+//     public async Task<ActionResult<ICollection<BillResponse>>> ListBills()
+//     {
+//         var query = billService.QueryBills();
 
-        return bills.Select(BillResponse.FromModel).ToList();
-    }
+//         var responses = await query
+//             .Select(BillResponse.Projection)
+//             .ToArrayAsync();
 
-    [HttpPost]
-    public async Task<ActionResult<BillResponse>> CreateBill(BillRequest body)
-    {
-        var table = await branchService.GetTable(
-            restaurantId: body.restaurant_id,
-            branchId: body.branch_id,
-            tableId: body.table_id
-        );
+//         return responses;
+//     }
 
-        if (table is null)
-        {
-            return NotFound();
-        }
+//     [HttpGet("{bill_id}/orders")]
+//     public async Task<ActionResult<ICollection<OrderResponse>>> ListOrders(Guid bill_id)
+//     {
+//         var query = billService.QueryOrders(bill_id);
 
-        var bill = await billService.CreateBill(
-            consumerId: body.consumer_id,
-            table: table,
-            pax: body.pax
-        );
+//         var responses = await query
+//             .Select(OrderResponse.Projection)
+//             .ToArrayAsync();
 
-        await billService.SaveChanges();
-
-        return CreatedAtAction(
-            nameof(GetBill),
-            new { bill_id = bill.Id },
-            BillResponse.FromModel(bill)
-        );
-    }
-
-    [HttpGet("{bill_id}")]
-    public async Task<ActionResult<BillResponse>> GetBill(Guid bill_id)
-    {
-        var bill = await billService.GetBill(bill_id);
-
-        if (bill is null) return NotFound();
-
-        return BillResponse.FromModel(bill);
-    }
-
-    // [HttpPut("{bill_id}")]
-    // public async Task<ActionResult> UpdateBill(Guid bill_id, BillRequest bill)
-    // {
-    //     return NoContent();
-    // }
-
-    [HttpDelete("{bill_id}")]
-    public async Task<ActionResult> DeleteBill(Guid bill_id)
-    {
-        var bill = await billService.GetBill(bill_id);
-
-        if (bill is null)
-        {
-            return NotFound();
-        }
-
-        await billService.DeleteBill(bill);
-        await billService.SaveChanges();
-
-        return NoContent();
-    }
-
-    [HttpPost("{bill_id}/orders")]
-    public async Task<ActionResult<OrderResponse>> CreateOrder(Guid bill_id, OrderRequest body)
-    {
-        var bill = await billService.GetBill(bill_id);
-
-        if (bill is null)
-        {
-            return NotFound();
-        }
-
-        var order = await billService.CreateOrder(bill);
-
-        foreach (var item in body.items)
-        {
-            var menu = await menuService.FindMenu(bill.RestaurantId, item.menu_id);
-
-            if (menu is null)
-            {
-                return NotFound();
-            }
-
-            await billService.CreateOrderItem(order, menu, item.quantity, item.note);
-        }
-
-        await billService.SaveChanges();
-
-        return CreatedAtAction(
-            nameof(GetOrder),
-            new { bill_id, order_id = order.Id },
-            OrderResponse.FromModel(order)
-        );
-    }
-
-    [HttpGet("{bill_id}/orders")]
-    public async Task<ActionResult<List<OrderResponse>>> ListOrders(Guid bill_id)
-    {
-        var orders = await billService.ListOrders(bill_id);
-
-        return orders
-            .Select(OrderResponse.FromModel)
-            .ToList();
-    }
-
-    [HttpGet("{bill_id}/orders/{order_id}")]
-    public async Task<ActionResult<OrderResponse>> GetOrder(Guid bill_id, short order_id)
-    {
-        var order = await billService.GetOrder(bill_id, order_id);
-
-        if (order is null)
-        {
-            return NotFound();
-        }
-
-        return OrderResponse.FromModel(order);
-    }
-
-    [HttpPost("{bill_id}/orders/{order_id}/status")]
-    public async Task<ActionResult<OrderResponse>> UpdateOrderStatus(Guid bill_id, short order_id, OrderStatusRequest body)
-    {
-        var order = await billService.GetOrder(bill_id, order_id);
-
-        if (order is null)
-        {
-            return NotFound();
-        }
-
-        await billService.UpdateOrderStatus(order, body.status);
-        await billService.SaveChanges();
-
-        return OrderResponse.FromModel(order);
-    }
-
-    [HttpPost("{bill_id}/orders/{order_id}/items")]
-    public async Task<ActionResult> SetOrderItem(Guid bill_id, short order_id, OrderItemRequest body)
-    {
-        var order = await billService.GetOrder(bill_id, order_id);
-
-        if (order is null)
-        {
-            return NotFound();
-        }
-
-        var menu = await menuService.FindMenu(order.Bill.RestaurantId, body.menu_id);
-
-        if (menu is null)
-        {
-            return NotFound();
-        }
-
-        await billService.CreateOrderItem(order, menu, body.quantity, body.note);
-        await billService.SaveChanges();
-
-        return NoContent();
-    }
-
-    [HttpDelete("{bill_id}/orders/{order_id}")]
-    public async Task<ActionResult> DeleteOrder(Guid bill_id, short order_id)
-    {
-        var order = await billService.GetOrder(bill_id, order_id);
-
-        if (order is null)
-        {
-            return NotFound();
-        }
-
-        await billService.DeleteOrder(order);
-        await billService.SaveChanges();
-
-        return NoContent();
-    }
-}
+//         return responses;
+//     }
+// }

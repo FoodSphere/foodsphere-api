@@ -27,7 +27,7 @@ public class RestaurantResponse
             id = model.Id,
             create_time = model.CreateTime,
             update_time = model.UpdateTime,
-            contact = ContactDto.FromModel(model.Contact)!,
+            contact = ContactDto.Project(model.Contact)!,
             name = model.Name,
             display_name = model.DisplayName,
         };

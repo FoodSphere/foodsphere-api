@@ -4,13 +4,19 @@
 dotnet_diagnostic.IDE0130.severity = none
 
 # CA1050: Declare types in namespaces
-dotnet_diagnostic.CA1050.severity = none
+dotnet_diagnostic.CA1050.severity = suggestion
 
 # CS1587: XML comment is not placed on a valid language element
-dotnet_diagnostic.CS1587.severity = none
+dotnet_diagnostic.CS1587.severity = suggestion
 
 # ASPIREPIPELINES003: Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 dotnet_diagnostic.ASPIREPIPELINES003.severity = suggestion
 
 # ASPIRECOMPUTE003: Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 dotnet_diagnostic.ASPIRECOMPUTE003.severity = suggestion
+
+# CS9113: Parameter unread
+dotnet_diagnostic.CS9113.severity = suggestion
+
+# VSTHRD200: Use Async suffix for async methods
+dotnet_diagnostic.VSTHRD200.severity = suggestion

@@ -53,7 +53,7 @@
     {
       "label": "redeploy",
       "type": "shell",
-      "command": "aspire do push && kubectl rollout restart deployment pos-api-deployment && kubectl rollout restart deployment ordering-api-deployment && kubectl rollout restart deployment resource-api-deployment"
+      "command": "aspire do push && kubectl rollout restart deployment pos-api-deployment && kubectl rollout restart deployment ordering-api-deployment #&& kubectl rollout restart deployment resource-api-deployment"
     }
   ]
 }

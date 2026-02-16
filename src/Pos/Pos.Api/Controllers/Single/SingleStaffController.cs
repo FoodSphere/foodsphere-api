@@ -9,34 +9,19 @@ public class SingleStaffController(
 ) : PosControllerBase
 {
     /// <summary>
-    /// create staff's portal
-    /// </summary>
-    [HttpPost("{staff_id}/portal")]
-    public async Task<ActionResult<SingleStaffPortalResponse>> CreatePortal(Guid restaurant_id, short staff_id, StaffPortalRequest body)
-    {
-        var staff = await staffService.GetDefaultStaff(restaurant_id, staff_id);
-
-        if (staff is null)
-        {
-            return NotFound();
-        }
-
-        var portal = await staffPortalService.CreateStaffPortal(staff, body.valid_duration);
-
-        return SingleStaffPortalResponse.FromModel(portal);
-    }
-
-    /// <summary>
     /// list staffs
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<SingleStaffResponse[]>> ListStaffs(Guid restaurant_id)
+    public async Task<ActionResult<ICollection<SingleStaffResponse>>> ListStaffs(Guid restaurant_id)
     {
-        var staffs = await staffService.ListDefaultStaffs(restaurant_id);
+        var responses = await staffService.QueryStaffs()
+            .Where(e =>
+                e.RestaurantId == restaurant_id &&
+                e.BranchId == 1)
+            .Select(SingleStaffResponse.Projection)
+            .ToArrayAsync();
 
-        return staffs
-            .Select(SingleStaffResponse.FromModel)
-            .ToArray();
+        return responses;
     }
 
     /// <summary>
@@ -45,12 +30,7 @@ public class SingleStaffController(
     [HttpPost]
     public async Task<ActionResult<SingleStaffResponse>> CreateStaff(Guid restaurant_id, StaffRequest body)
     {
-        var branch = await branchService.GetDefaultBranch(restaurant_id);
-
-        if (branch is null)
-        {
-            return NotFound();
-        }
+        var branch = branchService.GetBranchStub(restaurant_id, 1);
 
         var staff = await staffService.CreateStaff(
             branch: branch,
@@ -65,13 +45,14 @@ public class SingleStaffController(
 
         await staffService.SaveChanges();
 
-        // get staff?
+        var response = await staffService.GetStaff(
+            restaurant_id, 1, staff.Id,
+            SingleStaffResponse.Projection);
 
         return CreatedAtAction(
             nameof(GetStaff),
             new { restaurant_id, staff_id = staff.Id },
-            SingleStaffResponse.FromModel(staff)
-        );
+            response);
     }
 
     /// <summary>
@@ -80,14 +61,16 @@ public class SingleStaffController(
     [HttpGet("{staff_id}")]
     public async Task<ActionResult<SingleStaffResponse>> GetStaff(Guid restaurant_id, short staff_id)
     {
-        var staff = await staffService.GetDefaultStaff(restaurant_id, staff_id);
+        var response = await staffService.GetStaff(
+            restaurant_id, 1, staff_id,
+            SingleStaffResponse.Projection);
 
-        if (staff is null)
+        if (response is null)
         {
             return NotFound();
         }
 
-        return SingleStaffResponse.FromModel(staff);
+        return response;
     }
 
     /// <summary>
@@ -96,7 +79,7 @@ public class SingleStaffController(
     [HttpDelete("{staff_id}")]
     public async Task<ActionResult> DeleteStaff(Guid restaurant_id, short staff_id)
     {
-        var staff = await staffService.GetDefaultStaff(restaurant_id, staff_id);
+        var staff = await staffService.GetStaff(restaurant_id, 1, staff_id);
 
         if (staff is null)
         {
@@ -107,5 +90,66 @@ public class SingleStaffController(
         await staffService.SaveChanges();
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// list staff's portals
+    /// </summary>
+    [HttpGet("{staff_id}/portals")]
+    public async Task<ActionResult<ICollection<SingleStaffPortalResponse>>> ListPortals(Guid restaurant_id, short staff_id)
+    {
+        var responses = await staffPortalService.QueryPortals()
+            .Where(e =>
+                e.RestaurantId == restaurant_id &&
+                e.BranchId == 1 &&
+                e.StaffId == staff_id)
+            .Select(SingleStaffPortalResponse.Projection)
+            .ToArrayAsync();
+
+        return responses;
+    }
+
+    /// <summary>
+    /// create staff's portal
+    /// </summary>
+    [HttpPost("{staff_id}/portal")]
+    public async Task<ActionResult<SingleStaffPortalResponse>> CreatePortal(
+        Guid restaurant_id, short staff_id, StaffPortalRequest body)
+    {
+        var staff = staffService.GetStaffStub(restaurant_id, 1, staff_id);
+
+        var portal = await staffPortalService.CreatePortal(staff, body.valid_duration);
+
+        await staffPortalService.SaveChanges();
+
+        var response = StaffPortalResponse.Project(portal);
+
+        return CreatedAtAction(
+            nameof(GetPortal),
+            new { restaurant_id, staff_id, portal_id = portal.Id },
+            response);
+    }
+
+    /// <summary>
+    /// get staff's portal
+    /// </summary>
+    [HttpGet("{staff_id}/portals/{portal_id}")]
+    public async Task<ActionResult<SingleStaffPortalResponse>> GetPortal(
+        Guid restaurant_id, short staff_id, Guid portal_id)
+    {
+        var response = await staffPortalService.QuerySinglePortal(portal_id)
+            .Where(e =>
+                e.RestaurantId == restaurant_id &&
+                e.BranchId == 1 &&
+                e.StaffId == staff_id)
+            .Select(SingleStaffPortalResponse.Projection)
+            .SingleOrDefaultAsync();
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return response;
     }
 }

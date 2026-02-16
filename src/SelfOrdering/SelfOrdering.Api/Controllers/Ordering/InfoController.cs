@@ -2,6 +2,7 @@ namespace FoodSphere.SelfOrdering.Api.Controller;
 
 public class InfoController(
     ILogger<InfoController> logger,
+    BillService billService,
     RestaurantService restaurantService,
     BranchService branchService,
     MenuService menuService
@@ -10,47 +11,61 @@ public class InfoController(
     [HttpGet("restaurant")]
     public async Task<ActionResult<RestaurantBranchResponse>> GetRestaurant()
     {
-        var restaurantId = Member.Bill.RestaurantId;
-        var branchId = Member.Bill.BranchId;
+        var query = await billService.QuerySingleBill(Member.BillId)
+            .Select(e => new { e.RestaurantId, e.BranchId })
+            .SingleOrDefaultAsync();
 
-        var restaurant = await restaurantService.GetRestaurant(restaurantId);
-        var branch = await branchService.GetBranch(restaurantId, branchId);
-
-        if (branch is null || restaurant is null)
+        if (query is null)
         {
             return NotFound();
         }
 
-        return RestaurantBranchResponse.FromModel(restaurant, branch);
+        var response = await branchService.GetBranch(
+            query.RestaurantId, query.BranchId,
+            RestaurantBranchResponse.Projection);
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return response;
     }
 
     [HttpGet("menus")]
-    public async Task<ActionResult<List<MenuResponse>>> ListMenus()
+    public async Task<ActionResult<ICollection<MenuResponse>>> ListMenus()
     {
-        var restaurantId = Member.Bill.RestaurantId;
+        var restaurantId = await billService.QuerySingleBill(Member.BillId)
+            .Select(e => e.RestaurantId)
+            .SingleOrDefaultAsync();
 
-        var menu = await menuService.ListMenus(restaurantId);
+        var responses = await menuService.QueryMenus()
+            .Where(e => e.RestaurantId == restaurantId)
+            .Select(MenuResponse.Projection)
+            .ToArrayAsync();
 
-        if (menu is null)
+        if (responses is null)
         {
             return NotFound();
         }
 
-        return menu.Select(MenuResponse.FromModel).ToList();
+        return responses;
     }
 
     [HttpGet("menus/{menu_id}")]
     public async Task<ActionResult<MenuResponse>> GetMenu(short menu_id)
     {
-        var restaurantId = Member.Bill.RestaurantId;
+        var restaurantId = await billService.QuerySingleBill(Member.BillId)
+            .Select(e => e.RestaurantId)
+            .SingleOrDefaultAsync();
 
-        var menu = await menuService.FindMenu(restaurantId, menu_id);
+        var response = await menuService.GetMenu(restaurantId, menu_id, MenuResponse.Projection);
 
-        if (menu is null)
+        if (response is null)
         {
             return NotFound();
         }
 
-        return MenuResponse.FromModel(menu);
+        return response;
     }
 }

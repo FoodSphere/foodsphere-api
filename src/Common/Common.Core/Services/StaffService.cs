@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using FoodSphere.Infrastructure.Persistence;
-
 namespace FoodSphere.Common.Service;
 
 public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
@@ -26,9 +23,28 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
         string? phone = null,
         CancellationToken ct = default
     ) {
-        var lastId = await _ctx.Set<StaffUser>()
-            .Where(staff => staff.RestaurantId == restaurantId && staff.BranchId == branchId)
-            .MaxAsync(staff => (short?)staff.Id, ct) ?? 0;
+        int lastId;
+        var hasPendingAdds = _ctx.ChangeTracker.Entries<StaffUser>()
+            .Any(e =>
+                e.State == EntityState.Added &&
+                e.Entity.RestaurantId == restaurantId);
+
+        if (hasPendingAdds)
+        {
+            lastId = _ctx.Set<StaffUser>().Local
+                .Where(e =>
+                    e.RestaurantId == restaurantId &&
+                    e.BranchId == branchId)
+                .Max(e => (int?)e.Id) ?? 0;
+        }
+        else
+        {
+            lastId = await _ctx.Set<StaffUser>()
+                .Where(e =>
+                    e.RestaurantId == restaurantId &&
+                    e.BranchId == branchId)
+                .MaxAsync(e => (int?)e.Id, ct) ?? 0;
+        }
 
         var staff = new StaffUser
         {
@@ -42,6 +58,58 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
         _ctx.Add(staff);
 
         return staff;
+    }
+
+    public StaffUser GetStaffStub(Guid restaurantId, short branchId, short staffId)
+    {
+        var staff = new StaffUser
+        {
+            RestaurantId = restaurantId,
+            BranchId = branchId,
+            Id = staffId,
+            Name = default!,
+        };
+
+        _ctx.Attach(staff);
+
+        return staff;
+    }
+
+    public IQueryable<StaffUser> QueryStaffs()
+    {
+        return _ctx.Set<StaffUser>()
+            .AsExpandable();
+    }
+
+    public IQueryable<StaffUser> QuerySingleStaff(Guid restaurantId, short branchId, short staffId)
+    {
+        return QueryStaffs()
+            .Where(e =>
+                e.RestaurantId == restaurantId &&
+                e.BranchId == branchId &&
+                e.Id == staffId);
+    }
+
+    public async Task<TDto?> GetStaff<TDto>(
+        Guid restaurantId, short branchId, short staffId,
+        Expression<Func<StaffUser, TDto>> projection)
+    {
+        return await QuerySingleStaff(restaurantId, branchId, staffId)
+            .Select(projection)
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<StaffUser?> GetStaff(Guid restaurantId, short branchId, short staffId)
+    {
+        var existed = QuerySingleStaff(restaurantId, branchId, staffId)
+            .AnyAsync();
+
+        if (!await existed)
+        {
+            return null;
+        }
+
+        return GetStaffStub(restaurantId, branchId, staffId);
     }
 
     public async Task SetRoles(
@@ -93,30 +161,6 @@ public class StaffService(FoodSphereDbContext context) : ServiceBase(context)
 
         _ctx.RemoveRange(toRemove);
         await _ctx.AddRangeAsync(newEntities, ct);
-    }
-
-    public async Task<StaffUser?> GetStaff(Guid restaurantId, short branchId, short staffId)
-    {
-        return await _ctx.FindAsync<StaffUser>(restaurantId, branchId, staffId);
-    }
-
-    public async Task<StaffUser?> GetDefaultStaff(Guid restaurantId, short staffId)
-    {
-        return await _ctx.FindAsync<StaffUser>(restaurantId, 1, staffId);
-    }
-
-    public async Task<StaffUser[]> ListStaffs(Guid restaurantId, short branchId)
-    {
-        return await _ctx.Set<StaffUser>()
-            .Where(staff => staff.RestaurantId == restaurantId && staff.BranchId == branchId)
-            .ToArrayAsync();
-    }
-
-    public async Task<StaffUser[]> ListDefaultStaffs(Guid restaurantId)
-    {
-        return await _ctx.Set<StaffUser>()
-            .Where(staff => staff.RestaurantId == restaurantId && staff.BranchId == 1)
-            .ToArrayAsync();
     }
 
     public async Task DeleteStaff(StaffUser staff)

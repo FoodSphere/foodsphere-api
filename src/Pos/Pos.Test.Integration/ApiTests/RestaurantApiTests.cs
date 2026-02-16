@@ -11,7 +11,7 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         var (owner, _) = await builder.SeedMasterUser();
 
         await builder.Commit();
-        var requestBody = new QuickRestaurantRequest
+        var requestBody = new SingleRestaurantRequest
         {
             name = $"TEST.restaurant-name.{unique}",
             display_name = $"TEST.restaurant-display_name.{unique}",
@@ -32,19 +32,16 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created, content);
 
-        var responseBody = await response.Content.ReadFromJsonAsync<QuickRestaurantResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var responseBody = await response.Content.ReadFromJsonAsync<RestaurantResponse>(JsonSerializerOptions, TestContext.Current.CancellationToken);
         responseBody.Should().NotBeNull();
 
-        responseBody.restaurant_id.Should().NotBeEmpty();
-        responseBody.restaurant_contact.Should().BeEquivalentTo(requestBody.contact);
-        responseBody.restaurant_name.Should().Be(requestBody.name);
-        responseBody.restaurant_display_name.Should().Be(requestBody.display_name);
+        responseBody.id.Should().NotBeEmpty();
+        responseBody.contact.Should().BeEquivalentTo(requestBody.contact);
+        responseBody.name.Should().Be(requestBody.name);
+        responseBody.display_name.Should().Be(requestBody.display_name);
 
-        responseBody.branch_id.Should().Be(1);
-        responseBody.branch_name.Should().Be("main");
-        responseBody.branch_address.Should().Be(requestBody.address);
-        responseBody.branch_opening_time.Should().Be(requestBody.opening_time);
-        responseBody.branch_closing_time.Should().Be(requestBody.closing_time);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
     }
 
     [Fact]
@@ -67,7 +64,7 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
 
         responseBody.id.Should().Be(restaurant.Id);
         responseBody.contact.Should().BeEquivalentTo(
-            ContactDto.FromModel(restaurant.Contact));
+            ContactDto.Project(restaurant.Contact));
 
         responseBody.name.Should().Be(restaurant.Name);
         responseBody.display_name.Should().Be(restaurant.DisplayName);

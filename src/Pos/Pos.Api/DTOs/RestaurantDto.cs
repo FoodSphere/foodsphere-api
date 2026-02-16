@@ -26,18 +26,18 @@ public class RestaurantResponse
     /// <example>ร้านบิ๊กบัง</example>
     public string? display_name { get; set; }
 
-    public static RestaurantResponse FromModel(Restaurant model)
-    {
-        return new RestaurantResponse
+    public static readonly Func<Restaurant, RestaurantResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Restaurant, RestaurantResponse>> Projection =>
+        model => new RestaurantResponse
         {
             id = model.Id,
             create_time = model.CreateTime,
             update_time = model.UpdateTime,
-            contact = ContactDto.FromModel(model.Contact)!,
+            contact = ContactDto.Projection.Invoke(model.Contact),
             name = model.Name,
             display_name = model.DisplayName,
         };
-    }
 }
 
 public class SingleRestaurantRequest
@@ -81,17 +81,17 @@ public class SingleRestaurantResponse
     /// <example>22:00</example>
     public TimeOnly? closing_time { get; set; }
 
-    public static SingleRestaurantResponse FromModel(Branch branch)
-    {
-        return new SingleRestaurantResponse
+    public static readonly Func<Branch, SingleRestaurantResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Branch, SingleRestaurantResponse>> Projection =>
+        model => new SingleRestaurantResponse
         {
-            restaurant_id = branch.RestaurantId,
-            contact = ContactDto.FromModel(branch.Restaurant.Contact)!,
-            name = branch.Restaurant.Name,
-            display_name = branch.Restaurant.DisplayName,
-            address = branch.Address,
-            opening_time = branch.OpeningTime,
-            closing_time = branch.ClosingTime,
+            restaurant_id = model.RestaurantId,
+            contact = ContactDto.Projection.Invoke(model.Restaurant.Contact),
+            name = model.Restaurant.Name,
+            display_name = model.Restaurant.DisplayName,
+            address = model.Address,
+            opening_time = model.OpeningTime,
+            closing_time = model.ClosingTime,
         };
-    }
 }

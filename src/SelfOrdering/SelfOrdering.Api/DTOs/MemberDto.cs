@@ -10,12 +10,12 @@ public class BillMemberResponse
     public short id { get; set; }
     public string? name { get; set; }
 
-    public static BillMemberResponse FromModel(BillMember model)
-    {
-        return new BillMemberResponse
+    public static readonly Func<BillMember, BillMemberResponse> Project = Projection.Compile();
+
+    public static Expression<Func<BillMember, BillMemberResponse>> Projection =>
+        model => new BillMemberResponse
         {
             id = model.Id,
             name = model.Name,
         };
-    }
 }

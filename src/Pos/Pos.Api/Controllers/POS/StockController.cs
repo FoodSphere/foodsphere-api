@@ -10,34 +10,46 @@ public class StockController(
     /// list stocks
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<List<StockDto>>> ListStocks(Guid restaurant_id, short branch_id)
+    public async Task<ActionResult<ICollection<StockDto>>> ListStocks(Guid restaurant_id, short branch_id)
     {
-        var branch = await branchService.GetBranch(restaurant_id, branch_id);
+        var responses = await branchService.QueryStocks()
+            .Where(e =>
+                e.RestaurantId == restaurant_id &&
+                e.BranchId == branch_id)
+            .Select(StockDto.Projection)
+            .ToArrayAsync();
 
-        if (branch is null)
-        {
-            return NotFound();
-        }
-
-        return branch.IngredientStocks
-            .Select(StockDto.FromModel)
-            .ToList();
+        return responses;
     }
 
     /// <summary>
-    /// set stock
+    /// upsert stock
     /// </summary>
-    [HttpPost]
-    public async Task<ActionResult> SetStock(Guid restaurant_id, short branch_id, StockDto body)
+    [HttpPut]
+    public async Task<ActionResult> UpsertStock(Guid restaurant_id, short branch_id, StockDto body)
     {
-        var branch = await branchService.GetBranch(restaurant_id, branch_id);
+        var stock = await branchService.GetStock(restaurant_id, branch_id, body.ingredient_id);
 
-        if (branch is null)
+        if (stock is null)
         {
-            return NotFound();
+            var branch = branchService.GetBranchStub(restaurant_id, branch_id);
+
+            stock = await branchService.CreateStock(branch, body.ingredient_id ,body.amount);
+
+            await branchService.SaveChanges();
+
+            var response = await branchService.GetStock(
+                restaurant_id, branch_id, body.ingredient_id,
+                StockDto.Projection);
+
+            return CreatedAtAction(
+                nameof(GetStock),
+                new { restaurant_id, branch_id, ingredient_id = body.ingredient_id },
+                response);
         }
 
-        await branchService.SetStock(branch, body.ingredient_id, body.amount);
+        stock.Amount = body.amount;
+
         await branchService.SaveChanges();
 
         return NoContent();
@@ -47,16 +59,18 @@ public class StockController(
     /// get stock
     /// </summary>
     [HttpGet("{ingredient_id}")]
-    public async Task<ActionResult<StockDto>> GetStocks(Guid restaurant_id, short branch_id, short ingredient_id)
+    public async Task<ActionResult<StockDto>> GetStock(Guid restaurant_id, short branch_id, short ingredient_id)
     {
-        var stock = await branchService.GetStock(restaurant_id, branch_id, ingredient_id);
+        var response = await branchService.GetStock(
+            restaurant_id, branch_id, ingredient_id,
+            StockDto.Projection);
 
-        if (stock is null)
+        if (response is null)
         {
             return NotFound();
         }
 
-        return StockDto.FromModel(stock);
+        return response;
     }
 
     /// <summary>

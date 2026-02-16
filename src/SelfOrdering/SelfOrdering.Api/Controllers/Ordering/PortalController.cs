@@ -7,18 +7,14 @@ public class PortalController(
 ) : SelfOrderingControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<List<PortalResponse>>> ListPortals([FromQuery] Guid? portal_id)
+    public async Task<ActionResult<ICollection<PortalResponse>>> ListPortals()
     {
-        var portals = await orderingPortalService.ListPortals(Member.BillId);
+        var responses = await orderingPortalService.QueryPortals()
+            .Where(p => p.BillId == Member.BillId)
+            .Select(PortalResponse.Projection)
+            .ToArrayAsync();
 
-        if (portal_id is not null)
-        {
-            portals = [.. portals.Where(p => p.Id == portal_id)];
-        }
-
-        return portals
-            .Select(PortalResponse.FromModel)
-            .ToList();
+        return responses;
     }
 
     [HttpPost]
@@ -32,10 +28,27 @@ public class PortalController(
 
         await orderingPortalService.SaveChanges();
 
+        var response = PortalResponse.Project(portal);
+
         return CreatedAtAction(
             nameof(ListPortals),
             new { portal_id = portal.Id },
-            PortalResponse.FromModel(portal)
-        );
+            response);
+    }
+
+    [HttpGet("{portal_id}")]
+    public async Task<ActionResult<PortalResponse>> GetPortal(Guid portal_id)
+    {
+        var response = await orderingPortalService.QuerySinglePortal(portal_id)
+            .Where(p => p.BillId == Member.BillId)
+            .Select(PortalResponse.Projection)
+            .SingleOrDefaultAsync();
+
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return response;
     }
 }

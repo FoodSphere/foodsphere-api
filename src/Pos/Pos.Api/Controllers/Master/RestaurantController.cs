@@ -7,6 +7,20 @@ public class RestaurantController(
 ) : MasterControllerBase
 {
     /// <summary>
+    /// list owned restaurants
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<ICollection<RestaurantResponse>>> ListOwnedRestaurants()
+    {
+        var responses = await restaurantService.QueryRestaurants()
+            .Where(e => e.OwnerId == MasterId)
+            .Select(RestaurantResponse.Projection)
+            .ToArrayAsync();
+
+        return responses;
+    }
+
+    /// <summary>
     /// create restaurant
     /// </summary>
     [HttpPost]
@@ -25,68 +39,43 @@ public class RestaurantController(
 
         await restaurantService.SaveChanges();
 
+        var response = await restaurantService.GetRestaurant(
+            restaurant.Id, RestaurantResponse.Projection);
+
         return CreatedAtAction(
             nameof(InfoController.GetRestaurant),
             GetControllerName(nameof(InfoController)),
             new { restaurant_id = restaurant.Id },
-            RestaurantResponse.FromModel(restaurant)
-        );
+            response);
     }
 
     /// <summary>
-    /// list owned restaurants
+    /// update restaurant
     /// </summary>
-    [HttpGet]
-    public async Task<ActionResult<RestaurantResponse[]>> ListMyRestaurants()
+    [HttpPut("{restaurant_id}")]
+    public async Task<ActionResult> UpdateRestaurant(Guid restaurant_id, RestaurantRequest body)
     {
-        var restaurant = await restaurantService.ListRestaurants(MasterId);
+        var restaurant = restaurantService.GetRestaurantStub(restaurant_id);
 
-        return restaurant
-            .Select(RestaurantResponse.FromModel)
-            .ToArray();
-    }
+        // if (restaurant.OwnerId != MasterId)
+        // {
+        //     return Forbid();
+        // }
 
-    /// <summary>
-    /// get restaurant's contact
-    /// </summary>
-    [HttpGet("{restaurant_id}/contact")]
-    public async Task<ActionResult<ContactDto>> GetContact(Guid restaurant_id)
-    {
-        var restaurant = await restaurantService.GetRestaurant(restaurant_id);
+        restaurant.Name = body.name;
+        restaurant.DisplayName = body.display_name;
 
-        if (restaurant is null)
+        if (body.contact is not null)
+        {
+            await restaurantService.SetContact(restaurant, body.contact);
+        }
+
+        var affected = await restaurantService.SaveChanges();
+
+        if (affected == 0)
         {
             return NotFound();
         }
-
-        if (restaurant.OwnerId != MasterId)
-        {
-            return Forbid();
-        }
-
-        return ContactDto.FromModel(restaurant.Contact)!;
-    }
-
-    /// <summary>
-    /// set restaurant's contact
-    /// </summary>
-    [HttpPut("{restaurant_id}/contact")]
-    public async Task<ActionResult> SetContact(Guid restaurant_id, ContactDto body)
-    {
-        var restaurant = await restaurantService.GetRestaurant(restaurant_id);
-
-        if (restaurant is null)
-        {
-            return NotFound();
-        }
-
-        if (restaurant.OwnerId != MasterId)
-        {
-            return Forbid();
-        }
-
-        await restaurantService.SetContact(restaurant, body);
-        await restaurantService.SaveChanges();
 
         return NoContent();
     }
@@ -97,22 +86,39 @@ public class RestaurantController(
     [HttpDelete("{restaurant_id}")]
     public async Task<ActionResult> DeleteRestaurant(Guid restaurant_id)
     {
-        var restaurant = await restaurantService.GetRestaurant(restaurant_id);
+        var restaurant = restaurantService.GetRestaurantStub(restaurant_id);
 
-        if (restaurant is null)
+        // if (restaurant.OwnerId != MasterId)
+        // {
+        //     return Forbid();
+        // }
+
+        await restaurantService.DeleteRestaurant(restaurant);
+
+        var affected = await restaurantService.SaveChanges();
+
+        if (affected == 0)
         {
             return NotFound();
         }
 
-        if (restaurant.OwnerId != MasterId)
-        {
-            return Forbid();
-        }
-
-        await restaurantService.DeleteRestaurant(restaurant);
-        await restaurantService.SaveChanges();
-
         return NoContent();
+    }
+
+    /// <summary>
+    /// list restaurant's managers
+    /// </summary>
+    [HttpGet("{restaurant_id}/managers")]
+    public async Task<ActionResult<ICollection<RestaurantManagerResponse>>> ListManagers(Guid restaurant_id)
+    {
+        var responses = await restaurantService
+            .QueryManagers()
+            .Where(e =>
+                e.RestaurantId == restaurant_id)
+            .Select(RestaurantManagerResponse.Projection)
+            .ToArrayAsync();
+
+        return responses;
     }
 
     /// <summary>
@@ -121,23 +127,73 @@ public class RestaurantController(
     [HttpPost("{restaurant_id}/managers")]
     public async Task<ActionResult<RestaurantManagerResponse>> CreateManager(Guid restaurant_id, ManagerRequest body)
     {
-        var manager = await restaurantService.CreateManager(restaurant_id, body.master_id);
+        var manager = await restaurantService.CreateManager(
+            restaurantId: restaurant_id,
+            masterId: body.master_id
+        );
+
+        await restaurantService.SetManagerRoles(manager, body.roles);
 
         await restaurantService.SaveChanges();
 
-        return RestaurantManagerResponse.FromModel(manager);
+        var response = await restaurantService.GetManager(
+            restaurant_id, manager.MasterId,
+            RestaurantManagerResponse.Projection);
+
+        return CreatedAtAction(
+            nameof(GetManager),
+            new { restaurant_id, manager_id = manager.MasterId },
+            response);
     }
 
     /// <summary>
-    /// list restaurant's managers
+    /// get restaurant's manager
     /// </summary>
-    [HttpGet("{restaurant_id}/managers")]
-    public async Task<ActionResult<RestaurantManagerResponse[]>> ListManagers(Guid restaurant_id)
+    [HttpGet("{restaurant_id}/managers/{manager_id}")]
+    public async Task<ActionResult<RestaurantManagerResponse>> GetManager(Guid restaurant_id, string manager_id)
     {
-        var managers = await restaurantService.ListManagers(restaurant_id);
+        var response = await restaurantService.GetManager(
+            restaurant_id, manager_id,
+            RestaurantManagerResponse.Projection);
 
-        return managers
-            .Select(RestaurantManagerResponse.FromModel)
-            .ToArray();
+        if (response is null)
+        {
+            return NotFound();
+        }
+
+        return response;
+    }
+
+    /// <summary>
+    /// update restaurant's manager
+    /// </summary>
+    [HttpPut("{restaurant_id}/managers/{manager_id}")]
+    public async Task<ActionResult> UpdateManager(Guid restaurant_id, string manager_id, RestaurantManagerRequest body)
+    {
+        var manager = restaurantService.GetManagerStub(restaurant_id, manager_id);
+
+        await restaurantService.SetManagerRoles(manager, body.roles);
+
+        await restaurantService.SaveChanges();
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// delete restaurant's manager
+    /// </summary>
+    [HttpDelete("{restaurant_id}/managers/{manager_id}")]
+    public async Task<ActionResult> DeleteManager(Guid restaurant_id, string manager_id)
+    {
+        var affected = await restaurantService
+            .QuerySingleManager(restaurant_id, manager_id)
+            .ExecuteDeleteAsync();
+
+        if (affected == 0)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
     }
 }

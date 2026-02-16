@@ -1,26 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using FoodSphere.Infrastructure.Persistence;
-
 namespace FoodSphere.Common.Service;
 
 public class RoleService(
     FoodSphereDbContext dbContext
 ) : ServiceBase(dbContext)
 {
-    public async Task<Role?> GetRole(Guid restaurantId, short roleId)
-    {
-        return await _ctx.Set<Role>()
-            .Include(r => r.Permissions)
-            .FirstOrDefaultAsync(r => r.RestaurantId == restaurantId && r.Id == roleId);
-    }
-
-    public async Task<List<Role>> ListRoles(Guid restaurantId)
-    {
-        return await _ctx.Set<Role>()
-            .Where(r => r.RestaurantId == restaurantId)
-            .ToListAsync();
-    }
-
     public async Task<Role> CreateRole(
         Guid restaurantId,
         string name,
@@ -29,20 +12,21 @@ public class RoleService(
     ) {
         int lastId;
         var hasPendingAdds = _ctx.ChangeTracker.Entries<Role>()
-            .Any(e => e.State == EntityState.Added && e.Entity.RestaurantId == restaurantId);
+            .Any(e =>
+                e.State == EntityState.Added &&
+                e.Entity.RestaurantId == restaurantId);
 
         if (hasPendingAdds)
         {
             lastId = _ctx.Set<Role>().Local
-                .Where(role => role.RestaurantId == restaurantId)
-                .Max(role => (int?)role.Id) ?? 0;
+                .Where(e => e.RestaurantId == restaurantId)
+                .Max(e => (int?)e.Id) ?? 0;
         }
         else
         {
             lastId = await _ctx.Set<Role>()
-                .Where(role => role.RestaurantId == restaurantId)
-                .Select(role => (int?)role.Id)
-                .MaxAsync(ct) ?? 0;
+                .Where(e => e.RestaurantId == restaurantId)
+                .MaxAsync(e => (int?)e.Id, ct) ?? 0;
         }
 
         var role = new Role()
@@ -58,18 +42,52 @@ public class RoleService(
         return role;
     }
 
-    public async Task<bool> DeleteRole(Guid restaurantId, short roleId)
+    public Role GetRoleStub(Guid restaurantId, short roleId)
     {
-        var role = await _ctx.FindAsync<Role>(restaurantId, roleId);
-
-        if (role == null)
+        var role = new Role
         {
-            return false;
+            RestaurantId = restaurantId,
+            Id = roleId,
+            Name = default!,
+        };
+
+        _ctx.Attach(role);
+
+        return role;
+    }
+
+    public IQueryable<Role> QueryRoles()
+    {
+        return _ctx.Set<Role>()
+            .AsExpandable();
+    }
+
+    public IQueryable<Role> QuerySingleRole(Guid restaurantId, short roleId)
+    {
+        return QueryRoles()
+            .Where(e => e.RestaurantId == restaurantId && e.Id == roleId);
+    }
+
+    public async Task<TDto?> GetRole<TDto>(Guid restaurantId, short roleId, Expression<Func<Role, TDto>> projection)
+    {
+        return await QuerySingleRole(restaurantId, roleId)
+            .Select(projection)
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<Role?> GetRole(Guid restaurantId, short roleId)
+    {
+        var existed = await _ctx.Set<Role>()
+            .AnyAsync(e =>
+                e.RestaurantId == restaurantId &&
+                e.Id == roleId);
+
+        if (!existed)
+        {
+            return null;
         }
 
-        _ctx.Remove(role);
-
-        return true;
+        return GetRoleStub(restaurantId, roleId);
     }
 
     // public async Task AddPermission(Role role, IEnumerable<int> permissionIds)
@@ -125,5 +143,19 @@ public class RoleService(
 
         _ctx.RemoveRange(toRemove);
         await _ctx.AddRangeAsync(newEntities, ct);
+    }
+
+    public async Task<bool> DeleteRole(Guid restaurantId, short roleId)
+    {
+        var role = await _ctx.FindAsync<Role>(restaurantId, roleId);
+
+        if (role is null)
+        {
+            return false;
+        }
+
+        _ctx.Remove(role);
+
+        return true;
     }
 }

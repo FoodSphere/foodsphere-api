@@ -11,13 +11,15 @@ public class TagController(
     /// list tags
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<List<TagResponse>>> ListTags(Guid restaurant_id)
+    public async Task<ActionResult<ICollection<TagResponse>>> ListTags(Guid restaurant_id)
     {
-        var tags = await tagService.ListTags(restaurant_id);
+        var responses = await tagService.QueryTags()
+            .Where(e =>
+                e.RestaurantId == restaurant_id)
+            .Select(TagResponse.Projection)
+            .ToArrayAsync();
 
-        return tags
-            .Select(TagResponse.FromModel)
-            .ToList();
+        return responses;
     }
 
     /// <summary>
@@ -26,12 +28,7 @@ public class TagController(
     [HttpPost]
     public async Task<ActionResult<TagResponse>> CreateTag(Guid restaurant_id, TagRequest body)
     {
-        var restaurant = await restaurantService.GetRestaurant(restaurant_id);
-
-        if (restaurant is null)
-        {
-            return NotFound();
-        }
+        var restaurant = restaurantService.GetRestaurantStub(restaurant_id);
 
         var tag = await tagService.CreateTag(
             restaurant: restaurant,
@@ -40,11 +37,15 @@ public class TagController(
 
         await tagService.SaveChanges();
 
+        var response = await tagService.GetTag(
+            restaurant_id, tag.Id,
+            TagResponse.Projection
+        );
+
         return CreatedAtAction(
             nameof(GetTag),
             new { restaurant_id, tag_id = tag.Id },
-            TagResponse.FromModel(tag)
-        );
+            response);
     }
 
     /// <summary>
@@ -53,14 +54,14 @@ public class TagController(
     [HttpGet("{tag_id}")]
     public async Task<ActionResult<TagResponse>> GetTag(Guid restaurant_id, short tag_id)
     {
-        var tag = await tagService.GetTag(restaurant_id, tag_id);
+        var response = await tagService.GetTag(restaurant_id, tag_id, TagResponse.Projection);
 
-        if (tag is null)
+        if (response is null)
         {
             return NotFound();
         }
 
-        return TagResponse.FromModel(tag);
+        return response;
     }
 
 
@@ -70,17 +71,18 @@ public class TagController(
     [HttpPut("{tag_id}")]
     public async Task<ActionResult<TagResponse>> UpdateTag(Guid restaurant_id, short tag_id, TagRequest body)
     {
-        var tag = await tagService.GetTag(restaurant_id, tag_id);
+        var tag = tagService.GetTagStub(restaurant_id, tag_id);
 
-        if (tag is null)
+        tag.Name = body.name;
+
+        var affected = await tagService.SaveChanges();
+
+        if (affected == 0)
         {
             return NotFound();
         }
 
-        await tagService.UpdateTag(tag, body.name);
-        await tagService.SaveChanges();
-
-        return TagResponse.FromModel(tag);
+        return TagResponse.Project(tag);
     }
 
     /// <summary>

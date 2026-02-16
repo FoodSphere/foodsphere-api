@@ -20,9 +20,10 @@ public class MenuResponse
 
     public MenuStatus status { get; set; }
 
-    public static MenuResponse FromModel(Menu model)
-    {
-        return new MenuResponse
+    public static readonly Func<Menu, MenuResponse> Project = Projection.Compile();
+
+    public static Expression<Func<Menu, MenuResponse>> Projection =>
+        model => new MenuResponse
         {
             id = model.Id,
             name = model.Name,
@@ -32,5 +33,4 @@ public class MenuResponse
             price = model.Price,
             status = model.Status,
         };
-    }
 }

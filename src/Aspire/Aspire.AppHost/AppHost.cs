@@ -2,7 +2,7 @@ using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var resourceApi = builder.AddProject<Projects.FoodSphere_Resource_Api>("resource-api");
+// var resourceApi = builder.AddProject<Projects.FoodSphere_Resource_Api>("resource-api");
 var posApi = builder.AddProject<Projects.FoodSphere_Pos_Api>("pos-api");
 var selfOrderingApi = builder.AddProject<Projects.FoodSphere_SelfOrdering_Api>("ordering-api");
 // var consumerApi = builder.AddProject<Projects.FoodSphere_Consumer_Api>("consumer-api");
@@ -25,15 +25,15 @@ if (builder.Environment.IsDevelopment())
         .WithReference(pgDb)
         .WaitFor(pgDb);
 
-    resourceApi
-        .WithReference(pgDb)
-        .WithEndpoint("http", endpoint => {
-            endpoint.Port = 0;
-        })
-        .WithEndpoint("https", endpoint => {
-            endpoint.Port = 0;
-        })
-        .WaitForCompletion(pgMigrator);
+    // resourceApi
+    //     .WithReference(pgDb)
+    //     .WithEndpoint("http", endpoint => {
+    //         endpoint.Port = 0;
+    //     })
+    //     .WithEndpoint("https", endpoint => {
+    //         endpoint.Port = 0;
+    //     })
+    //     .WaitForCompletion(pgMigrator);
 
     posApi
         .WithReference(pgDb)
@@ -78,12 +78,12 @@ else if (builder.Environment.IsProduction())
             k8s.HelmChartName = "foodsphere-api";
         });
 
-    resourceApi
-        .WithContainerRegistry(registry)
-        // .WithRemoteImageName("foodsphere/resource-api")
-        // .WithRemoteImageTag("latest")
-        // .WithHttpHealthCheck("/health")
-        .WithExternalHttpEndpoints();
+    // resourceApi
+    //     .WithContainerRegistry(registry)
+    //     // .WithRemoteImageName("foodsphere/resource-api")
+    //     // .WithRemoteImageTag("latest")
+    //     // .WithHttpHealthCheck("/health")
+    //     .WithExternalHttpEndpoints();
 
     posApi
         .WithContainerRegistry(registry)

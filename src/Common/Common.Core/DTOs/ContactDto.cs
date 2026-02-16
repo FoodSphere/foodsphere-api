@@ -21,15 +21,13 @@ public class ContactDto
         };
     }
 
-    public static ContactDto? FromModel(Contact? model)
-    {
-        if (model is null) return null;
+    public static readonly Func<Contact, ContactDto> Project = Projection.Compile();
 
-        return new ContactDto
+    public static Expression<Func<Contact, ContactDto>> Projection =>
+        model => new ContactDto
         {
             name = model.Name,
             email = model.Email,
             phone = model.Phone,
         };
-    }
 }
