@@ -31,7 +31,7 @@ public class NpgsqlMigrationWorker(
             logger.LogInformation("Migrations applied successfully.");
 
             // logger.LogInformation("Starting database seeding...");
-            // await strategy.ExecuteAsync(async () => await SeedDataAsync(dbContext, ct));
+            // await strategy.ExecuteAsync(async () => await SeedData(dbContext, ct));
 
             // logger.LogInformation("Database seeding completed successfully.");
         }
@@ -46,7 +46,7 @@ public class NpgsqlMigrationWorker(
         hostApplicationLifetime.StopApplication();
     }
 
-    static async Task SeedDataAsync(FoodSphereDbContext dbContext, CancellationToken ct)
+    static async Task SeedData(FoodSphereDbContext dbContext, CancellationToken ct)
     {
         await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
 
@@ -55,7 +55,7 @@ public class NpgsqlMigrationWorker(
             Name = "Menu.Read",
         };
 
-        await dbContext.Set<Permission>().AddAsync(p1, ct);
+        dbContext.Set<Permission>().Add(p1);
         await dbContext.SaveChangesAsync(ct);
 
         await transaction.CommitAsync(ct);

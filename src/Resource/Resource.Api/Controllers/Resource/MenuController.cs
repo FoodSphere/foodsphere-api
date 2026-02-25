@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.Resource.Api.Controllers;
+namespace FoodSphere.Resource.Api.Controller;
 
 [Route("restaurants/{restaurant_id}/menus")]
 public class MenuController(
@@ -33,7 +31,7 @@ public class MenuController(
             await menuService.UpdateIngredient(restaurant_id, menu.Id, ingredient.ingredient_id, ingredient.amount);
         }
 
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetMenu),
@@ -58,7 +56,7 @@ public class MenuController(
     [HttpPut("{menu_id}")]
     public async Task<ActionResult> UpdateMenu(Guid restaurant_id, short menu_id, MenuRequest body)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var menu = await menuService.FindMenu(restaurant_id, menu_id);
 
         if (menu is null)
         {
@@ -71,7 +69,7 @@ public class MenuController(
         menu.Description = body?.description;
         menu.ImageUrl = body?.image_url;
 
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }
@@ -79,7 +77,7 @@ public class MenuController(
     [HttpPost("{menu_id}/ingredients")]
     public async Task<ActionResult> UpdateMenuIngredient(Guid restaurant_id, short menu_id, MenuIngredientDto body)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var menu = await menuService.FindMenu(restaurant_id, menu_id);
 
         if (menu is null)
         {
@@ -87,7 +85,7 @@ public class MenuController(
         }
 
         await menuService.UpdateIngredient(restaurant_id, menu.Id, body.ingredient_id, body.amount);
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }
@@ -95,7 +93,7 @@ public class MenuController(
     [HttpDelete("{menu_id}")]
     public async Task<ActionResult> DeleteMenu(Guid restaurant_id, short menu_id)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var menu = await menuService.FindMenu(restaurant_id, menu_id);
 
         if (menu is null)
         {
@@ -103,7 +101,7 @@ public class MenuController(
         }
 
         await menuService.DeleteMenu(menu);
-        await menuService.SaveAsync();
+        await menuService.SaveChanges();
 
         return NoContent();
     }

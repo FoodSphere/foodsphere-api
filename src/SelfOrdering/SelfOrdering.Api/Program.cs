@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using FoodSphere.Core.Configurations;
+using FoodSphere.Common.Configuration;
 using FoodSphere.Infrastructure.Persistence;
-using FoodSphere.SelfOrdering.Api.Configurations;
+using FoodSphere.SelfOrdering.Api.Configuration;
 using FoodSphere.SelfOrdering.Api.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +13,8 @@ if (builder.Environment.IsDevelopment())
     DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
     builder.Configuration.AddEnvironmentVariables();
 
-    builder.Services.AddSwaggerGen(SwaggerConfiguration.Configure());
+    builder.Services.AddSwaggerGen(SwaggerGenConfiguration.Configure());
+    builder.Services.AddCors(CorsConfiguration.Configure());
 }
 else if (builder.Environment.IsProduction())
 {
@@ -45,7 +46,7 @@ builder.Services.AddDomainOrderingOptions();
 builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
     var envConnectionString = sp.GetRequiredService<IOptions<EnvConnectionStrings>>().Value;
 
-    // optionsBuilder.UseLazyLoadingProxies();
+    optionsBuilder.UseLazyLoadingProxies();
     optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(2);
@@ -72,6 +73,9 @@ if (builder.Environment.IsProduction())
 builder.Services.AddAuthorization(AuthorizationConfiguration.Configure());
 
 builder.Services.AddScoped<SelfOrderingAuthService>();
+builder.Services.AddScoped<OrderingAuthService>();
+builder.Services.AddScoped<OrderingPortalService>();
+
 builder.Services.AddScoped<BillService>();
 builder.Services.AddScoped<BranchService>();
 builder.Services.AddScoped<MenuService>();
@@ -79,7 +83,9 @@ builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<RestaurantService>();
 builder.Services.AddScoped<StaffService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(JsonConfiguration.Configure());
+
 builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddProblemDetails();
 
@@ -87,8 +93,9 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger(SwaggerConfiguration.Configure());
     app.UseSwaggerUI();
+    app.UseCors();
 }
 
 app.UseHttpsRedirection();

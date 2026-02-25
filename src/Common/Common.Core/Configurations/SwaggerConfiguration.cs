@@ -1,10 +1,11 @@
 using System.Reflection;
 using Microsoft.OpenApi;
+using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace FoodSphere.Core.Configurations;
+namespace FoodSphere.Common.Configuration;
 
-public static class SwaggerConfiguration
+public static class SwaggerGenConfiguration
 {
     public const string JwtSchemeName = "Bearer";
 
@@ -46,10 +47,41 @@ public static class SwaggerConfiguration
                 Example = 1
             });
 
+            options.MapType<TimeSpan>(() => new OpenApiSchema
+            {
+                Type = JsonSchemaType.String,
+                Example = "23:59:59"
+            });
+
             options.IncludeXmlComments(xmlPath);
         };
     }
 }
+
+public static class SwaggerConfiguration
+{
+    public static Action<SwaggerOptions> Configure()
+    {
+        return options =>
+        {
+            options.PreSerializeFilters.Add((doc, req) =>
+            {
+                var prefix = req.Headers["X-Forwarded-Prefix"].FirstOrDefault("");
+
+                doc.Servers =
+                [
+                    new() { Url = $"{req.Scheme}://{req.Host.Value}{prefix}" }
+                ];
+            });
+        };
+    }
+}
+
+// app.UseForwardedHeaders(new ForwardedHeadersOptions
+// {
+//     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+// });
+
 
 
 // Read [](file:///home/shoguncoffee/.dotnet/symbolcache/JsonNode.cs)

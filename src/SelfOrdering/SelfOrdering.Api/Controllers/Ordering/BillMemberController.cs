@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.SelfOrdering.Api.Controllers;
+namespace FoodSphere.SelfOrdering.Api.Controller;
 
 [Route("members")]
 public class BillMemberController(

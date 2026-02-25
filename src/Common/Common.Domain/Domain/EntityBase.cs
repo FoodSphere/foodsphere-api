@@ -1,4 +1,4 @@
-namespace FoodSphere.Common.Entities;
+namespace FoodSphere.Common.Entity;
 
 public interface IEntity<TKey>
     where TKey : IEquatable<TKey>
@@ -31,7 +31,7 @@ public abstract class EntityBase : EntityBase<Guid>
 {
     public EntityBase()
     {
-        Id = Guid.NewGuid();
+        Id = Guid.CreateVersion7();
     }
 }
 

@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using FoodSphere.Core.Configurations;
+using FoodSphere.Common.Configuration;
 using FoodSphere.Infrastructure.Persistence;
-using FoodSphere.Resource.Api.Configurations;
+using FoodSphere.Resource.Api.Configuration;
 using FoodSphere.Resource.Api.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +13,8 @@ if (builder.Environment.IsDevelopment())
     DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, ".env.development"));
     builder.Configuration.AddEnvironmentVariables();
 
-    builder.Services.AddSwaggerGen(SwaggerConfiguration.Configure());
+    builder.Services.AddSwaggerGen(SwaggerGenConfiguration.Configure());
+    builder.Services.AddCors(CorsConfiguration.Configure());
 }
 else if (builder.Environment.IsProduction())
 {
@@ -44,7 +45,7 @@ builder.Services.AddDomainResourceOptions();
 builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
     var envConnectionString = sp.GetRequiredService<IOptions<EnvConnectionStrings>>().Value;
 
-    // optionsBuilder.UseLazyLoadingProxies();
+    optionsBuilder.UseLazyLoadingProxies();
     optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(2);
@@ -72,7 +73,9 @@ builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<RestaurantService>();
 builder.Services.AddScoped<StaffService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(JsonConfiguration.Configure());
+
 builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddProblemDetails();
 
@@ -80,8 +83,9 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger(SwaggerConfiguration.Configure());
     app.UseSwaggerUI();
+    app.UseCors();
 }
 
 app.UseHttpsRedirection();

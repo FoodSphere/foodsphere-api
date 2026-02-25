@@ -1,4 +1,4 @@
-namespace FoodSphere.Pos.Api.DTOs;
+namespace FoodSphere.Pos.Api.DTO;
 
 public class IngredientRequest
 {
@@ -7,8 +7,6 @@ public class IngredientRequest
 
     /// <example>เนื้อออส</example>
     public string? description { get; set; }
-
-    public string? image_url { get; set; }
 
     /// <example>กิโล</example>
     public string? unit { get; set; }

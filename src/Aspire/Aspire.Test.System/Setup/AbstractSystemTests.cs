@@ -28,6 +28,6 @@ public abstract class SystemTestsBase
 
     public static string GetUniqueString()
     {
-        return "test_" + Guid.NewGuid().ToString();
+        return "test_" + Guid.CreateVersion7().ToString();
     }
 }

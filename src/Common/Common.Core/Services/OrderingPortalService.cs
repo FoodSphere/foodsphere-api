@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FoodSphere.Infrastructure.Persistence;
 
-namespace FoodSphere.Common.Services;
+namespace FoodSphere.Common.Service;
 
 public class OrderingPortalService(
     FoodSphereDbContext context,
@@ -23,7 +23,7 @@ public class OrderingPortalService(
             ValidDuration = validDuration
         };
 
-        await _ctx.AddAsync(portal);
+        _ctx.Add(portal);
 
         return portal;
     }

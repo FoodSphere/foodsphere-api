@@ -1,4 +1,4 @@
-namespace FoodSphere.Common.DTOs;
+namespace FoodSphere.Common.DTO;
 
 public class ContactDto
 {

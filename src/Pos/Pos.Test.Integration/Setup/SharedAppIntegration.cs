@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 using FoodSphere.Infrastructure.Persistence;
-using FoodSphere.Pos.Api.Services;
+using FoodSphere.Pos.Api.Service;
 
 [assembly: AssemblyFixture(typeof(FoodSphere.Pos.Test.Integration.SharedAppFixture))]
 
@@ -16,7 +16,6 @@ namespace FoodSphere.Pos.Test.Integration;
 public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
     readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18-alpine")
-        .WithReuse(true)
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -63,6 +62,16 @@ public abstract class SharedAppTestsBase(SharedAppFixture Factory)
     {
         using var scope = CreateScope();
         var authService = scope.ServiceProvider.GetRequiredService<MasterAuthService>();
+
+        var token = await authService.GenerateToken(user);
+
+        _client.DefaultRequestHeaders.Authorization = new("Bearer", token);
+    }
+
+    protected async Task Authenticate(StaffUser user)
+    {
+        using var scope = CreateScope();
+        var authService = scope.ServiceProvider.GetRequiredService<StaffAuthService>();
 
         var token = await authService.GenerateToken(user);
 

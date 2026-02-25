@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FoodSphere.Infrastructure.Persistence;
 
-namespace FoodSphere.Common.Services;
+namespace FoodSphere.Common.Service;
 
 public class BillService(FoodSphereDbContext context) : ServiceBase(context)
 {
@@ -29,27 +29,47 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
     }
 
     public async Task<Bill> CreateBill(
-        Table table,
+        Guid restaurantId,
+        short branchId,
+        short tableId,
         short? pax,
-        Guid? consumerId
+        Guid? consumerId,
+        CancellationToken ct = default
     ) {
         var bill = new Bill
         {
+            RestaurantId = restaurantId,
+            BranchId = branchId,
+            TableId = tableId,
+            Pax = pax,
             ConsumerId = consumerId,
-            Table = table,
-            Pax = pax
         };
 
-        await _ctx.AddAsync(bill);
+        _ctx.Add(bill);
 
         return bill;
     }
 
-    public async Task<Order> CreateOrder(Bill bill)
+    public async Task<Bill> CreateBill(
+        Table table,
+        short? pax,
+        Guid? consumerId,
+        CancellationToken ct = default
+    ) {
+        return await CreateBill(
+            table.RestaurantId,
+            table.BranchId,
+            table.Id,
+            pax,
+            consumerId,
+            ct);
+    }
+
+    public async Task<Order> CreateOrder(Bill bill, CancellationToken ct = default)
     {
         var lastId = await _ctx.Set<Order>()
             .Where(order => order.BillId == bill.Id)
-            .MaxAsync(order => (int?)order.Id) ?? 0;
+            .MaxAsync(order => (short?)order.Id, ct) ?? 0;
 
         var order = new Order
         {
@@ -79,7 +99,7 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
             Name = name
         };
 
-        await _ctx.AddAsync(member);
+        _ctx.Add(member);
 
         return member;
     }
@@ -104,47 +124,62 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
         }
     }
 
-    public async Task SetOrderItem(Order order, Menu menu, short quantity)
-    {
-        // if (order.Status != OrderStatus.Wait) return;
+    public async Task CreateOrderItem(
+        Order order,
+        Menu menu,
+        short quantity,
+        string? note,
+        CancellationToken ct = default
+    ) {
+        int lastId;
+        var hasPendingAdds = _ctx.ChangeTracker.Entries<OrderItem>()
+            .Any(e =>
+                e.State == EntityState.Added &&
+                e.Entity.BillId == order.BillId &&
+                e.Entity.OrderId == order.Id);
 
-        ArgumentOutOfRangeException.ThrowIfNegative(quantity);
-
-        var item = await _ctx.FindAsync<OrderItem>(order.BillId, menu.RestaurantId, order.Id, menu.Id);
-
-        if (item is null)
+        if (hasPendingAdds)
         {
-            if (quantity == 0)
-            {
-                return;
-            }
-            else
-            {
-                item = new OrderItem
-                {
-                    Order = order,
-                    Menu = menu,
-                    Quantity = quantity
-                };
-
-                // await _ctx.AddAsync(item);
-                order.Items.Add(item);
-            }
+            lastId = _ctx.Set<OrderItem>().Local
+                .Where(item => item.BillId == order.BillId && item.OrderId == order.Id)
+                .Max(item => (int?)item.Id) ?? 0;
         }
         else
         {
-            if (quantity == 0)
-            {
-                // _ctx.Remove(item);
-                order.Items.Remove(item);
-            }
-            else
-            {
-                item.Quantity = quantity;
-                _ctx.Entry(item).State = EntityState.Modified;
-            }
+            lastId = await _ctx.Set<OrderItem>()
+                .Where(item => item.BillId == order.BillId && item.OrderId == order.Id)
+                .Select(item => (int?)item.Id)
+                .MaxAsync(ct) ?? 0;
         }
+
+        var item = new OrderItem
+        {
+            Id = (short)(lastId + 1),
+            Order = order,
+            Menu = menu,
+            PriceSnapshot = menu.Price,
+            Quantity = quantity,
+            Note = note
+        };
+
+        order.Items.Add(item);
     }
+
+    // public async Task UpdateOrderItem(
+    //     OrderItem item,
+
+    //     CancellationToken ct = default
+    // ) {
+    //     if (quantity is not null)
+    //     {
+    //         ArgumentOutOfRangeException.ThrowIfNegative(quantity.Value);
+    //         item.Quantity = quantity.Value;
+    //     }
+
+    //     item.Note ??= note;
+
+    //     // _ctx.Entry(orderItem).State = EntityState.Modified;
+    // }
 
     public async Task UpdateOrderStatus(Order order, OrderStatus status)
     {
@@ -169,27 +204,27 @@ public class BillService(FoodSphereDbContext context) : ServiceBase(context)
             );
     }
 
-    public async Task<bool> CheckPermissions(Bill bill, MasterUser user, Permission[]? permissions = null)
-    {
-        return await _ctx.Set<Restaurant>()
-            .AnyAsync(r =>
-                r.Id == bill.RestaurantId && (
-                    r.OwnerId == user.Id ||
-                    _ctx.Set<Manager>().Any(m =>
-                        m.RestaurantId == r.Id &&
-                        m.BranchId == bill.BranchId &&
-                        m.MasterId == user.Id
-        )));
-    }
+    // public async Task<bool> CheckPermissions(Bill bill, MasterUser user, Permission[]? permissions = null)
+    // {
+    //     return await _ctx.Set<Restaurant>()
+    //         .AnyAsync(r =>
+    //             r.Id == bill.RestaurantId && (
+    //                 r.OwnerId == user.Id ||
+    //                 _ctx.Set<BranchManager>().Any(m =>
+    //                     m.RestaurantId == r.Id &&
+    //                     m.BranchId == bill.BranchId &&
+    //                     m.MasterId == user.Id
+    //     )));
+    // }
 
-    public async Task<bool> CheckPermissions(Bill bill, StaffUser user, Permission[]? permissions = null)
-    {
-        return bill.RestaurantId == user.RestaurantId &&
-               bill.BranchId == user.BranchId;
-    }
+    // public async Task<bool> CheckPermissions(Bill bill, StaffUser user, Permission[]? permissions = null)
+    // {
+    //     return bill.RestaurantId == user.RestaurantId &&
+    //            bill.BranchId == user.BranchId;
+    // }
 
-    public async Task<bool> CheckPermissions(Bill bill, ConsumerUser user)
-    {
-        return bill.ConsumerId == user.Id;
-    }
+    // public async Task<bool> CheckPermissions(Bill bill, ConsumerUser user)
+    // {
+    //     return bill.ConsumerId == user.Id;
+    // }
 }

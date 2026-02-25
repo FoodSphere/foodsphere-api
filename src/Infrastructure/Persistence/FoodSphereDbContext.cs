@@ -1,3 +1,4 @@
+using FoodSphere.Common.Constant;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace FoodSphere.Infrastructure.Persistence;
@@ -22,7 +23,7 @@ public class FoodSphereDbContext(DbContextOptions<FoodSphereDbContext> options) 
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(FoodSphereDbContext).Assembly);
-        // modelBuilder.PermissionSeeding();
+        modelBuilder.Entity<Permission>().HasData(PERMISSION.GetAll());
     }
 
     void HandleTrackTime()

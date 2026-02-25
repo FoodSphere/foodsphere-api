@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using FoodSphere.Resource.Api.Authentication;
-using FoodSphere.Resource.Api.Configurations;
+using FoodSphere.Resource.Api.Configuration;
 
 namespace FoodSphere.Resource.Api.Authorization
 {
@@ -13,7 +12,7 @@ namespace FoodSphere.Resource.Api.Authorization
     }
 }
 
-namespace FoodSphere.Resource.Api.Configurations
+namespace FoodSphere.Resource.Api.Configuration
 {
     public static class AuthorizationConfiguration
     {

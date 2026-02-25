@@ -1,4 +1,4 @@
-namespace FoodSphere.SelfOrdering.Api.DTOs;
+namespace FoodSphere.SelfOrdering.Api.DTO;
 
 public class SelfOrderingTokenRequest
 {

@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.Consumer.Api.Controllers;
+namespace FoodSphere.Consumer.Api.Controller;
 
 [Route("auth")]
 public class ConsumerAuthController(

@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.SelfOrdering.Api.Controllers;
+namespace FoodSphere.SelfOrdering.Api.Controller;
 
 [Route("me")]
 public class MeController(
@@ -20,7 +18,7 @@ public class MeController(
     {
         Member.Name = body.name;
 
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return NoContent();
     }
@@ -55,7 +53,7 @@ public class MeController(
 
         Member.ConsumerId = Guid.Parse((string)consumerId);
 
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return NoContent();
     }

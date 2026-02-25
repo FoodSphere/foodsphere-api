@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.Resource.Api.Controllers;
+namespace FoodSphere.Resource.Api.Controller;
 
 [Route("restaurants/{restaurant_id}/branches")]
 public class BranchController(
@@ -33,7 +31,7 @@ public class BranchController(
             await branchService.SetContact(branch, body.contact);
         }
 
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetBranch),
@@ -84,7 +82,7 @@ public class BranchController(
         }
 
         await branchService.DeleteBranch(branch);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }
@@ -115,7 +113,7 @@ public class BranchController(
         }
 
         await branchService.SetStock(branch, body.ingredient_id, body.amount);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }
@@ -138,7 +136,7 @@ public class BranchController(
         }
 
         await branchService.DeleteStock(stock);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }
@@ -146,7 +144,7 @@ public class BranchController(
     [HttpGet("{branch_id}/staffs")]
     public async Task<ActionResult<List<StaffResponse>>> ListStaffs(Guid restaurant_id, short branch_id)
     {
-        var staffs = await branchService.ListStaffs(restaurant_id, branch_id);
+        var staffs = await staffService.ListStaffs(restaurant_id, branch_id);
 
         return staffs.Select(StaffResponse.FromModel).ToList();
     }
@@ -164,9 +162,15 @@ public class BranchController(
         var staff = await staffService.CreateStaff(
             branch: branch,
             name: body.name,
-            roles: body.roles,
             phone: body.phone
         );
+
+        await staffService.SetRoles(
+            staff: staff,
+            roleIds: body.roles
+        );
+
+        await staffService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetStaff),
@@ -227,7 +231,7 @@ public class BranchController(
         }
 
         await staffService.DeleteStaff(staff);
-        await staffService.SaveAsync();
+        await staffService.SaveChanges();
 
         return NoContent();
     }
@@ -254,7 +258,7 @@ public class BranchController(
             branch: branch,
             name: body.name
         );
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetTable),
@@ -315,7 +319,7 @@ public class BranchController(
         }
 
         await branchService.DeleteTable(table);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }

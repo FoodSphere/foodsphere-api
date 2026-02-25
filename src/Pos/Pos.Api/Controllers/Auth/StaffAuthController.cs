@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.Pos.Api.Controllers;
+namespace FoodSphere.Pos.Api.Controller;
 
 [Route("auth/staff")]
 public class StaffAuthController(
@@ -8,6 +6,9 @@ public class StaffAuthController(
     StaffPortalService staffPortalService
 ) : FoodSphereControllerBase
 {
+    /// <summary>
+    /// login staff user
+    /// </summary>
     [HttpPost("token")]
     public async Task<ActionResult<StaffTokenResponse>> GenerateToken(StaffTokenRequest body)
     {
@@ -25,7 +26,7 @@ public class StaffAuthController(
 
         var token = await staffPortalService.GenerateToken(portal);
 
-        await staffPortalService.SaveAsync();
+        await staffPortalService.SaveChanges();
 
         return new StaffTokenResponse
         {

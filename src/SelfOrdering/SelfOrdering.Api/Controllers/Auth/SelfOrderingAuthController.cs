@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.SelfOrdering.Api.Controllers;
+namespace FoodSphere.SelfOrdering.Api.Controller;
 
 [Route("auth")]
 public class SelfOrderingAuthController(
@@ -26,7 +24,7 @@ public class SelfOrderingAuthController(
 
         var token = await orderingPortalService.GenerateToken(portal);
 
-        await orderingPortalService.SaveAsync();
+        await orderingPortalService.SaveChanges();
 
         return new SelfOrderingTokenResponse
         {

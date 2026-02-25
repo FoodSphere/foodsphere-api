@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.SelfOrdering.Api.Controllers;
+namespace FoodSphere.SelfOrdering.Api.Controller;
 
 [Route("portals")]
 public class PortalController(
@@ -32,7 +30,7 @@ public class PortalController(
             body.valid_duration
         );
 
-        await orderingPortalService.SaveAsync();
+        await orderingPortalService.SaveChanges();
 
         return CreatedAtAction(
             nameof(ListPortals),

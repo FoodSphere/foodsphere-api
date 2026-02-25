@@ -1,4 +1,4 @@
-namespace FoodSphere.Common.Enums;
+namespace FoodSphere.Common.Constant;
 
 public enum BillStatus
 {
@@ -10,8 +10,9 @@ public enum BillStatus
 
 public enum OrderStatus
 {
+    Draft,
     Pending,
-    Processing,
+    Cooking,
     Completed,
     Canceled,
 }

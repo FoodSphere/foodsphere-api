@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
 using FoodSphere.SelfOrdering.Api.Authentication;
-using FoodSphere.SelfOrdering.Api.Configurations;
+using FoodSphere.SelfOrdering.Api.Configuration;
 
-namespace FoodSphere.SelfOrdering.Api.Authorizations
+namespace FoodSphere.SelfOrdering.Api.Authorization
 {
     public class SelfOrderingAuthorizeAttribute : AuthorizeAttribute
     {
@@ -13,7 +12,7 @@ namespace FoodSphere.SelfOrdering.Api.Authorizations
     }
 }
 
-namespace FoodSphere.SelfOrdering.Api.Configurations
+namespace FoodSphere.SelfOrdering.Api.Configuration
 {
     public static class AuthorizationConfiguration
     {

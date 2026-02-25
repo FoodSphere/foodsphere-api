@@ -1,7 +1,6 @@
-using FoodSphere.Common.Services;
 using FoodSphere.Infrastructure.Persistence;
 
-namespace FoodSphere.Pos.Api.Services;
+namespace FoodSphere.Pos.Api.Service;
 
 public class StaffPortalService(
     FoodSphereDbContext context,
@@ -42,7 +41,7 @@ public class StaffPortalService(
             StaffId = staffId,
         };
 
-        await _ctx.AddAsync(portal);
+        _ctx.Add(portal);
 
         return portal;
     }

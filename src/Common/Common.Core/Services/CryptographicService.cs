@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.DataProtection;
 
-namespace FoodSphere.Common.Services;
+namespace FoodSphere.Common.Service;
 
 public class AesServiceProvider : IDataProtectionProvider
 {

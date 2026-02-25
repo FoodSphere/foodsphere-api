@@ -1,4 +1,4 @@
-namespace FoodSphere.Core.Constants;
+namespace FoodSphere.Common.Constant;
 
 public static class FileName
 {

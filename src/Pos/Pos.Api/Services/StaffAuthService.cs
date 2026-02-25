@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace FoodSphere.Pos.Api.Services;
+namespace FoodSphere.Pos.Api.Service;
 
 public class StaffAuthService(
     IOptions<EnvDomainApi> envDomainApi,
@@ -25,7 +25,7 @@ public class StaffAuthService(
         var claims = new Dictionary<string, object>
         {
             [FoodSphereClaimType.RestaurantClaimType] = user.RestaurantId,
-            [FoodSphereClaimType.BranchClaimType] = user.BranchId,
+            [FoodSphereClaimType.BranchClaimType] = (int)user.BranchId,
             [FoodSphereClaimType.UserTypeClaimType] = UserType.Staff.ToString(),
         };
 

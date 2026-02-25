@@ -52,6 +52,11 @@
       "label": "update database",
       "type": "shell",
       "command": "dotnet ef database update --project src/Infrastructure/Migrator.Npgsql/FoodSphere.Migrator.Npgsql.csproj"
+    },
+    {
+      "label": "redeploy",
+      "type": "shell",
+      "command": "aspire do push && kubectl rollout restart deployment pos-api-deployment && kubectl rollout restart deployment ordering-api-deployment && kubectl rollout restart deployment resource-api-deployment"
     }
   ]
 }

@@ -18,6 +18,11 @@ spec:
         path:
           type: ReplacePrefixMatch
           replacePrefixMatch: /
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        set:
+        - name: X-Forwarded-Prefix
+          value: /api
     backendRefs:
     - name: ordering-api-service
       port: {{ .Values.parameters.ordering_api.port_http }}

@@ -1,4 +1,4 @@
-namespace FoodSphere.Infrastructure.Persistence.Configurations;
+namespace FoodSphere.Infrastructure.Persistence.Configuration;
 
 public class StockConfiguration : IEntityTypeConfiguration<Stock>
 {

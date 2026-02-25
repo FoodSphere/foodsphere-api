@@ -1,4 +1,4 @@
-namespace FoodSphere.SelfOrdering.Api.Services;
+namespace FoodSphere.SelfOrdering.Api.Service;
 
 public class SelfOrderingAuthService(
     ILogger<SelfOrderingAuthService> logger,

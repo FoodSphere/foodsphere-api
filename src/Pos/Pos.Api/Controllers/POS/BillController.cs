@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.Pos.Api.Controllers;
+namespace FoodSphere.Pos.Api.Controller;
 
 [Route("bills")]
 public class BillController(
@@ -11,6 +9,9 @@ public class BillController(
     OrderingPortalService orderingPortalService
 ) : PosControllerBase
 {
+    /// <summary>
+    /// create bill
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<BillResponse>> CreateBill(BillRequest body)
     {
@@ -24,20 +25,20 @@ public class BillController(
             return NotFound();
         }
 
-        if (UserType is UserType.Master)
-        {
-            if (!await branchService.CheckPermissions(branch, MasterUser))
-            {
-                return Forbid();
-            }
-        }
-        else if (UserType is UserType.Staff)
-        {
-            if (!await branchService.CheckPermissions(branch, StaffUser))
-            {
-                return Forbid();
-            }
-        }
+        // if (UserType is UserType.Master)
+        // {
+        //     if (!await branchService.CheckPermissions(branch, MasterUser))
+        //     {
+        //         return Forbid();
+        //     }
+        // }
+        // else if (UserType is UserType.Staff)
+        // {
+        //     if (!await branchService.CheckPermissions(branch, StaffUser))
+        //     {
+        //         return Forbid();
+        //     }
+        // }
 
         var table = await branchService.GetTable(
             restaurantId: body.restaurant_id,
@@ -56,7 +57,7 @@ public class BillController(
             consumerId: body.consumer_id
         );
 
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetBill),
@@ -65,6 +66,9 @@ public class BillController(
         );
     }
 
+    /// <summary>
+    /// get bill
+    /// </summary>
     [HttpGet("{bill_id}")]
     public async Task<ActionResult<BillResponse>> GetBill(Guid bill_id)
     {
@@ -82,24 +86,27 @@ public class BillController(
             return NotFound();
         }
 
-        if (UserType is UserType.Master)
-        {
-            if (!await branchService.CheckPermissions(branch, MasterUser))
-            {
-                return Forbid();
-            }
-        }
-        else if (UserType is UserType.Staff)
-        {
-            if (!await branchService.CheckPermissions(branch, StaffUser))
-            {
-                return Forbid();
-            }
-        }
+        // if (UserType is UserType.Master)
+        // {
+        //     if (!await branchService.CheckPermissions(branch, MasterUser))
+        //     {
+        //         return Forbid();
+        //     }
+        // }
+        // else if (UserType is UserType.Staff)
+        // {
+        //     if (!await branchService.CheckPermissions(branch, StaffUser))
+        //     {
+        //         return Forbid();
+        //     }
+        // }
 
         return BillResponse.FromModel(bill);
     }
 
+    /// <summary>
+    /// create ordering portal
+    /// </summary>
     [HttpPost("{bill_id}/portals")]
     public async Task<ActionResult<OrderingPortalResponse>> CreatePortal(Guid bill_id, OrderingPortalRequest body)
     {
@@ -109,7 +116,7 @@ public class BillController(
             body.valid_duration
         );
 
-        await orderingPortalService.SaveAsync();
+        await orderingPortalService.SaveChanges();
 
         return OrderingPortalResponse.FromModel(portal);
 
@@ -120,6 +127,9 @@ public class BillController(
         // );
     }
 
+    /// <summary>
+    /// list ordering portals
+    /// </summary>
     [HttpGet("{bill_id}/portals")]
     public async Task<ActionResult<List<OrderingPortalResponse>>> ListPortals(Guid bill_id, [FromQuery] Guid? portal_id)
     {
@@ -141,6 +151,9 @@ public class BillController(
     //     return NoContent();
     // }
 
+    /// <summary>
+    /// delete bill
+    /// </summary>
     [HttpDelete("{bill_id}")]
     public async Task<ActionResult> DeleteBill(Guid bill_id)
     {
@@ -152,11 +165,14 @@ public class BillController(
         }
 
         await billService.DeleteBill(bill);
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return NoContent();
     }
 
+    /// <summary>
+    /// create order
+    /// </summary>
     [HttpPost("{bill_id}/orders")]
     public async Task<ActionResult<OrderResponse>> CreateOrder(Guid bill_id, OrderDto body)
     {
@@ -171,17 +187,17 @@ public class BillController(
 
         foreach (var item in body.items)
         {
-            var menu = await menuService.GetMenu(bill.RestaurantId, item.menu_id);
+            var menu = await menuService.FindMenu(bill.RestaurantId, item.menu_id);
 
             if (menu is null)
             {
                 return NotFound();
             }
 
-            await billService.SetOrderItem(order, menu, item.quantity);
+            await billService.CreateOrderItem(order, menu, item.quantity, item.note);
         }
 
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetOrder),
@@ -190,6 +206,9 @@ public class BillController(
         );
     }
 
+    /// <summary>
+    /// list orders
+    /// </summary>
     [HttpGet("{bill_id}/orders")]
     public async Task<ActionResult<List<OrderResponse>>> ListOrders(Guid bill_id)
     {
@@ -200,6 +219,9 @@ public class BillController(
             .ToList();
     }
 
+    /// <summary>
+    /// get order
+    /// </summary>
     [HttpGet("{bill_id}/orders/{order_id}")]
     public async Task<ActionResult<OrderResponse>> GetOrder(Guid bill_id, short order_id)
     {
@@ -213,6 +235,9 @@ public class BillController(
         return OrderResponse.FromModel(order);
     }
 
+    /// <summary>
+    /// update order status
+    /// </summary>
     [HttpPost("{bill_id}/orders/{order_id}/status")]
     public async Task<ActionResult<OrderResponse>> UpdateOrderStatus(Guid bill_id, short order_id, OrderStatusDTO body)
     {
@@ -224,13 +249,16 @@ public class BillController(
         }
 
         await billService.UpdateOrderStatus(order, body.status);
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return OrderResponse.FromModel(order);
     }
 
+    /// <summary>
+    /// add item to order
+    /// </summary>
     [HttpPost("{bill_id}/orders/{order_id}/items")]
-    public async Task<ActionResult> SetOrderItem(Guid bill_id, short order_id, OrderItemDto body)
+    public async Task<ActionResult> CreateOrderItem(Guid bill_id, short order_id, OrderItemDto body)
     {
         var order = await billService.GetOrder(bill_id, order_id);
 
@@ -239,19 +267,22 @@ public class BillController(
             return NotFound();
         }
 
-        var menu = await menuService.GetMenu(order.Bill.RestaurantId, body.menu_id);
+        var menu = await menuService.FindMenu(order.Bill.RestaurantId, body.menu_id);
 
         if (menu is null)
         {
             return NotFound();
         }
 
-        await billService.SetOrderItem(order, menu, body.quantity);
-        await billService.SaveAsync();
+        await billService.CreateOrderItem(order, menu, body.quantity, body.note);
+        await billService.SaveChanges();
 
         return NoContent();
     }
 
+    /// <summary>
+    /// delete order
+    /// </summary>
     [HttpDelete("{bill_id}/orders/{order_id}")]
     public async Task<ActionResult> DeleteOrder(Guid bill_id, short order_id)
     {
@@ -263,7 +294,7 @@ public class BillController(
         }
 
         await billService.DeleteOrder(order);
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return NoContent();
     }

@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.Pos.Api.Controllers;
+namespace FoodSphere.Pos.Api.Controller;
 
 [Route("restaurants/{restaurant_id}/branches/{branch_id}/stocks")]
 public class StockController(
@@ -8,6 +6,9 @@ public class StockController(
     BranchService branchService
 ) : PosControllerBase
 {
+    /// <summary>
+    /// list stocks
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<StockDto>>> ListStocks(Guid restaurant_id, short branch_id)
     {
@@ -23,6 +24,9 @@ public class StockController(
             .ToList();
     }
 
+    /// <summary>
+    /// set stock
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult> SetStock(Guid restaurant_id, short branch_id, StockDto body)
     {
@@ -34,11 +38,14 @@ public class StockController(
         }
 
         await branchService.SetStock(branch, body.ingredient_id, body.amount);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }
 
+    /// <summary>
+    /// get stock
+    /// </summary>
     [HttpGet("{ingredient_id}")]
     public async Task<ActionResult<StockDto>> GetStocks(Guid restaurant_id, short branch_id, short ingredient_id)
     {
@@ -52,6 +59,9 @@ public class StockController(
         return StockDto.FromModel(stock);
     }
 
+    /// <summary>
+    /// delete stock
+    /// </summary>
     [HttpDelete("{ingredient_id}")]
     public async Task<ActionResult> DeleteStock(Guid restaurant_id, short branch_id, short ingredient_id)
     {
@@ -70,7 +80,7 @@ public class StockController(
         }
 
         await branchService.DeleteStock(stock);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }

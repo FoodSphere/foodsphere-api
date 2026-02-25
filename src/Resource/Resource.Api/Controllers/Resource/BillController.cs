@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.Resource.Api.Controllers;
+namespace FoodSphere.Resource.Api.Controller;
 
 [Route("bills")]
 public class BillController(
@@ -38,7 +36,7 @@ public class BillController(
             pax: body.pax
         );
 
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetBill),
@@ -74,7 +72,7 @@ public class BillController(
         }
 
         await billService.DeleteBill(bill);
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return NoContent();
     }
@@ -93,17 +91,17 @@ public class BillController(
 
         foreach (var item in body.items)
         {
-            var menu = await menuService.GetMenu(bill.RestaurantId, item.menu_id);
+            var menu = await menuService.FindMenu(bill.RestaurantId, item.menu_id);
 
             if (menu is null)
             {
                 return NotFound();
             }
 
-            await billService.SetOrderItem(order, menu, item.quantity);
+            await billService.CreateOrderItem(order, menu, item.quantity, item.note);
         }
 
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetOrder),
@@ -146,7 +144,7 @@ public class BillController(
         }
 
         await billService.UpdateOrderStatus(order, body.status);
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return OrderResponse.FromModel(order);
     }
@@ -161,15 +159,15 @@ public class BillController(
             return NotFound();
         }
 
-        var menu = await menuService.GetMenu(order.Bill.RestaurantId, body.menu_id);
+        var menu = await menuService.FindMenu(order.Bill.RestaurantId, body.menu_id);
 
         if (menu is null)
         {
             return NotFound();
         }
 
-        await billService.SetOrderItem(order, menu, body.quantity);
-        await billService.SaveAsync();
+        await billService.CreateOrderItem(order, menu, body.quantity, body.note);
+        await billService.SaveChanges();
 
         return NoContent();
     }
@@ -185,7 +183,7 @@ public class BillController(
         }
 
         await billService.DeleteOrder(order);
-        await billService.SaveAsync();
+        await billService.SaveChanges();
 
         return NoContent();
     }

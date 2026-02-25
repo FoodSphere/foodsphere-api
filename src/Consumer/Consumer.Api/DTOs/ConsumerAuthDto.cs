@@ -1,4 +1,4 @@
-namespace FoodSphere.Consumer.Api.DTOs;
+namespace FoodSphere.Consumer.Api.DTO;
 
 public class ConsumerTokenRequest
 {

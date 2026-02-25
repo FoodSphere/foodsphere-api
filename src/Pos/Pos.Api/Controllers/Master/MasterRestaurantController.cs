@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.Pos.Api.Controllers;
+namespace FoodSphere.Pos.Api.Controller;
 
 [Route("restaurants")]
 public class RestaurantController(
@@ -9,6 +7,9 @@ public class RestaurantController(
     BranchService branchService
 ) : MasterControllerBase
 {
+    /// <summary>
+    /// create restaurant
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<QuickRestaurantResponse>> CreateRestaurant(QuickRestaurantRequest body)
     {
@@ -31,16 +32,19 @@ public class RestaurantController(
             closingTime: body.closing_time
         );
 
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return CreatedAtAction(
-            nameof(StaffAccessController.GetRestaurant),
-            GetControllerName(nameof(StaffAccessController)),
+            nameof(InfoController.GetRestaurant),
+            GetControllerName(nameof(InfoController)),
             new { restaurant_id = restaurant.Id },
             QuickRestaurantResponse.FromModel(restaurant, branch)
         );
     }
 
+    /// <summary>
+    /// list owned restaurants
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<RestaurantResponse>>> ListMyRestaurants()
     {
@@ -51,6 +55,9 @@ public class RestaurantController(
             .ToList();
     }
 
+    /// <summary>
+    /// set restaurant's contact
+    /// </summary>
     [HttpPost("{restaurant_id}/contact")]
     public async Task<ActionResult<RestaurantResponse>> SetContact(Guid restaurant_id, ContactDto body)
     {
@@ -67,11 +74,14 @@ public class RestaurantController(
         }
 
         await restaurantService.SetContact(restaurant, body);
-        await restaurantService.SaveAsync();
+        await restaurantService.SaveChanges();
 
         return NoContent();
     }
 
+    /// <summary>
+    /// delete restaurant
+    /// </summary>
     [HttpDelete("{restaurant_id}")]
     public async Task<ActionResult> DeleteRestaurant(Guid restaurant_id)
     {
@@ -88,7 +98,7 @@ public class RestaurantController(
         }
 
         await restaurantService.DeleteRestaurant(restaurant);
-        await restaurantService.SaveAsync();
+        await restaurantService.SaveChanges();
 
         return NoContent();
     }

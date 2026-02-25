@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using MessagePack;
 using FoodSphere.Resource.Api.Authentication;
 
@@ -7,143 +6,130 @@ using FoodSphere.Resource.Api.Authentication;
 // builder.Services.AddSingleton<IAuthorizationPolicyProvider, ClientPolicyProvider>();
 // builder.Services.AddSingleton<IAuthorizationHandler, ClientHandler>();
 
+namespace FoodSphere.Resource.Api.Authorization;
 
-// namespace FoodSphere.Client.Api {
-//     public class PolicyPrefix
-//     {
-//         public const string Client = "CLIENT;";
-//     }
+class PolicyPrefix
+{
+    public const string Resource = "RESOURCE;";
+}
 
-//     public enum PermissionType
-//     {
-//         OrderRead,
-//         OrderWrite,
-//         MenuRead,
-//     }
-// }
+public enum OperationType
+{
+    OrderRead,
+    OrderWrite,
+    MenuRead,
+}
 
-// namespace FoodSphere.Client.Api.Authorization
-// {
-//     public class ClientAuthorizeAttribute : AuthorizeAttribute
-//     {
-//         void SetPolicy(ClientRequirement requirement)
-//         {
-//             var serialized = MessagePackSerializer.Serialize(requirement);
-//             Policy = PolicyPrefix.Client + Convert.ToBase64String(serialized);
-//         }
+public class NewResourceAuthorizeAttribute : AuthorizeAttribute
+{
+    void SetPolicy(ResourceRequirement requirement)
+    {
+        var serialized = MessagePackSerializer.Serialize(requirement);
+        Policy = PolicyPrefix.Resource + Convert.ToBase64String(serialized);
+    }
 
-//         public ClientAuthorizeAttribute(params PermissionType[] permissions)
-//         {
-//             var requirement = new ClientRequirement
-//             {
-//                 Permissions = permissions,
-//             };
+    public NewResourceAuthorizeAttribute(params OperationType[] permissions)
+    {
+        var requirement = new ResourceRequirement
+        {
+            Permissions = permissions,
+        };
 
-//             SetPolicy(requirement);
-//         }
+        SetPolicy(requirement);
+    }
 
-//         public ClientAuthorizeAttribute(UserType userType, params PermissionType[] permissions)
-//         {
-//             var requirement = new ClientRequirement
-//             {
-//                 Permissions = permissions,
-//                 UserType = userType,
-//             };
+    public NewResourceAuthorizeAttribute(UserType userType, params OperationType[] permissions)
+    {
+        var requirement = new ResourceRequirement
+        {
+            Permissions = permissions,
+            UserType = userType,
+        };
 
-//             SetPolicy(requirement);
-//         }
-//     }
-// }
+        SetPolicy(requirement);
+    }
+}
 
-// namespace FoodSphere.Client.Api.Authorization
-// {
-//     // https://learn.microsoft.com/en-us/aspnet/core/security/authorization/iauthorizationpolicyprovider
-//     public class ClientPolicyProvider(IOptions<AuthorizationOptions> options) : IAuthorizationPolicyProvider
-//     {
-//         readonly DefaultAuthorizationPolicyProvider backupPolicyProvider = new(options);
+// https://learn.microsoft.com/en-us/aspnet/core/security/authorization/iauthorizationpolicyprovider
+public class ResourcePolicyProvider(IOptions<AuthorizationOptions> options) : IAuthorizationPolicyProvider
+{
+    readonly DefaultAuthorizationPolicyProvider backupPolicyProvider = new(options);
 
-//         public async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
-//         {
-//             if (policyName.StartsWith(PolicyPrefix.Client))
-//             {
-//                 var serialized = policyName[PolicyPrefix.Client.Length..];
-//                 var bytes = Convert.FromBase64String(serialized);
-//                 var requirement = MessagePackSerializer.Deserialize<ClientRequirement>(bytes);
+    public async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
+    {
+        if (policyName.StartsWith(PolicyPrefix.Resource))
+        {
+            var serialized = policyName[PolicyPrefix.Resource.Length..];
+            var bytes = Convert.FromBase64String(serialized);
+            var requirement = MessagePackSerializer.Deserialize<ResourceRequirement>(bytes);
+            var policy = new AuthorizationPolicyBuilder()
+                .AddAuthenticationSchemes(JwtAuthentication.SchemeName)
+                .RequireAuthenticatedUser()
+                .RequireClaim(FoodSphereClaimType.Identity.UserIdClaimType)
+                .RequireClaim(FoodSphereClaimType.UserTypeClaimType)
+                .AddRequirements(requirement)
+                .Build();
 
-//                 var policy = new AuthorizationPolicyBuilder()
-//                     .AddAuthenticationSchemes(JwtAuthentication.SchemeName)
-//                     .RequireAuthenticatedUser()
-//                     .RequireClaim(FoodSphereClaimType.Identity.UserIdClaimType)
-//                     .RequireClaim(FoodSphereClaimType.UserTypeClaimType)
-//                     .AddRequirements(requirement)
-//                     .Build();
+            return policy;
+        }
 
-//                 return policy;
-//             }
+        return await backupPolicyProvider.GetPolicyAsync(policyName);
+    }
 
-//             return await backupPolicyProvider.GetPolicyAsync(policyName);
-//         }
+    // for simply `[Authorize]`
+    public async Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+    {
+        return await backupPolicyProvider.GetDefaultPolicyAsync();
+    }
 
-//         // for simply `[Authorize]`
-//         public async Task<AuthorizationPolicy> GetDefaultPolicyAsync()
-//         {
-//             return await backupPolicyProvider.GetDefaultPolicyAsync();
-//         }
+    // when no metadata (eg. [Authorize], [AllowAnonymous]) attribute is specified
+    public async Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
+    {
+        return await backupPolicyProvider.GetFallbackPolicyAsync();
+    }
+}
 
-//         // when no metadata (eg. [Authorize], [AllowAnonymous]) attribute is specified
-//         public async Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
-//         {
-//             return await backupPolicyProvider.GetFallbackPolicyAsync();
-//         }
-//     }
-// }
+[MessagePackObject]
+public class ResourceRequirement : IAuthorizationRequirement
+{
+    [Key(0)]
+    public UserType? UserType { get; set; } = null;
+    [Key(1)]
+    public OperationType[] Permissions { get; set; } = [];
+}
 
-// namespace FoodSphere.Client.Api.Authorization
-// {
-//     [MessagePackObject]
-//     public class ClientRequirement : IAuthorizationRequirement
-//     {
-//         [Key(0)]
-//         public UserType? UserType { get; set; } = null;
-//         [Key(1)]
-//         public PermissionType[] Permissions { get; set; } = [];
-//     }
+public class ResourceHandler(ILogger<ResourceHandler> logger) : AuthorizationHandler<ResourceRequirement>
+{
+    protected override async Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        ResourceRequirement requirement
+    ) {
+        // authentication middleware failed -> [IsAuthenticated == false]
+        // request still proceeds to this (authorization middleware)
+        if (context.User.Identity?.IsAuthenticated != true)
+        {
+            // multiple policy requirements -> all handlers are running
+            // .RequireAuthenticatedUser() handle rejection (DenyAnonymousAuthorizationRequirement)
+            return;
+        }
 
-//     public class ClientHandler(ILogger<ClientHandler> logger) : AuthorizationHandler<ClientRequirement>
-//     {
-//         readonly ILogger<ClientHandler> _logger = logger;
+        if (requirement.UserType is not null)
+        {
+            // confidently thrown exception here, because
+            // UserTypeClaimType already checked in JwtClientConfiguration.OnTokenValidated()
+            var userTypeClaim = context.User.FindFirstValue(FoodSphereClaimType.UserTypeClaimType) ?? throw new InvalidOperationException();
+            var userType = Enum.Parse<UserType>(userTypeClaim);
 
-//         protected override async Task HandleRequirementAsync(
-//             AuthorizationHandlerContext context,
-//             ClientRequirement requirement
-//         ) {
-//             // authentication middleware failed -> [IsAuthenticated == false]
-//             // request still proceeds to this (authorization middleware)
-//             if (context.User.Identity?.IsAuthenticated != true)
-//             {
-//                 // multiple policy requirements -> all handlers are running
-//                 // .RequireAuthenticatedUser() handle rejection (DenyAnonymousAuthorizationRequirement)
-//                 return;
-//             }
+            logger.LogInformation("requirement: {RequireUserType}, parsed: {UserType}", requirement.UserType, userType);
 
-//             if (requirement.UserType is not null)
-//             {
-//                 // confidently thrown exception here, because
-//                 // UserTypeClaimType already checked in JwtClientConfiguration.OnTokenValidated()
-//                 var userTypeClaim = context.User.FindFirstValue(FoodSphereClaimType.UserTypeClaimType) ?? throw new InvalidOperationException();
-//                 var userType = Enum.Parse<UserType>(userTypeClaim);
+            if (requirement.UserType != userType)
+            {
+                context.Fail();
+                return;
+            }
+        }
 
-//                 _logger.LogInformation("requirement: {RequireUserType}, parsed: {UserType}", requirement.UserType, userType);
-
-//                 if (requirement.UserType != userType)
-//                 {
-//                     context.Fail();
-//                     return;
-//                 }
-//             }
-
-//             // but we must known which restaurant/branch before check permissions?
-//             context.Succeed(requirement);
-//         }
-//     }
-// }
+        // but we must known before hand that which restaurant/branch need to be checked permissions with?
+        context.Succeed(requirement);
+    }
+}

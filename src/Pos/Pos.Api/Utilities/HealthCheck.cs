@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace FoodSphere.Pos.Api.Utilities;
+namespace FoodSphere.Pos.Api.Utility;
 
 public class HealthCheck
 {

@@ -1,4 +1,4 @@
-namespace FoodSphere.Infrastructure.Persistence.Configurations;
+namespace FoodSphere.Infrastructure.Persistence.Configuration;
 
 public class BranchConfiguration : IEntityTypeConfiguration<Branch>
 {
@@ -8,9 +8,9 @@ public class BranchConfiguration : IEntityTypeConfiguration<Branch>
     }
 }
 
-public class ManagerConfiguration : IEntityTypeConfiguration<Manager>
+public class BranchManagerConfiguration : IEntityTypeConfiguration<BranchManager>
 {
-    public void Configure(EntityTypeBuilder<Manager> builder)
+    public void Configure(EntityTypeBuilder<BranchManager> builder)
     {
         builder.HasKey(e => new { e.RestaurantId, e.BranchId, e.MasterId });
 
@@ -26,13 +26,13 @@ public class ManagerConfiguration : IEntityTypeConfiguration<Manager>
     }
 }
 
-public class ManagerRoleConfiguration : IEntityTypeConfiguration<ManagerRole>
+public class BranchManagerRoleConfiguration : IEntityTypeConfiguration<BranchManagerRole>
 {
-    public void Configure(EntityTypeBuilder<ManagerRole> builder)
+    public void Configure(EntityTypeBuilder<BranchManagerRole> builder)
     {
         builder.HasKey(e => new { e.RestaurantId, e.BranchId, e.ManagerId, e.RoleId });
 
-        builder.HasOne(e => e.ManagerBranch)
+        builder.HasOne(e => e.Manager)
             .WithMany(e => e.Roles)
             .HasForeignKey(e => new { e.RestaurantId, e.BranchId, e.ManagerId })
             .OnDelete(DeleteBehavior.Restrict);

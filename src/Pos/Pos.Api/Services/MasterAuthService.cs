@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace FoodSphere.Pos.Api.Services;
+namespace FoodSphere.Pos.Api.Service;
 
 public class MasterAuthService(
     UserManager<MasterUser> userManager,
@@ -68,7 +68,7 @@ public class MasterAuthService(
         return token;
     }
 
-    public async Task<bool> IsTwoFactorEnabledAsync(MasterUser user)
+    public async Task<bool> IsTwoFactorEnabled(MasterUser user)
     {
         return
             await userManager.GetTwoFactorEnabledAsync(user) &&

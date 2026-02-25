@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace FoodSphere.Common.Services;
+namespace FoodSphere.Common.Service;
 
 public class ConsumerAuthService(
     ILogger<ConsumerAuthService> logger,
@@ -78,7 +78,7 @@ public class ConsumerAuthService(
         return token;
     }
 
-    public async Task<bool> IsTwoFactorEnabledAsync(ConsumerUser user)
+    public async Task<bool> IsTwoFactorEnabled(ConsumerUser user)
     {
         return user.TwoFactorEnabled;
     }

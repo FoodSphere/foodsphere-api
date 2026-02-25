@@ -1,110 +1,130 @@
-
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Options;
 
-namespace FoodSphere.Common.Options
+namespace FoodSphere.Common.Options;
+
+public interface IEnvOptions
 {
-    public class EnvConnectionStrings
-    {
-        public const string SectionName = "ConnectionStrings";
 
-        [Required]
-        public required string @default { get; init; }
-    }
+}
 
-    public class EnvGoogle
-    {
-        public const string SectionName = "Google";
+public class EnvConnectionStrings : IEnvOptions
+{
+    public const string SectionName = "ConnectionStrings";
 
-        [Required]
-        public required string client_id { get; init; }
-        [Required]
-        public required string client_secret { get; init; }
-    }
+    [Required]
+    public required string @default { get; init; }
+}
 
-    public class EnvMagicLink
-    {
-        public const string SectionName = "MagicLink";
+public class EnvGoogle : IEnvOptions
+{
+    public const string SectionName = "Google";
 
-        [Required]
-        public required string signing_key { get; init; }
-        [Required]
-        public required string encryption_key { get; init; }
-    }
+    [Required]
+    public required string client_id { get; init; }
+    [Required]
+    public required string client_secret { get; init; }
+}
 
-    public class EnvKeyVault
-    {
-        public const string SectionName = "KeyVault";
+public class EnvMagicLink : IEnvOptions
+{
+    public const string SectionName = "MagicLink";
 
-        [Required]
-        public required string uri { get; init; }
-    }
+    [Required]
+    public required string signing_key { get; init; }
+    [Required]
+    public required string encryption_key { get; init; }
+}
 
-    public class NestedDomain
-    {
-        [Required]
-        public required string hostname { get; init; }
+public class EnvKeyVault : IEnvOptions
+{
+    public const string SectionName = "KeyVault";
 
-        [Required]
-        public required string signing_key { get; init; }
-    }
+    [Required]
+    public required string uri { get; init; }
+}
 
-    public class EnvDomain
-    {
-        public const string SectionName = "Domain";
+public class EnvS3 : IEnvOptions
+{
+    public const string SectionName = "S3";
 
-        [ValidateObjectMembers]
-        public required NestedDomain api { get; init; }
+    [Required]
+    public required string access_key { get; init; }
 
-        [ValidateObjectMembers]
-        public required NestedDomain resource { get; init; }
+    [Required]
+    public required string secret_key { get; init; }
 
-        [ValidateObjectMembers]
-        public required NestedDomain pos { get; init; }
+    [Required]
+    public required string endpoint_url { get; init; }
 
-        [ValidateObjectMembers]
-        public required NestedDomain master { get; init; }
+    // [Required]
+    // public required string region { get; init; }
+}
 
-        [ValidateObjectMembers]
-        public required NestedDomain consumer { get; init; }
+public class NestedDomain : IEnvOptions
+{
+    [Required]
+    public required string hostname { get; init; }
 
-        [ValidateObjectMembers]
-        public required NestedDomain ordering { get; init; }
-    }
+    [Required]
+    public required string signing_key { get; init; }
+}
 
-    public class EnvDomainApi : NestedDomain
-    {
-        public const string ParentSectionName = EnvDomain.SectionName;
-        public const string SectionName = "api";
-    }
+public class EnvDomain : IEnvOptions
+{
+    public const string SectionName = "Domain";
 
-    public class EnvDomainResource : NestedDomain
-    {
-        public const string ParentSectionName = EnvDomain.SectionName;
-        public const string SectionName = "resource";
-    }
+    [ValidateObjectMembers]
+    public required NestedDomain api { get; init; }
 
-    public class EnvDomainPos : NestedDomain
-    {
-        public const string ParentSectionName = EnvDomain.SectionName;
-        public const string SectionName = "pos";
-    }
+    [ValidateObjectMembers]
+    public required NestedDomain resource { get; init; }
 
-    public class EnvDomainMaster : NestedDomain
-    {
-        public const string ParentSectionName = EnvDomain.SectionName;
-        public const string SectionName = "master";
-    }
+    [ValidateObjectMembers]
+    public required NestedDomain pos { get; init; }
 
-    public class EnvDomainConsumer : NestedDomain
-    {
-        public const string ParentSectionName = EnvDomain.SectionName;
-        public const string SectionName = "consumer";
-    }
+    [ValidateObjectMembers]
+    public required NestedDomain master { get; init; }
 
-    public class EnvDomainOrdering : NestedDomain
-    {
-        public const string ParentSectionName = EnvDomain.SectionName;
-        public const string SectionName = "ordering";
-    }
+    [ValidateObjectMembers]
+    public required NestedDomain consumer { get; init; }
+
+    [ValidateObjectMembers]
+    public required NestedDomain ordering { get; init; }
+}
+
+public class EnvDomainApi : NestedDomain, IEnvOptions
+{
+    public const string ParentSectionName = EnvDomain.SectionName;
+    public const string SectionName = "api";
+}
+
+public class EnvDomainResource : NestedDomain, IEnvOptions
+{
+    public const string ParentSectionName = EnvDomain.SectionName;
+    public const string SectionName = "resource";
+}
+
+public class EnvDomainPos : NestedDomain, IEnvOptions
+{
+    public const string ParentSectionName = EnvDomain.SectionName;
+    public const string SectionName = "pos";
+}
+
+public class EnvDomainMaster : NestedDomain, IEnvOptions
+{
+    public const string ParentSectionName = EnvDomain.SectionName;
+    public const string SectionName = "master";
+}
+
+public class EnvDomainConsumer : NestedDomain, IEnvOptions
+{
+    public const string ParentSectionName = EnvDomain.SectionName;
+    public const string SectionName = "consumer";
+}
+
+public class EnvDomainOrdering : NestedDomain, IEnvOptions
+{
+    public const string ParentSectionName = EnvDomain.SectionName;
+    public const string SectionName = "ordering";
 }

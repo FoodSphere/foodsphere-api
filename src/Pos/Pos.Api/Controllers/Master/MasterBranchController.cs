@@ -1,32 +1,4 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-
-namespace FoodSphere.Pos.Api.Controllers;
-
-// check master have access to branch?
-public class ManageBranchFilter : IAuthorizationFilter
-{
-    public void OnAuthorization(AuthorizationFilterContext context)
-    {
-        var sp = context.HttpContext.RequestServices;
-        var restaurantService = sp.GetService<RestaurantService>();
-
-        var userId = context.HttpContext.User.FindFirstValue(FoodSphereClaimType.Identity.UserIdClaimType);
-
-        if (userId is null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        // var restaurantId = Guid.Parse((string)context.RouteData.Values["restaurant_id"]!);
-
-        // if (restaurantService.UserOwnsRestaurant(userId, restaurantId))
-        // {
-        //     context.Result = new ForbidResult();
-        // }
-    }
-}
+namespace FoodSphere.Pos.Api.Controller;
 
 [Route("restaurants/{restaurant_id}/branches")]
 public class MasterBranchController(
@@ -34,6 +6,9 @@ public class MasterBranchController(
     BranchService branchService
 ) : MasterControllerBase
 {
+    /// <summary>
+    /// list branches
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<BranchResponse>>> ListBranches(Guid restaurant_id)
     {
@@ -44,6 +19,9 @@ public class MasterBranchController(
             .ToList();
     }
 
+    /// <summary>
+    /// create branch
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<BranchResponse>> CreateBranch(Guid restaurant_id, BranchRequest body)
     {
@@ -61,36 +39,45 @@ public class MasterBranchController(
             await branchService.SetContact(branch, body.contact);
         }
 
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return CreatedAtAction(
-            nameof(StaffAccessController.GetBranch),
-            GetControllerName(nameof(StaffAccessController)),
+            nameof(InfoController.GetBranch),
+            GetControllerName(nameof(InfoController)),
             new { restaurant_id, branch_id = branch.Id },
             BranchResponse.FromModel(branch)
         );
     }
 
+    /// <summary>
+    /// list branch managers
+    /// </summary>
     [HttpGet("managers")]
-    public async Task<ActionResult<List<ManagerResponse>>> ListManagers(Guid restaurant_id, short branch_id)
+    public async Task<ActionResult<List<BranchManagerResponse>>> ListManagers(Guid restaurant_id, short branch_id)
     {
         var managers = await branchService.ListManagers(restaurant_id, branch_id);
 
         return managers
-            .Select(ManagerResponse.FromModel)
+            .Select(BranchManagerResponse.FromModel)
             .ToList();
     }
 
+    /// <summary>
+    /// not done
+    /// </summary>
     [HttpPost("managers")]
-    public async Task<ActionResult<ManagerResponse>> CreateManager(Guid restaurant_id, short branch_id, ManagerRequest body)
+    public async Task<ActionResult<BranchManagerResponse>> CreateManager(Guid restaurant_id, short branch_id, BranchManagerRequest body)
     {
         var manager = await branchService.CreateManager(restaurant_id, branch_id, body.master_id);
 
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
-        return ManagerResponse.FromModel(manager);
+        return BranchManagerResponse.FromModel(manager);
     }
 
+    /// <summary>
+    /// delete branch
+    /// </summary>
     [HttpDelete("{branch_id}")]
     public async Task<ActionResult> DeleteBranch(Guid restaurant_id, short branch_id)
     {
@@ -102,7 +89,7 @@ public class MasterBranchController(
         }
 
         await branchService.DeleteBranch(branch);
-        await branchService.SaveAsync();
+        await branchService.SaveChanges();
 
         return NoContent();
     }

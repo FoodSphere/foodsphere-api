@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
-namespace FoodSphere.Resource.Api.Controllers;
+namespace FoodSphere.Resource.Api.Controller;
 
 [Route("restaurants")]
 public class RestaurantController(
@@ -30,7 +28,7 @@ public class RestaurantController(
             await restaurantService.SetContact(restaurant, body.contact);
         }
 
-        await restaurantService.SaveAsync();
+        await restaurantService.SaveChanges();
 
         return CreatedAtAction(
             nameof(GetRestaurant),
@@ -63,7 +61,7 @@ public class RestaurantController(
         }
 
         await restaurantService.SetContact(restaurant, body);
-        await restaurantService.SaveAsync();
+        await restaurantService.SaveChanges();
 
         return NoContent();
     }
@@ -97,7 +95,7 @@ public class RestaurantController(
         }
 
         await restaurantService.DeleteRestaurant(restaurant);
-        await restaurantService.SaveAsync();
+        await restaurantService.SaveChanges();
 
         return NoContent();
     }

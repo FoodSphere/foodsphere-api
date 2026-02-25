@@ -1,4 +1,4 @@
-namespace FoodSphere.Resource.Api.DTOs;
+namespace FoodSphere.Resource.Api.DTO;
 
 public class BranchRequest
 {

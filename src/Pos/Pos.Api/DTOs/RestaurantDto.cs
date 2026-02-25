@@ -1,4 +1,4 @@
-namespace FoodSphere.Pos.Api.DTOs;
+namespace FoodSphere.Pos.Api.DTO;
 
 public class QuickRestaurantRequest
 {
@@ -67,6 +67,9 @@ public class QuickRestaurantResponse
     /// <example>main</example>
     public string? branch_name { get; set; }
 
+    /// <example>null</example>
+    public string? branch_display_name { get; set; }
+
     /// <example>71 Lat Krabang Rd, Lat Krabang, Bangkok 10520</example>
     public string? branch_address { get; set; }
 
@@ -86,9 +89,26 @@ public class QuickRestaurantResponse
             restaurant_display_name = restaurant.DisplayName,
             branch_id = branch.Id,
             branch_name = branch.Name,
+            branch_display_name = branch.DisplayName,
             branch_address = branch.Address,
             branch_opening_time = branch.OpeningTime,
             branch_closing_time = branch.ClosingTime,
+        };
+    }
+}
+
+public class QuickRestaurantResponse2
+{
+    public required RestaurantResponse restaurant { get; set; }
+
+    public required BranchResponse branch { get; set; }
+
+    public static QuickRestaurantResponse2 FromModel(Restaurant restaurant, Branch branch)
+    {
+        return new QuickRestaurantResponse2
+        {
+            restaurant = RestaurantResponse.FromModel(restaurant),
+            branch = BranchResponse.FromModel(branch),
         };
     }
 }

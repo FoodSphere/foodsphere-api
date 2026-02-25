@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FoodSphere.Infrastructure.Persistence;
 
-namespace FoodSphere.Common.Services;
+namespace FoodSphere.Common.Service;
 
 public class RestaurantService(FoodSphereDbContext context) : ServiceBase(context)
 {
@@ -19,12 +19,77 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
             DisplayName = displayName,
         };
 
+        // await SeedRole(); ?
+
         // we don't have to `_ctx.Add(contact)`,
         // because the contact was set in restaurant
         // before the restaurant is added to DbContext
-        await _ctx.AddAsync(restaurant, ct);
+        _ctx.Add(restaurant);
 
         return restaurant;
+    }
+
+    public async Task<RestaurantManager> CreateManager(
+        Guid restaurantId,
+        string masterId,
+        CancellationToken ct = default
+    ) {
+        var manager = new RestaurantManager
+        {
+            RestaurantId = restaurantId,
+            MasterId = masterId,
+        };
+
+        _ctx.Add(manager);
+
+        return manager;
+    }
+
+    public async Task SetManagerRoles(
+        RestaurantManager manager,
+        IEnumerable<short> roleIds,
+        CancellationToken ct = default
+    ) {
+        await SetManagerRoles(
+            manager.RestaurantId,
+            manager.MasterId,
+            roleIds,
+            ct);
+    }
+
+    public async Task SetManagerRoles(
+        Guid restaurantId,
+        string masterId,
+        IEnumerable<short> roleIds,
+        CancellationToken ct = default
+    ) {
+        var desiredIds = roleIds
+            .Distinct()
+            .ToArray();
+
+        var currentRoles = await _ctx.Set<RestaurantManagerRole>()
+            .Where(rmr =>
+                rmr.RestaurantId == restaurantId &&
+                rmr.ManagerId == masterId)
+            .ToArrayAsync(ct);
+
+        var toRemove = currentRoles
+            .ExceptBy(desiredIds, sr => sr.RoleId)
+            .ToArray();
+
+        var toAddIds = desiredIds
+            .Except(currentRoles.Select(sr => sr.RoleId))
+            .ToArray();
+
+        var newEntities = toAddIds.Select(roleId => new RestaurantManagerRole
+        {
+            RestaurantId = restaurantId,
+            ManagerId = masterId,
+            RoleId = roleId
+        });
+
+        _ctx.RemoveRange(toRemove);
+        await _ctx.AddRangeAsync(newEntities, ct);
     }
 
     public async Task<Restaurant?> GetRestaurant(Guid restaurantId)
@@ -42,6 +107,13 @@ public class RestaurantService(FoodSphereDbContext context) : ServiceBase(contex
         return await _ctx.Set<Restaurant>()
             .Where(restaurant => restaurant.OwnerId == ownerId)
             .ToListAsync();
+    }
+
+    public async Task<RestaurantManager[]> ListManagers(Guid restaurantId)
+    {
+        return await _ctx.Set<RestaurantManager>()
+            .Where(manager => manager.RestaurantId == restaurantId)
+            .ToArrayAsync();
     }
 
     public async Task DeleteRestaurant(Restaurant restaurant)

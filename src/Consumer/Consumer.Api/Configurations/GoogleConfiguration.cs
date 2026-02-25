@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Google;
 
-namespace FoodSphere.Consumer.Api.Configurations;
+namespace FoodSphere.Consumer.Api.Configuration;
 
 public static class GoogleConfiguration
 {

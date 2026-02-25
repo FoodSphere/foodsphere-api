@@ -1,4 +1,4 @@
-namespace FoodSphere.Infrastructure.Persistence.Configurations;
+namespace FoodSphere.Infrastructure.Persistence.Configuration;
 
 public class ContactConfiguration : IEntityTypeConfiguration<Contact>
 {
@@ -21,11 +21,47 @@ public class RestaurantConfiguration : IEntityTypeConfiguration<Restaurant>
     }
 }
 
+public class RestaurantManagerConfiguration : IEntityTypeConfiguration<RestaurantManager>
+{
+    public void Configure(EntityTypeBuilder<RestaurantManager> builder)
+    {
+        builder.HasKey(e => new { e.RestaurantId, e.MasterId });
+
+        builder.HasOne(e => e.Restaurant)
+            .WithMany(e => e.Managers)
+            .HasForeignKey(e => new { e.RestaurantId })
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.Master)
+            .WithMany(e => e.ManagedRestaurants)
+            .HasForeignKey(e => e.MasterId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+public class RestaurantManagerRoleConfiguration : IEntityTypeConfiguration<RestaurantManagerRole>
+{
+    public void Configure(EntityTypeBuilder<RestaurantManagerRole> builder)
+    {
+        builder.HasKey(e => new { e.RestaurantId, e.ManagerId, e.RoleId });
+
+        builder.HasOne(e => e.Manager)
+            .WithMany(e => e.Roles)
+            .HasForeignKey(e => new { e.RestaurantId, e.ManagerId })
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.Role)
+            .WithMany()
+            .HasForeignKey(e => new { e.RestaurantId, e.RoleId })
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
 public class TagConfiguration : IEntityTypeConfiguration<Tag>
 {
     public void Configure(EntityTypeBuilder<Tag> builder)
     {
-        builder.HasKey(e => new { e.RestaurantId, e.Name });
+        builder.HasKey(e => new { e.RestaurantId, e.Id });
 
         builder.HasOne<Restaurant>()
             .WithMany(e => e.Tags)

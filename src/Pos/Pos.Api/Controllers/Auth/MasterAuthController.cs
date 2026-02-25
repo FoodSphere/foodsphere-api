@@ -2,13 +2,11 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace FoodSphere.Pos.Api.Controllers;
+namespace FoodSphere.Pos.Api.Controller;
 
 /// <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi"/>
 /// <see cref="Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions"/>
@@ -16,7 +14,7 @@ namespace FoodSphere.Pos.Api.Controllers;
 [Route("auth/master")]
 public class MasterAuthController(
     ILogger<MasterAuthController> logger,
-    Utilities.EmailService emailSender,
+    Utility.EmailService emailSender,
     UserManager<MasterUser> userManager,
     MasterAuthService authService
 ) : FoodSphereControllerBase
@@ -24,7 +22,7 @@ public class MasterAuthController(
     readonly EmailAddressAttribute emailAddressAttribute = new();
 
     /// <summary>
-    /// Register a master user.
+    /// register a master user
     /// </summary>
     [HttpPost]
     public async Task<Results<
@@ -58,7 +56,7 @@ public class MasterAuthController(
     }
 
     /// <summary>
-    /// Login master user
+    /// login master user
     /// </summary>
     [HttpPost("token")]
     public async Task<Results<
@@ -74,7 +72,7 @@ public class MasterAuthController(
         if (!await userManager.CheckPasswordAsync(user, body.password))
             return TypedResults.Unauthorized();
 
-        if (await authService.IsTwoFactorEnabledAsync(user))
+        if (await authService.IsTwoFactorEnabled(user))
         {
             if (string.IsNullOrEmpty(body.two_factor_code))
             {
