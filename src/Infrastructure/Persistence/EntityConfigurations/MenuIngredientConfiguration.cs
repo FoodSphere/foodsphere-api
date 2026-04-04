@@ -10,7 +10,7 @@ public class MenuIngredientConfiguration : IEntityTypeConfiguration<MenuIngredie
             .HasColumnType("numeric(10,4)");
 
         builder.HasOne(e => e.Menu)
-            .WithMany(e => e.MenuIngredients)
+            .WithMany(e => e.Ingredients)
             .HasForeignKey(e => new { e.RestaurantId, e.MenuId })
             .OnDelete(DeleteBehavior.Restrict);
 

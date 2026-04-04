@@ -1,57 +1,38 @@
 namespace FoodSphere.Common.Entity;
 
-public class Branch : EntityBase<short>
+public interface IBranchKey
 {
-    public Guid RestaurantId { get; set; }
-    public virtual Restaurant Restaurant { get; set; } = null!;
+    public Guid RestaurantId { get; }
+    public short Id { get; }
+}
 
-    public Guid? ContactId { get; set; }
-    public virtual Contact? Contact { get; set; } = null!;
+public record BranchKey(Guid RestaurantId, short Id) : IBranchKey, IEntityKey
+{
+    public static implicit operator BranchKey(Branch model) => new(model.RestaurantId, model.Id);
+    public static implicit operator object[](BranchKey key) => [key.RestaurantId, key.Id];
+}
 
-    public virtual List<BranchManager> BranchManagers { get; } = [];
-    public virtual List<Stock> IngredientStocks { get; } = [];
-    public virtual List<Table> Tables { get; } = [];
-    public virtual List<StaffUser> Staffs { get; } = [];
-    public virtual List<Queuing> Queuings { get; } = [];
+public class Branch : IBranchKey, IUpdatableEntityModel, ISoftDeleteEntityModel
+{
+    public required Guid RestaurantId { get; init; }
+    public required short Id { get; init; }
 
+    public DateTime CreateTime { get; set; }
+    public DateTime? UpdateTime { get; set; }
+    public DateTime? DeleteTime { get; set; }
+
+    public virtual Restaurant Restaurant { get; init; } = null!;
+
+    public virtual ICollection<BranchStaff> BranchStaffs { get; } = [];
+    public virtual ICollection<StockTransaction> IngredientStocks { get; } = [];
+    public virtual ICollection<Table> Tables { get; } = [];
+    public virtual ICollection<WorkerUser> Workers { get; } = [];
+    public virtual ICollection<Queuing> Queuings { get; } = [];
+
+    public Contact Contact { get; set; } = new();
     public required string Name { get; set; }
     public string? DisplayName { get; set; }
     public string? Address { get; set; }
     public TimeOnly? OpeningTime { get; set; }
     public TimeOnly? ClosingTime { get; set; }
-}
-
-public class BranchManager : TrackableEntityBase
-{
-    public Guid RestaurantId { get; set; }
-    public short BranchId { get; set; }
-    public virtual Branch Branch { get; set; } = null!;
-
-    public string MasterId { get; set; } = null!;
-    public virtual MasterUser Master { get; set; } = null!;
-
-    public virtual List<BranchManagerRole> Roles { get; } = [];
-
-    public Permission[] GetPermissions()
-    {
-        var permissions = Roles
-            .SelectMany(r => r.Role.Permissions)
-            .Select(rp => rp.Permission)
-            .Distinct()
-            .ToArray();
-
-        return permissions;
-    }
-}
-
-public class BranchManagerRole : TrackableEntityBase
-{
-    public Guid RestaurantId { get; set; }
-    public short BranchId { get; set; }
-
-    public string ManagerId { get; set; } = null!;
-    public virtual BranchManager Manager { get; set; } = null!;
-
-    public short RoleId { get; set; }
-    public virtual Role Role { get; set; } = null!;
 }

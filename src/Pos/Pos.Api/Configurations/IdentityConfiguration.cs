@@ -6,7 +6,8 @@ public static class IdentityConfiguration
 {
     public static Action<IdentityOptions> Configure()
     {
-        return options => {
+        return options =>
+        {
             options.Password.RequiredLength = 4;
             options.Password.RequireDigit = false;
             options.Password.RequireLowercase = false;

@@ -1,101 +1,137 @@
 namespace FoodSphere.Pos.Api.Controller;
 
-[Route("restaurants/{restaurant_id}/branches/{branch_id}/stocks")]
+[Route("restaurants/{restaurant_id}/branches/{branch_id}/stock")]
 public class StockController(
     ILogger<StockController> logger,
-    BranchService branchService
+    StockServiceBase stockService,
+    AccessControlService accessControl
 ) : PosControllerBase
 {
     /// <summary>
-    /// list stocks
+    /// list stock's transactions
     /// </summary>
-    [HttpGet]
-    public async Task<ActionResult<ICollection<StockDto>>> ListStocks(Guid restaurant_id, short branch_id)
+    [HttpGet("transactions")]
+    public async Task<ActionResult<ICollection<StockTransactionResponse>>> ListTransactions(
+        Guid restaurant_id, short branch_id,
+        [FromQuery] IReadOnlyCollection<short> ingredient_id,
+        [FromQuery] IReadOnlyCollection<Guid> bill_id,
+        [FromQuery] DateTime? from_time,
+        [FromQuery] DateTime? to_time,
+        [FromQuery] int offset = 0,
+        [FromQuery] int limit = 10000)
     {
-        var responses = await branchService.QueryStocks()
-            .Where(e =>
-                e.RestaurantId == restaurant_id &&
-                e.BranchId == branch_id)
-            .Select(StockDto.Projection)
-            .ToArrayAsync();
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Stock.READ);
 
-        return responses;
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        Expression<Func<StockTransaction, bool>> predicate = e =>
+            e.RestaurantId == restaurant_id &&
+            e.BranchId == branch_id;
+
+        if (ingredient_id.Count > 0)
+            predicate = predicate.And(e =>
+                ingredient_id.Contains(e.IngredientId));
+
+        if (bill_id.Count > 0)
+            predicate = predicate.And(e =>
+                e.BillId != null &&
+                bill_id.Contains(e.BillId.Value));
+
+        if (from_time is not null)
+            predicate = predicate.And(e => e.CreateTime >= from_time.Value);
+
+        if (to_time is not null)
+            predicate = predicate.And(e => e.CreateTime <= to_time.Value);
+
+        return await stockService.ListTransactions(
+            StockTransactionResponse.Projection, predicate,
+            new(offset, limit));
     }
 
     /// <summary>
-    /// upsert stock
+    /// create stock transaction
     /// </summary>
-    [HttpPut]
-    public async Task<ActionResult> UpsertStock(Guid restaurant_id, short branch_id, StockDto body)
+    [HttpPost("transactions")]
+    public async Task<ActionResult<StockTransactionResponse>> CreateTransaction(
+        Guid restaurant_id, short branch_id, StockTransactionRequest body)
     {
-        var stock = await branchService.GetStock(restaurant_id, branch_id, body.ingredient_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Stock.CREATE);
 
-        if (stock is null)
-        {
-            var branch = branchService.GetBranchStub(restaurant_id, branch_id);
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-            stock = await branchService.CreateStock(branch, body.ingredient_id ,body.amount);
+        var result = await stockService.CreateTransaction(
+            StockTransactionResponse.Projection, new(
+                new(restaurant_id, branch_id),
+                new(restaurant_id, body.ingredient_id),
+                body.amount,
+                body.note));
 
-            await branchService.SaveChanges();
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
-            var response = await branchService.GetStock(
-                restaurant_id, branch_id, body.ingredient_id,
-                StockDto.Projection);
+        var (key, response) = result.Value;
 
-            return CreatedAtAction(
-                nameof(GetStock),
-                new { restaurant_id, branch_id, ingredient_id = body.ingredient_id },
-                response);
-        }
-
-        stock.Amount = body.amount;
-
-        await branchService.SaveChanges();
-
-        return NoContent();
+        return CreatedAtAction(
+            nameof(GetStock),
+            new { restaurant_id, branch_id, key.Id },
+            response);
     }
 
     /// <summary>
-    /// get stock
+    /// get transaction
     /// </summary>
-    [HttpGet("{ingredient_id}")]
-    public async Task<ActionResult<StockDto>> GetStock(Guid restaurant_id, short branch_id, short ingredient_id)
+    [HttpGet("transactions/{transaction_id}")]
+    public async Task<ActionResult<StockTransactionResponse>> GetStock(
+        Guid restaurant_id, short branch_id, Guid transaction_id)
     {
-        var response = await branchService.GetStock(
-            restaurant_id, branch_id, ingredient_id,
-            StockDto.Projection);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Stock.READ);
+
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var response = await stockService.GetTransaction(
+            StockTransactionResponse.Projection,
+            new(restaurant_id, branch_id, transaction_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
 
     /// <summary>
-    /// delete stock
+    /// create stock transaction (adjust stock level)
     /// </summary>
-    [HttpDelete("{ingredient_id}")]
-    public async Task<ActionResult> DeleteStock(Guid restaurant_id, short branch_id, short ingredient_id)
+    [HttpPut("rebalance")]
+    public async Task<ActionResult<StockTransactionResponse>> SetTransaction(
+        Guid restaurant_id, short branch_id, StockTransactionRequest body)
     {
-        var branch = await branchService.GetBranch(restaurant_id, branch_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Stock.CREATE);
 
-        if (branch is null)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var stock = await branchService.GetStock(branch, ingredient_id);
+        var result = await stockService.CreateTransaction(
+            StockTransactionResponse.Projection, new(
+                new(restaurant_id, branch_id),
+                new(restaurant_id, body.ingredient_id),
+                body.amount,
+                body.note));
 
-        if (stock is null)
-        {
-            return NotFound();
-        }
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
-        await branchService.DeleteStock(stock);
-        await branchService.SaveChanges();
+        var (key, response) = result.Value;
 
-        return NoContent();
+        return CreatedAtAction(
+            nameof(GetStock),
+            new { restaurant_id, branch_id, key.Id },
+            response);
     }
 }

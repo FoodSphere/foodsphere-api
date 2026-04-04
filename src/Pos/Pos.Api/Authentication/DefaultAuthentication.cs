@@ -35,7 +35,8 @@ public static class DefaultAuthentication
             {
                 var path = context.Request.Path.Value;
 
-                if (path is null) {
+                if (path is null)
+                {
                     return "";
                 }
 

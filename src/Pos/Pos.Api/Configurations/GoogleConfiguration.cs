@@ -9,7 +9,8 @@ public static class GoogleConfiguration
         using var sp = services.BuildServiceProvider();
         var envGoogle = sp.GetRequiredService<IOptions<EnvGoogle>>().Value;
 
-        return options => {
+        return options =>
+        {
             options.ClientId = envGoogle.client_id;
             options.ClientSecret = envGoogle.client_secret;
         };

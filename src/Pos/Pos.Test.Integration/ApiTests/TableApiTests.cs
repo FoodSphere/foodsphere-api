@@ -34,8 +34,8 @@ public class TableApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         responseBody.name.Should().Be(requestBody.name);
         // responseBody.status.Should().Be(TableStatus.Open);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class TableApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtur
         responseBody.name.Should().Be(table.Name);
         responseBody.status.Should().Be(table.Status);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 }

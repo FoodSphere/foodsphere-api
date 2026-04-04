@@ -6,5 +6,5 @@ global using FluentAssertions;
 global using FoodSphere.Common.Entity;
 global using FoodSphere.Common.Constant;
 global using FoodSphere.Common.DTO;
-global using FoodSphere.Common.Service;
+global using FoodSphere.Common.Test;
 global using FoodSphere.Pos.Api.DTO;

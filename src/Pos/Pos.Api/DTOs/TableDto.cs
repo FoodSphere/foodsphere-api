@@ -1,61 +1,63 @@
 namespace FoodSphere.Pos.Api.DTO;
 
-public class TableRequest
+public record TableRequest
 {
     /// <example>A1</example>
     public string? name { get; set; }
 }
 
-public class TableResponse
+public record TableResponse
 {
-    public short id { get; set; }
+    public required short id { get; set; }
 
     public DateTime create_time { get; set; }
-    public DateTime update_time { get; set; }
+    public DateTime? update_time { get; set; }
+    public DateTime? delete_time { get; set; }
 
-    public Guid restaurant_id { get; set; }
+    public required Guid restaurant_id { get; set; }
 
-    public short branch_id { get; set; }
+    public required short branch_id { get; set; }
 
     /// <example>"A1"</example>
     public string? name { get; set; }
 
     public TableStatus status { get; set; }
 
-    public static readonly Func<Table, TableResponse> Project = Projection.Compile();
-
-    public static Expression<Func<Table, TableResponse>> Projection =>
-        model => new TableResponse
+    public static readonly Expression<Func<Table, TableResponse>> Projection =
+        model => new()
         {
             id = model.Id,
             create_time = model.CreateTime,
             update_time = model.UpdateTime,
+            delete_time = model.DeleteTime,
             restaurant_id = model.RestaurantId,
             branch_id = model.BranchId,
             name = model.Name,
             status = model.Status,
         };
+
+    public static readonly Func<Table, TableResponse> Project = Projection.Compile();
 }
 
-public class SingleTableResponse
+public record SingleTableResponse
 {
-    public short id { get; set; }
+    public required short id { get; set; }
 
-    public Guid restaurant_id { get; set; }
+    public required Guid restaurant_id { get; set; }
 
     /// <example>"A1"</example>
     public string? name { get; set; }
 
     public TableStatus status { get; set; }
 
-    public static readonly Func<Table, SingleTableResponse> Project = Projection.Compile();
-
-    public static Expression<Func<Table, SingleTableResponse>> Projection =>
-        model => new SingleTableResponse
+    public static readonly Expression<Func<Table, SingleTableResponse>> Projection =
+        model => new()
         {
             id = model.Id,
             restaurant_id = model.RestaurantId,
             name = model.Name,
             status = model.Status,
         };
+
+    public static readonly Func<Table, SingleTableResponse> Project = Projection.Compile();
 }

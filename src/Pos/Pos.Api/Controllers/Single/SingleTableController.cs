@@ -3,47 +3,55 @@ namespace FoodSphere.Pos.Api.Controller;
 [Route("s/restaurants/{restaurant_id}/tables")]
 public class SingleTableController(
     ILogger<SingleTableController> logger,
-    BranchService branchService
+    TableServiceBase tableService,
+    AccessControlService accessControl
 ) : PosControllerBase
 {
     /// <summary>
     /// list tables
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ICollection<TableResponse>>> ListTables(Guid restaurant_id)
+    public async Task<ActionResult<ICollection<SingleTableResponse>>> ListTables(
+        Guid restaurant_id,
+        [FromQuery] bool? is_deleted = false)
     {
-        var responses = await branchService.QueryTables()
-            .Where(e =>
-                e.RestaurantId == restaurant_id &&
-                e.BranchId == 1)
-            .Select(TableResponse.Projection)
-            .ToArrayAsync();
+        Expression<Func<Table, bool>> predicate = e =>
+            e.RestaurantId == restaurant_id &&
+            e.BranchId == 1;
 
-        return responses;
+        if (is_deleted is not null)
+            predicate = predicate.And(e => e.DeleteTime != null == is_deleted.Value);
+
+        return await tableService.ListTables(
+            SingleTableResponse.Projection, predicate);
     }
 
     /// <summary>
     /// create table
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<TableResponse>> CreateTable(Guid restaurant_id, TableRequest body)
+    public async Task<ActionResult<SingleTableResponse>> CreateTable(
+        Guid restaurant_id, TableRequest body)
     {
-        var branch = branchService.GetBranchStub(restaurant_id, 1);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Table.CREATE);
 
-        var table = await branchService.CreateTable(
-            branch: branch,
-            name: body.name
-        );
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        await branchService.SaveChanges();
+        var result = await tableService.CreateTable(
+            SingleTableResponse.Projection, new(
+                new(restaurant_id, 1),
+                body.name));
 
-        var response = await branchService.GetTable(
-            restaurant_id, 1, table.Id,
-            TableResponse.Projection);
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
+
+        var (tableKey, response) = result.Value;
 
         return CreatedAtAction(
             nameof(GetTable),
-            new { restaurant_id, table_id = table.Id },
+            new { restaurant_id, table_id = tableKey.Id },
             response);
     }
 
@@ -51,36 +59,79 @@ public class SingleTableController(
     /// get table
     /// </summary>
     [HttpGet("{table_id}")]
-    public async Task<ActionResult<TableResponse>> GetTable(Guid restaurant_id, short table_id)
+    public async Task<ActionResult<SingleTableResponse>> GetTable(
+        Guid restaurant_id, short table_id)
     {
-        var response = await branchService.GetTable(
-            restaurant_id, 1, table_id,
-            TableResponse.Projection);
+        var response = await tableService.GetTable(
+            SingleTableResponse.Projection,
+            new(restaurant_id, 1, table_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
+    }
+
+    /// <summary>
+    /// update table
+    /// </summary>
+    [HttpPut("{table_id}")]
+    public async Task<ActionResult<SingleTableResponse>> UpdateTable(
+        Guid restaurant_id, short table_id,
+        TableRequest body)
+    {
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Table.UPDATE);
+
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var result = await tableService.UpdateTable(
+            new(restaurant_id, 1, table_id),
+            new(body.name));
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
+
+        return NoContent();
     }
 
     /// <summary>
     /// delete table
     /// </summary>
     [HttpDelete("{table_id}")]
-    public async Task<ActionResult> DeleteTable(Guid restaurant_id, short table_id)
+    public async Task<ActionResult> DeleteTable(
+        Guid restaurant_id, short table_id)
     {
-        var table = await branchService.GetTable(restaurant_id, 1, table_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Table.UPDATE);
 
-        if (table is null)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        await branchService.DeleteTable(table);
-        await branchService.SaveChanges();
+        var result = await tableService.DeleteTable(
+            new(restaurant_id, 1, table_id));
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// get table's current bill
+    /// </summary>
+    [HttpGet("{table_id}/bill")]
+    public async Task<ActionResult<BillResponse>> GetTableBill(
+        Guid restaurant_id, short table_id)
+    {
+        var response = await tableService.GetBill(
+            BillResponse.Projection,
+            new(restaurant_id, 1, table_id));
+
+        if (response is null)
+            return NotFound();
+
+        return response;
     }
 }

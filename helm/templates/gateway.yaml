@@ -8,6 +8,12 @@ spec:
   - protocol: HTTP
     port: 80
     name: http-gw
+    allowedRoutes:
+      namespaces:
+        from: All
   - protocol: HTTPS
     name: https-gw
     port: 443
+    allowedRoutes:
+      namespaces:
+        from: All

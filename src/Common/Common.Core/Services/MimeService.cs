@@ -2,18 +2,25 @@ using Microsoft.AspNetCore.StaticFiles;
 
 namespace FoodSphere.Common.Service;
 
-public class MimeService
+public interface IMimeService
 {
-    public string? GetExtensionFromContentType(string contentType)
+    string? GetExtensionFromContentType(string contentType);
+}
+
+public class MimeService : IMimeService
+{
+    static readonly IDictionary<string, string> mappings;
+
+    static MimeService()
     {
         var provider = new FileExtensionContentTypeProvider();
-        var extensionName = provider.Mappings.FirstOrDefault(x => x.Value == contentType).Key;
+        mappings = provider.Mappings;
+    }
 
-        if (extensionName is not null)
-        {
-            return extensionName;
-        }
+    public string? GetExtensionFromContentType(string contentType)
+    {
+        var extensionName = mappings.FirstOrDefault(x => x.Value == contentType).Key;
 
-        return null;
+        return extensionName;
     }
 }

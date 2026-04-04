@@ -1,25 +1,25 @@
 namespace FoodSphere.SelfOrdering.Api.DTO;
 
-public class ConsumerResponse
+public record ConsumerResponse
 {
-    public Guid id { get; set; }
+    public required Guid id { get; set; }
     public string? email { get; set; }
-    public string? name { get; set; }
-    public string? phone { get; set; }
+    public string? username { get; set; }
+    public string? phone_number { get; set; }
 
-    public static readonly Func<ConsumerUser, ConsumerResponse> Project = Projection.Compile();
-
-    public static Expression<Func<ConsumerUser, ConsumerResponse>> Projection =>
-        model => new ConsumerResponse
+    public static readonly Expression<Func<ConsumerUser, ConsumerResponse>> Projection =
+        model => new()
         {
             id = model.Id,
             email = model.Email,
-            name = model.Name,
-            phone = model.Phone,
+            username = model.UserName,
+            phone_number = model.PhoneNumber,
         };
+
+    public static readonly Func<ConsumerUser, ConsumerResponse> Project = Projection.Compile();
 }
 
-public class SetConsumerRequest
+public record SetConsumerRequest
 {
     public required string token { get; set; }
 }

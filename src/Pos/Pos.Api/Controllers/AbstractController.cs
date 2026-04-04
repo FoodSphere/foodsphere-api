@@ -12,41 +12,35 @@ public abstract class PosControllerBase : FoodSphereControllerBase
             var obj = HttpContext.Items[nameof(Common.Constant.UserType)];
 
             if (obj is not UserType userType)
-            {
                 throw new InvalidOperationException();
-            }
 
             return userType;
         }
     }
 
-    protected MasterUser MasterUser
+    protected MasterUserKey MasterKey
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Common.Entity.MasterUser)];
+            var obj = HttpContext.Items[nameof(Common.Entity.MasterUserKey)];
 
-            if (obj is not MasterUser user)
-            {
+            if (obj is not MasterUserKey userKey)
                 throw new InvalidOperationException();
-            }
 
-            return user;
+            return userKey;
         }
     }
 
-    protected StaffUser StaffUser
+    protected WorkerUserKey WorkerKey
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Common.Entity.StaffUser)];
+            var obj = HttpContext.Items[nameof(Common.Entity.WorkerUserKey)];
 
-            if (obj is not StaffUser user)
-            {
+            if (obj is not WorkerUserKey userKey)
                 throw new InvalidOperationException();
-            }
 
-            return user;
+            return userKey;
         }
     }
 }
@@ -65,16 +59,14 @@ public abstract class MasterControllerBase : FoodSphereControllerBase
         }
     }
 
-    protected MasterUser MasterUser
+    protected MasterUser MasterKey
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Common.Entity.MasterUser)];
+            var obj = HttpContext.Items[nameof(Common.Entity.MasterUserKey)];
 
             if (obj is not MasterUser user)
-            {
                 throw new InvalidOperationException();
-            }
 
             return user;
         }

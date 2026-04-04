@@ -10,5 +10,10 @@ public class SelfQueuingConfiguration : IEntityTypeConfiguration<Queuing>
             .WithMany(e => e.Queuings)
             .HasForeignKey(e => new { e.RestaurantId, e.BranchId })
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.Consumer)
+            .WithMany()
+            .HasForeignKey(e => e.ConsumerId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

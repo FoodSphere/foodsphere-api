@@ -2,7 +2,7 @@ namespace FoodSphere.Common.Service;
 
 public interface IStorageService
 {
-    // Task<string> Getkey(string path, string? contentType = null);
+    // Task<string> GetKey(string path, string? contentType = null);
 
     Task<UploadResult> Upload(
         string bucket,
@@ -18,6 +18,7 @@ public interface IStorageService
     Task<string> GetDownloadPreSignedUrl(string bucket, string key, TimeSpan? duration = null);
 
     Task<bool> Delete(string bucket, string key);
+    Task<bool> Delete(string url);
 }
 
 public record PresignedUrlResult

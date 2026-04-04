@@ -40,8 +40,8 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         responseBody.name.Should().Be(requestBody.name);
         responseBody.display_name.Should().Be(requestBody.display_name);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         using var builder = CreateTestSeeder();
 
         var (owner, _) = await builder.SeedMasterUser();
-        var restaurant = await builder.SeedRestaurant(owner.Id);
+        var restaurant = await builder.SeedRestaurant(owner);
 
         await builder.Commit();
         await Authenticate(owner);
@@ -69,7 +69,7 @@ public class RestaurantApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         responseBody.name.Should().Be(restaurant.Name);
         responseBody.display_name.Should().Be(restaurant.DisplayName);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 }

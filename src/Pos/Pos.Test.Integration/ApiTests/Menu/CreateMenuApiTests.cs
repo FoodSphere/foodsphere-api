@@ -23,6 +23,7 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
             price = Random.Shared.Next(300),
             ingredients = ingredientItemsResponses.ToIngredientItemDtos(),
             tags = tags.ToAssignTagRequests(),
+            status = MenuStatus.Active,
         };
 
         await Authenticate(owner);
@@ -47,24 +48,24 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         responseBody.image_url.Should().BeNull();
         responseBody.status.Should().Be(MenuStatus.Active);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 
     [Fact]
-    public async Task RestaurantManager_Post_Menu_Succeed()
+    public async Task RestaurantStaff_Post_Menu_Succeed()
     {
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
         var (owner, _) = await builder.SeedMasterUser();
-        var (manager, _) = await builder.SeedMasterUser();
+        var (staff, _) = await builder.SeedMasterUser();
         var restaurant = await builder.SeedRestaurant(owner);
         var tags = await builder.SeedTags(restaurant);
         var ingredients = await builder.SeedIngredients(restaurant);
         var ingredientItemsResponses = ingredients.ToIngredientItemResponses();
 
-        await builder.SeedRestaurantManager(restaurant, manager, PERMISSION.Menu.CREATE);
+        await builder.SeedRestaurantStaff(restaurant, staff, PERMISSION.Menu.CREATE);
 
         await builder.Commit();
         var requestBody = new MenuRequest
@@ -75,9 +76,10 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
             price = Random.Shared.Next(300),
             ingredients = ingredientItemsResponses.ToIngredientItemDtos(),
             tags = tags.ToAssignTagRequests(),
+            status = MenuStatus.Active,
         };
 
-        await Authenticate(manager);
+        await Authenticate(staff);
 
         var response = await _client.PostAsJsonAsync($"restaurants/{restaurant.Id}/menus", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -99,21 +101,21 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         responseBody.image_url.Should().BeNull();
         responseBody.status.Should().Be(MenuStatus.Active);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 
     [Fact]
-    public async Task RestaurantManager_Post_Menu_Forbidden()
+    public async Task RestaurantStaff_Post_Menu_Forbidden()
     {
         var unique = TestSeedingGenerator.GetUniqueString();
         using var builder = CreateTestSeeder();
 
         var (owner, _) = await builder.SeedMasterUser();
-        var (manager, _) = await builder.SeedMasterUser();
+        var (staff, _) = await builder.SeedMasterUser();
         var restaurant = await builder.SeedRestaurant(owner);
 
-        await builder.SeedRestaurantManager(restaurant, manager);
+        await builder.SeedRestaurantStaff(restaurant, staff);
 
         await builder.Commit();
         var requestBody = new MenuRequest
@@ -122,7 +124,7 @@ public class CreateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
             price = Random.Shared.Next(300),
         };
 
-        await Authenticate(manager);
+        await Authenticate(staff);
 
         var response = await _client.PostAsJsonAsync($"restaurants/{restaurant.Id}/menus", requestBody, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);

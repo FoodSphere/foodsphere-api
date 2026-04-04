@@ -1,69 +1,37 @@
 namespace FoodSphere.Common.Entity;
 
-public class Contact : EntityBase
+public interface IRestaurantKey
 {
-    public string? Name { get; set; }
-    public string? Email { get; set; }
-    public string? Phone { get; set; }
+    public Guid Id { get; }
 }
 
-public class Restaurant : EntityBase
+public record RestaurantKey(Guid Id) : IRestaurantKey, IEntityKey
 {
-    public string OwnerId { get; set; } = null!;
-    public virtual MasterUser Owner { get; set; } = null!;
+    public static implicit operator RestaurantKey(Restaurant model) => new(model.Id);
+    public static implicit operator object[](RestaurantKey key) => [key.Id];
+}
 
-    public Guid ContactId { get; set; }
-    public virtual Contact Contact { get; set; } = null!;
+public class Restaurant : IRestaurantKey, IUpdatableEntityModel, ISoftDeleteEntityModel
+{
+    public required Guid Id { get; init; }
 
-    public virtual List<RestaurantManager> Managers { get; } = [];
-    public virtual List<Menu> Menus { get; } = [];
-    public virtual List<Tag> Tags { get; } = [];
-    public virtual List<Ingredient> Ingredient { get; } = [];
-    public virtual List<Branch> Branches { get; } = [];
+    public DateTime CreateTime { get; set; }
+    public DateTime? UpdateTime { get; set; }
+    public DateTime? DeleteTime { get; set; }
+
+    public required string OwnerId { get; init; }
+    public virtual MasterUser Owner { get; init; } = null!;
+
+    public Contact Contact { get; set; } = new();
+
+    public virtual ICollection<RestaurantStaff> Staffs { get; } = [];
+    public virtual ICollection<Menu> Menus { get; } = [];
+    public virtual ICollection<Tag> Tags { get; } = [];
+    public virtual ICollection<Ingredient> Ingredients { get; } = [];
+    public virtual ICollection<Branch> Branches { get; } = [];
 
     public required string Name { get; set; }
+    public string? StripeAccountId { get; set; }
     public string? DisplayName { get; set; }
-}
-
-public class RestaurantManager : TrackableEntityBase
-{
-    public Guid RestaurantId { get; set; }
-    public virtual Restaurant Restaurant { get; set; } = null!;
-
-    public string MasterId { get; set; } = null!;
-    public virtual MasterUser Master { get; set; } = null!;
-
-    public virtual List<RestaurantManagerRole> Roles { get; } = [];
-
-    public Permission[] GetPermissions()
-    {
-        var permissions = Roles
-            .SelectMany(r => r.Role.Permissions)
-            .Select(rp => rp.Permission)
-            .Distinct()
-            .ToArray();
-
-        return permissions;
-    }
-}
-
-public class RestaurantManagerRole : TrackableEntityBase
-{
-    public Guid RestaurantId { get; set; }
-
-    public string ManagerId { get; set; } = null!;
-    public virtual RestaurantManager Manager { get; set; } = null!;
-
-    public short RoleId { get; set; }
-    public virtual Role Role { get; set; } = null!;
-}
-
-public class Tag : EntityBase<short>
-{
-    public Guid RestaurantId { get; set; }
-
-    public required string Name { get; set; }
-
-    public virtual List<MenuTag> MenuTags { get; } = [];
-    public virtual List<IngredientTag> IngredientTags { get; } = [];
+    public string? ImageUrl { get; set; }
 }

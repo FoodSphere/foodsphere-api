@@ -1,29 +1,27 @@
 namespace FoodSphere.Common.Entity;
 
-public class Role : EntityBase<short>
+public interface IRolePermissionKey
 {
-    public Guid RestaurantId { get; set; }
-    public virtual Restaurant Restaurant { get; set; } = null!;
-
-    public required string Name { get; set; }
-    public string? Description { get; set; }
-
-    public virtual List<RolePermission> Permissions { get; } = [];
+    public Guid RestaurantId { get; }
+    public short RoleId { get; }
+    public int PermissionId { get; }
 }
 
-public class RolePermission : TrackableEntityBase
+public record RolePermissionKey(Guid RestaurantId, short RoleId, int PermissionId) : IRolePermissionKey, IEntityKey
 {
-    public Guid RestaurantId { get; set; }
-    public short RoleId { get; set; }
-    public virtual Role Role { get; set; } = null!;
-
-    public int PermissionId { get; set; }
-    public virtual Permission Permission { get; set; } = null!;
+    public static implicit operator RolePermissionKey(RolePermission model) => new(model.RestaurantId, model.RoleId, model.PermissionId);
+    public static implicit operator object[](RolePermissionKey key) => [key.RestaurantId, key.RoleId, key.PermissionId];
 }
 
-public class Permission : IEntity<int>
+public class RolePermission : IRolePermissionKey, IUpdatableEntityModel
 {
-    public int Id { get; set; }
-    public required string Name { get; set; }
-    public string? Description { get; set; }
+    public required Guid RestaurantId { get; init; }
+    public required short RoleId { get; init; }
+    public required int PermissionId { get; init; }
+
+    public DateTime CreateTime { get; set; }
+    public DateTime? UpdateTime { get; set; }
+
+    public virtual Role Role { get; init; } = null!;
+    public virtual Permission Permission { get; init; } = null!;
 }

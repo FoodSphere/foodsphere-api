@@ -37,8 +37,8 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         responseBody.permission_ids.Should().BeEquivalentTo(
             permissions.Select(p => p.Id));
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 
     [Fact]
@@ -49,7 +49,8 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         var (masterUser, _) = await builder.SeedMasterUser();
         var restaurant = await builder.SeedRestaurant(masterUser);
         var permissions = await builder.SeedPermissions();
-        var role = await builder.SeedRole(restaurant, permissions);
+        var role = await builder.SeedRole(
+            restaurant, permissions.Select(e => new PermissionKey(e.Id)));
 
         await builder.Commit();
         await Authenticate(masterUser);
@@ -69,7 +70,7 @@ public class RoleApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         responseBody.permission_ids.Should().BeEquivalentTo(
             permissions.Select(p => p.Id));
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 }

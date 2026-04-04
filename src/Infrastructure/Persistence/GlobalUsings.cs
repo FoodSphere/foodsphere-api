@@ -1,3 +1,10 @@
+global using System.Linq.Expressions;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using MassTransit;
+global using LinqKit;
+global using FoodSphere.Infrastructure.Persistence;
 global using FoodSphere.Common.Entity;
+global using FoodSphere.Common.Contracts;
+global using FoodSphere.Common.Constant;
+global using FoodSphere.Common.Service;

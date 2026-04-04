@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using MassTransit;
 using FoodSphere.Common.Configuration;
 using FoodSphere.Infrastructure.Persistence;
+using FoodSphere.Infrastructure.Extension;
 using FoodSphere.Pos.Api.Utility;
 using FoodSphere.Pos.Api.Configuration;
 using FoodSphere.Pos.Api.Authentication;
+using FoodSphere.Pos.Api.Event;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,24 +64,8 @@ builder.Services.AddDomainPosOptions();
 
 builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
     var envConnectionString = sp.GetRequiredService<IOptions<EnvConnectionStrings>>().Value;
-
-    // # navigation properties, Eager vs Explicit vs Lazy
-    // ## Eager loading
-    // ```
-    // var blog = context.Blogs
-    //     .Include(b => b.Posts)
-    //     .FirstOrDefault(b => b.Id == id);
-    // ```
-
-    // ## Explicit loading
-    // ```
-    // var blog = context.Blogs.Find(id);
-    // context.Entry(blog).Collection(b => b.Posts).Load();
-    // ```
-    optionsBuilder.UseLazyLoadingProxies();
     optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
     {
-        // sqlOptions.EnableRetryOnFailure(2);
     });
 
     if (builder.Environment.IsDevelopment())
@@ -89,10 +76,12 @@ builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
 });
 
 // https://github.com/dotnet/aspnetcore/blob/8f657272b6a9092f58df84c0123729919a693fbe/src/Identity/Extensions.Core/src/IdentityServiceCollectionExtensions.cs#L23
-// services.TryAddScoped<UserManager<TUser>>(); register by AddIdentityCore:
+// services.TryAddScoped<UserStaff<TUser>>(); register by AddIdentityCore:
 builder.Services.AddIdentityCore<MasterUser>(IdentityConfiguration.Configure())
     .AddRoles<IdentityRole>()
-    .AddDefaultTokenProviders() /// map token providers name to handler type eg. "Email" -> EmailTokenProvider (TOTP) <see cref="EmailTokenProvider{TUser}"/>
+    // map token providers name to handler type eg. "Email" -> EmailTokenProvider (TOTP)
+    /// <see cref="EmailTokenProvider{TUser}"/>
+    .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<FoodSphereDbContext>(); // must be after AddRoles
 
 // https://github.com/search?q=repo%3Adotnet%2Faspnetcore+AddAuthentication%28&type=code
@@ -109,40 +98,52 @@ if (builder.Environment.IsProduction())
 
 builder.Services.AddAuthorization(AuthorizationConfiguration.Configure());
 
-// lifetime of the application
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddSingleton<MimeService>();
 
 builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(S3Configuration.Configure);
+
+builder.Services.AddRepositoryServices();
+builder.Services.AddScoped<PersistenceService>();
 builder.Services.AddScoped<IStorageService, S3StorageService>();
 
-// scoped each http request
 builder.Services.AddScoped<IAuthorizationHandler, RestaurantPermissionHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, BranchPermissionHandler>();
+builder.Services.AddScoped<IPasswordHasher<ConsumerUser>, PasswordHasher<ConsumerUser>>();
 
 builder.Services.AddScoped<MasterAuthService>();
-builder.Services.AddScoped<StaffAuthService>();
+builder.Services.AddScoped<WorkerAuthService>();
 builder.Services.AddScoped<OrderingAuthService>();
-builder.Services.AddScoped<AuthorizeService>();
+builder.Services.AddScoped<AuthorizeHelperService>();
 builder.Services.AddScoped<AccessControlService>();
-builder.Services.AddScoped<OrderingPortalService>();
-builder.Services.AddScoped<StaffPortalService>();
+builder.Services.AddScoped<OrderingPortalServiceBase>();
+builder.Services.AddScoped<WorkerPortalService>();
 
-builder.Services.AddScoped<RestaurantService>();
-builder.Services.AddScoped<BranchService>();
-builder.Services.AddScoped<MenuService>();
-builder.Services.AddScoped<MenuService>();
+// builder.Services.AddScoped<ConsumerServiceBase>();
+builder.Services.AddScoped<RestaurantServiceBase>();
+builder.Services.AddScoped<RestaurantImageService>();
+builder.Services.AddScoped<BranchServiceBase>();
+builder.Services.AddScoped<TableServiceBase>();
+builder.Services.AddScoped<MenuServiceBase>();
+builder.Services.AddScoped<MenuServiceBase>();
 builder.Services.AddScoped<MenuImageService>();
-builder.Services.AddScoped<IngredientService>();
-builder.Services.AddScoped<IngredientService>();
+builder.Services.AddScoped<IngredientServiceBase>();
 builder.Services.AddScoped<IngredientImageService>();
-builder.Services.AddScoped<TagService>();
-builder.Services.AddScoped<PermissionService>();
-builder.Services.AddScoped<RoleService>();
-builder.Services.AddScoped<StaffService>();
+builder.Services.AddScoped<TagServiceBase>();
+builder.Services.AddScoped<PermissionServiceBase>();
+builder.Services.AddScoped<RoleServiceBase>();
+builder.Services.AddScoped<WorkerServiceBase>();
 builder.Services.AddScoped<DashboardService>();
-builder.Services.AddScoped<BillService>();
+builder.Services.AddScoped<BillServiceBase>();
+builder.Services.AddScoped<OrderServiceBase>();
+builder.Services.AddScoped<StockServiceBase>();
+builder.Services.AddScoped<RestaurantStaffServiceBase>();
+builder.Services.AddScoped<BranchStaffServiceBase>();
+builder.Services.AddScoped<OrderingCalculator>();
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<ServiceRequestService>();
+builder.Services.AddScoped<ReportCalculator>();
+builder.Services.AddScoped<AuthorizeService>();
 
 // short-lived each injection used
 // AddKeyedTransient?
@@ -152,6 +153,9 @@ builder.Services.AddControllers()
     .AddJsonOptions(JsonConfiguration.Configure());
 
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSignalR();
+builder.Services.AddMassTransit(MassTransitConfiguration.Configure());
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 // builder.Services.AddProblemDetails(); // RFC 9457, Result.Problem()
 // builder.Services.AddOpenApi();
@@ -171,6 +175,10 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-10.0?view=aspnetcore-10.0#support-for-server-sent-events-sse
+app.MapHub<PosHub>("restaurants/{restaurant_id}/branches/{branch_id}/hubs/pos")
+    .RequireCors("SignalRPolicy");
 
 HealthCheck.Check(app);
 

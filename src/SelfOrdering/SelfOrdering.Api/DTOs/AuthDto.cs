@@ -1,12 +1,12 @@
 namespace FoodSphere.SelfOrdering.Api.DTO;
 
-public class SelfOrderingTokenRequest
+public record SelfOrderingTokenRequest
 {
-    public Guid portal_id { get; set; }
+    public required Guid portal_id { get; set; }
     public string? consumer_token { get; set; }
 }
 
-public class SelfOrderingTokenResponse
+public record SelfOrderingTokenResponse
 {
     public required string access_token { get; set; }
 }

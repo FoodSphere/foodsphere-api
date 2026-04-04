@@ -8,31 +8,22 @@ namespace FoodSphere.Pos.Api.Authorization;
 // in IAuthorizationService.AuthorizeAsync()
 public record PermissionRequirement(params Permission[] Permissions) : IAuthorizationRequirement;
 
-// should I make class/record of primary keys for every EF Core entity?
-public record RestaurantKeys(Guid RestaurantId);
-public record BranchKeys(Guid RestaurantId, short BranchId);
-public record BillKeys(Guid BillId);
-
 public class RestaurantPermissionHandler(
     ILogger<RestaurantPermissionHandler> logger,
-    AuthorizeService authorizeService
-) : AuthorizationHandler<PermissionRequirement, RestaurantKeys>
+    AuthorizeHelperService authorizeService
+) : AuthorizationHandler<PermissionRequirement, RestaurantKey>
 {
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         PermissionRequirement requirement,
-        RestaurantKeys resource
-    ) {
+        RestaurantKey resource)
+    {
         if (context.User.Identity?.IsAuthenticated != true)
-        {
             return;
-        }
 
         var userTypeClaim = context.User.FindFirstValue(FoodSphereClaimType.UserTypeClaimType);
         if (!Enum.TryParse<UserType>(userTypeClaim, out var userType))
-        {
             return;
-        }
 
         if (userType is not UserType.Master)
         {
@@ -40,19 +31,24 @@ public class RestaurantPermissionHandler(
             return;
         }
 
-        var userId = context.User.FindFirstValue(FoodSphereClaimType.Identity.UserIdClaimType);
+        var userId = context.User.FindFirstValue(FoodSphereClaimType.Identity.UserIdClaimType)!;
 
-        if (await authorizeService.IsRestaurantOwner(resource.RestaurantId, userId))
+        if (await authorizeService.IsRestaurantOwner(
+            new(resource.Id), new(userId)))
         {
             context.Succeed(requirement);
             return;
         }
 
-        var requiredPermissionIds = requirement.Permissions.Select(p => p.Id).Distinct().ToArray();
+        var requiredPermissionIds = requirement.Permissions
+            .Select(p => p.Id)
+            .Distinct()
+            .ToArray();
 
         if (requiredPermissionIds.Length == 0)
         {
-            if (await authorizeService.IsRestaurantManager(resource.RestaurantId, userId))
+            if (await authorizeService.IsRestaurantStaff(
+                new(resource.Id), new(userId)))
             {
                 context.Succeed(requirement);
                 return;
@@ -60,9 +56,8 @@ public class RestaurantPermissionHandler(
         }
         else
         {
-            var valid = await authorizeService.CheckRestaurantManagerPermission(
-                resource.RestaurantId, userId,
-                requiredPermissionIds);
+            var valid = await authorizeService.CheckRestaurantStaffPermission(
+                new(resource.Id, userId), requiredPermissionIds);
 
             if (valid)
             {
@@ -77,32 +72,28 @@ public class RestaurantPermissionHandler(
 
 public class BranchPermissionHandler(
     ILogger<BranchPermissionHandler> logger,
-    AuthorizeService authorizeService
-) : AuthorizationHandler<PermissionRequirement, BranchKeys>
+    AuthorizeHelperService authorizeService
+) : AuthorizationHandler<PermissionRequirement, BranchKey>
 {
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         PermissionRequirement requirement,
-        BranchKeys resource
-    ) {
+        BranchKey resource)
+    {
         if (context.User.Identity?.IsAuthenticated != true)
-        {
             return;
-        }
 
         var userTypeClaim = context.User.FindFirstValue(FoodSphereClaimType.UserTypeClaimType);
         if (!Enum.TryParse<UserType>(userTypeClaim, out var userType))
-        {
             return;
-        }
 
         switch (userType)
         {
             case UserType.Master:
                 await HandleMaster(context, requirement, resource);
                 return;
-            case UserType.Staff:
-                await HandleStaff(context, requirement, resource);
+            case UserType.Worker:
+                await HandleWorker(context, requirement, resource);
                 return;
         }
 
@@ -112,11 +103,12 @@ public class BranchPermissionHandler(
     async Task HandleMaster(
         AuthorizationHandlerContext context,
         PermissionRequirement requirement,
-        BranchKeys resource
-    ) {
-        var userId = context.User.FindFirstValue(FoodSphereClaimType.Identity.UserIdClaimType);
+        BranchKey resource)
+    {
+        var userId = context.User.FindFirstValue(FoodSphereClaimType.Identity.UserIdClaimType)!;
 
-        if (await authorizeService.IsRestaurantOwner(resource.RestaurantId, userId))
+        if (await authorizeService.IsRestaurantOwner(
+            new(resource.RestaurantId), new(userId)))
         {
             context.Succeed(requirement);
             return;
@@ -126,13 +118,14 @@ public class BranchPermissionHandler(
 
         if (requiredPermissionIds.Length == 0)
         {
-            if (await authorizeService.IsRestaurantManager(resource.RestaurantId, userId))
+            if (await authorizeService.IsRestaurantStaff(
+                new(resource.RestaurantId), new(userId)))
             {
                 context.Succeed(requirement);
                 return;
             }
 
-            if (await authorizeService.IsBranchManager(resource.RestaurantId, resource.BranchId, userId))
+            if (await authorizeService.IsBranchStaff(resource.RestaurantId, resource.Id, userId))
             {
                 context.Succeed(requirement);
                 return;
@@ -140,16 +133,15 @@ public class BranchPermissionHandler(
         }
         else
         {
-            if (await authorizeService.CheckRestaurantManagerPermission(
-                resource.RestaurantId, userId,
-                requiredPermissionIds))
+            if (await authorizeService.CheckRestaurantStaffPermission(
+                new(resource.RestaurantId, userId), requiredPermissionIds))
             {
                 context.Succeed(requirement);
                 return;
             }
 
-            if (await authorizeService.CheckBranchManagerPermission(
-                resource.RestaurantId, resource.BranchId, userId,
+            if (await authorizeService.CheckBranchStaffPermission(
+                resource.RestaurantId, resource.Id, userId,
                 requiredPermissionIds))
             {
                 context.Succeed(requirement);
@@ -160,23 +152,21 @@ public class BranchPermissionHandler(
         context.Fail();
     }
 
-    async Task HandleStaff(
+    async Task HandleWorker(
         AuthorizationHandlerContext context,
         PermissionRequirement requirement,
-        BranchKeys resource
-    ) {
+        BranchKey resource)
+    {
         var _restaurantId = context.User.FindFirstValue(FoodSphereClaimType.RestaurantClaimType);
         var _branchId = context.User.FindFirstValue(FoodSphereClaimType.BranchClaimType);
         var _userId = context.User.FindFirstValue(FoodSphereClaimType.Identity.UserIdClaimType);
 
         if (!(Guid.TryParse(_restaurantId, out var restaurantId)
             && short.TryParse(_branchId, out var branchId)
-            && short.TryParse(_userId, out var staffId)))
-        {
+            && short.TryParse(_userId, out var workerId)))
             return;
-        }
 
-        if (restaurantId != resource.RestaurantId || branchId != resource.BranchId)
+        if (restaurantId != resource.RestaurantId || branchId != resource.Id)
         {
             context.Fail();
             return;
@@ -184,8 +174,8 @@ public class BranchPermissionHandler(
 
         var requiredPermissionIds = requirement.Permissions.Select(p => p.Id).Distinct().ToArray();
 
-        if (await authorizeService.CheckStaffPermission(
-            resource.RestaurantId, resource.BranchId, staffId,
+        if (await authorizeService.CheckWorkerPermission(
+            new(resource.RestaurantId, resource.Id, workerId),
             requiredPermissionIds))
         {
             context.Succeed(requirement);
@@ -198,32 +188,14 @@ public class BranchPermissionHandler(
 
 public class BillPermissionHandler(
     ILogger<BillPermissionHandler> logger,
-    AuthorizeService authorizeService
-) : AuthorizationHandler<PermissionRequirement, BillKeys>
+    AuthorizeHelperService authorizeService
+) : AuthorizationHandler<PermissionRequirement, BillKey>
 {
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         PermissionRequirement requirement,
-        BillKeys resource
-    ) {
+        BillKey resource
+    )
+    {
     }
 }
-
-// public static class PermissionExtension
-// {
-//     extension(MasterUser user)
-//     {
-//         public bool HasPermissionOn(Branch branch, params PermissionType[] permissions)
-//         {
-//             throw new NotImplementedException();
-//         }
-//     }
-
-//     extension(StaffUser user)
-//     {
-//         public bool HasPermissionOn(params PermissionType[] permissions)
-//         {
-//             throw new NotImplementedException();
-//         }
-//     }
-// }

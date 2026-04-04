@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Common.Domain/FoodSphere.Common.Domain.csproj" />
+    <ProjectReference Include="../Common.Core/FoodSphere.Common.Core.csproj" />
+    <ProjectReference Include="../../Infrastructure/Persistence/FoodSphere.Infrastructure.Persistence.csproj" />
+  </ItemGroup>
+</Project>

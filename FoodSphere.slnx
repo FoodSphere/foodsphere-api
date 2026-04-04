@@ -5,19 +5,18 @@
   <Folder Name="/Shared/">
     <Project Path="src/Common/Common.Core/FoodSphere.Common.Core.csproj" />
     <Project Path="src/Common/Common.Domain/FoodSphere.Common.Domain.csproj" />
+    <Project Path="src/Common/Common.Test/FoodSphere.Common.Test.csproj" />
     <Project Path="src/Infrastructure/Persistence/FoodSphere.Infrastructure.Persistence.csproj" />
   </Folder>
   <Folder Name="/API/">
-    <!-- <Project Path="src/Resource/Resource.Api/FoodSphere.Resource.Api.csproj" /> -->
     <Project Path="src/Pos/Pos.Api/FoodSphere.Pos.Api.csproj" />
     <Project Path="src/SelfOrdering/SelfOrdering.Api/FoodSphere.SelfOrdering.Api.csproj" />
-    <Project Path="src/Consumer/Consumer.Api/FoodSphere.Consumer.Api.csproj" />
+    <!-- <Project Path="src/Consumer/Consumer.Api/FoodSphere.Consumer.Api.csproj" /> -->
   </Folder>
   <Folder Name="/Test/">
     <Project Path="src/Pos/Pos.Test.Unit/FoodSphere.Pos.Test.Unit.csproj" />
     <Project Path="src/Pos/Pos.Test.Integration/FoodSphere.Pos.Test.Integration.csproj" />
-    <!-- <Project Path="src/Consumer/Consumer.Test.Unit/FoodSphere.Consumer.Test.Unit.csproj" />
-    <Project Path="src/Consumer/Consumer.Test.Integration/FoodSphere.Consumer.Test.Integration.csproj" /> -->
+    <Project Path="src/SelfOrdering/SelfOrdering.Test.Integration/FoodSphere.SelfOrdering.Test.Integration.csproj" />
   </Folder>
   <Folder Name="/Worker/">
     <Project Path="src/Infrastructure/Npgsql.Migrator/FoodSphere.Npgsql.Migrator.csproj" />

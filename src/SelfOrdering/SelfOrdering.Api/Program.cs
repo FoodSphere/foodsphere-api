@@ -1,10 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Microsoft.AspNetCore.Identity;
+using MassTransit;
 using FoodSphere.Common.Configuration;
+using FoodSphere.Infrastructure.Extension;
 using FoodSphere.Infrastructure.Persistence;
 using FoodSphere.SelfOrdering.Api.Configuration;
 using FoodSphere.SelfOrdering.Api.Authentication;
+using FoodSphere.SelfOrdering.Api.Event;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +52,6 @@ builder.Services.AddDbContext<FoodSphereDbContext>((sp, optionsBuilder) => {
     optionsBuilder.UseLazyLoadingProxies();
     optionsBuilder.UseNpgsql(envConnectionString.@default, sqlOptions =>
     {
-        sqlOptions.EnableRetryOnFailure(2);
     });
 
     if (builder.Environment.IsDevelopment())
@@ -72,18 +74,29 @@ if (builder.Environment.IsProduction())
 
 builder.Services.AddAuthorization(AuthorizationConfiguration.Configure());
 
+builder.Services.AddRepositoryServices();
+builder.Services.AddScoped<PersistenceService>();
+
 builder.Services.AddScoped<SelfOrderingAuthService>();
 builder.Services.AddScoped<OrderingAuthService>();
-builder.Services.AddScoped<OrderingPortalService>();
+builder.Services.AddScoped<OrderingPortalServiceBase>();
 
-builder.Services.AddScoped<ConsumerService>();
-builder.Services.AddScoped<BillService>();
-builder.Services.AddScoped<BranchService>();
-builder.Services.AddScoped<MenuService>();
+// builder.Services.AddScoped<ConsumerServiceBase>();
+builder.Services.AddScoped<BillServiceBase>();
+builder.Services.AddScoped<BranchServiceBase>();
+builder.Services.AddScoped<TableServiceBase>();
+builder.Services.AddScoped<MenuServiceBase>();
 builder.Services.AddScoped<PaymentService>();
-builder.Services.AddScoped<RestaurantService>();
-builder.Services.AddScoped<StaffService>();
+builder.Services.AddScoped<RestaurantServiceBase>();
+builder.Services.AddScoped<WorkerServiceBase>();
+builder.Services.AddScoped<StockServiceBase>();
+builder.Services.AddScoped<OrderServiceBase>();
+builder.Services.AddScoped<TagServiceBase>();
+builder.Services.AddScoped<OrderingCalculator>();
+builder.Services.AddScoped<ServiceRequestService>();
 
+builder.Services.AddSignalR();
+builder.Services.AddMassTransit(MassTransitConfiguration.Configure());
 builder.Services.AddControllers()
     .AddJsonOptions(JsonConfiguration.Configure());
 
@@ -104,5 +117,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapHub<OrderingHub>("hubs/ordering")
+    .RequireCors("SignalRPolicy");
 
 app.Run();

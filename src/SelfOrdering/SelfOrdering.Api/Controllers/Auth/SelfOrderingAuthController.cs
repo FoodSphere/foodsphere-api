@@ -3,28 +3,18 @@ namespace FoodSphere.SelfOrdering.Api.Controller;
 [Route("auth")]
 public class SelfOrderingAuthController(
     ILogger<SelfOrderingAuthController> logger,
-    OrderingPortalService orderingPortalService
+    OrderingPortalServiceBase portalService
 ) : FoodSphereControllerBase
 {
     [HttpPost("token")]
-    public async Task<ActionResult<SelfOrderingTokenResponse>> GetToken(SelfOrderingTokenRequest body)
+    public async Task<ActionResult<SelfOrderingTokenResponse>> GetToken(
+        SelfOrderingTokenRequest body)
     {
-        var portal = await orderingPortalService.GetPortal(body.portal_id);
+        var result = await portalService.GenerateToken(
+            new(body.portal_id), null, null);
 
-        if (portal is null)
-        {
-            return NotFound();
-        }
-
-        if (!portal.IsValid())
-
-        {
-            return BadRequest("ordering portal is not valid.");
-        }
-
-        var token = await orderingPortalService.GenerateToken(portal);
-
-        await orderingPortalService.SaveChanges();
+        if (!result.TryGetValue(out var token))
+            return result.Errors.ToActionResult();
 
         return new SelfOrderingTokenResponse
         {

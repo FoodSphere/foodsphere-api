@@ -7,14 +7,14 @@ using FoodSphere.Infrastructure.Persistence;
 
 namespace FoodSphere.Infrastructure.Npgsql;
 
-public static class NpgsqlDbContextOptionsBuilderExtension
+public static class NpgsqlDbContextOptionsBuilderExtensions
 {
     extension(NpgsqlDbContextOptionsBuilder sqlOptions)
     {
         public NpgsqlDbContextOptionsBuilder FoodSphereConfigure()
         {
             return sqlOptions
-                .MigrationsAssembly(typeof(NpgsqlDbContextOptionsBuilderExtension).Assembly)
+                .MigrationsAssembly(typeof(NpgsqlDbContextOptionsBuilderExtensions).Assembly)
                 // .UseAdminDatabase(builder.Configuration.GetConnectionString("admin"));
                 .EnableRetryOnFailure(2);
         }

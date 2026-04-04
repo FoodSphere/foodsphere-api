@@ -36,7 +36,8 @@ namespace FoodSphere.Pos.Api.Configuration
                     policy.AddAuthenticationSchemes(JwtAuthentication.SchemeName);
                     policy.RequireAuthenticatedUser();
                     policy.RequireClaim(FoodSphereClaimType.Identity.UserIdClaimType);
-                    policy.RequireClaim(FoodSphereClaimType.UserTypeClaimType, UserType.Master.ToString(), UserType.Staff.ToString());
+                    policy.RequireClaim(FoodSphereClaimType.UserTypeClaimType,
+                        UserType.Master.ToString(), UserType.Worker.ToString());
                  });
 
                 options.AddPolicy(MasterPolicy, policy =>
@@ -44,7 +45,8 @@ namespace FoodSphere.Pos.Api.Configuration
                     policy.AddAuthenticationSchemes(JwtAuthentication.SchemeName);
                     policy.RequireAuthenticatedUser();
                     policy.RequireClaim(FoodSphereClaimType.Identity.UserIdClaimType);
-                    policy.RequireClaim(FoodSphereClaimType.UserTypeClaimType, UserType.Master.ToString());
+                    policy.RequireClaim(FoodSphereClaimType.UserTypeClaimType,
+                        UserType.Master.ToString());
                 });
             };
         }

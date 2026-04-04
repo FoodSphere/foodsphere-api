@@ -6,7 +6,13 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
     {
         builder.HasKey(e => new { e.RestaurantId, e.Id });
 
-        // builder.HasIndex(r => new { r.RestaurantId, r.Name }).IsUnique();
+        builder.HasOne(r => r.Restaurant)
+            .WithMany()
+            .HasForeignKey(r => r.RestaurantId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(r => new { r.RestaurantId, r.Name })
+            .IsUnique();
 
         // builder.HasMany(r => r.Permissions)
         //        .WithMany()
@@ -32,6 +38,11 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
             .WithMany(e => e.Permissions)
             .HasForeignKey(e => new { e.RestaurantId, e.RoleId })
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.Permission)
+            .WithMany()
+            .HasForeignKey(e => e.PermissionId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 
@@ -40,6 +51,8 @@ public class PermissionConfiguration : IEntityTypeConfiguration<Permission>
     public void Configure(EntityTypeBuilder<Permission> builder)
     {
         builder.HasKey(e => e.Id);
-        // builder.HasIndex(p => p.Name).IsUnique();
+
+        builder.HasIndex(p => p.Name)
+            .IsUnique();
     }
 }

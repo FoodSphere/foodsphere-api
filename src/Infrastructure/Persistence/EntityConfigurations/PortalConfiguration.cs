@@ -1,8 +1,8 @@
 namespace FoodSphere.Infrastructure.Persistence.Configuration;
 
-public class SelfOrderingPortalConfiguration : IEntityTypeConfiguration<SelfOrderingPortal>
+public class SelfOrderingPortalConfiguration : IEntityTypeConfiguration<OrderingPortal>
 {
-    public void Configure(EntityTypeBuilder<SelfOrderingPortal> builder)
+    public void Configure(EntityTypeBuilder<OrderingPortal> builder)
     {
         builder.HasKey(e => e.Id);
 
@@ -13,15 +13,15 @@ public class SelfOrderingPortalConfiguration : IEntityTypeConfiguration<SelfOrde
     }
 }
 
-public class StaffPortalConfiguration : IEntityTypeConfiguration<StaffPortal>
+public class WorkerPortalConfiguration : IEntityTypeConfiguration<WorkerPortal>
 {
-    public void Configure(EntityTypeBuilder<StaffPortal> builder)
+    public void Configure(EntityTypeBuilder<WorkerPortal> builder)
     {
         builder.HasKey(e => e.Id);
 
-        builder.HasOne(e => e.StaffUser)
+        builder.HasOne(e => e.WorkerUser)
             .WithMany()
-            .HasForeignKey(e => new { e.RestaurantId, e.BranchId, e.StaffId })
+            .HasForeignKey(e => new { e.RestaurantId, e.BranchId, e.WorkerId })
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

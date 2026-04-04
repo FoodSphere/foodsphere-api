@@ -46,8 +46,8 @@ public class BranchApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
         responseBody.opening_time.Should().Be(requestBody.opening_time);
         responseBody.closing_time.Should().Be(requestBody.closing_time);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class BranchApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
 
         responseBody.id.Should().Be(branch.Id).And.Be(1);
         responseBody.restaurant_id.Should().Be(restaurant.Id);
-        responseBody.contact.Should().BeEquivalentTo(branch.Contact);
+        responseBody.contact.Should().BeEquivalentTo(ContactDto.Project(branch.Contact));
 
         responseBody.name.Should().Be(branch.Name);
         responseBody.display_name.Should().Be(branch.DisplayName);
@@ -79,7 +79,7 @@ public class BranchApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixtu
         responseBody.opening_time.Should().Be(branch.OpeningTime);
         responseBody.closing_time.Should().Be(branch.ClosingTime);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 }

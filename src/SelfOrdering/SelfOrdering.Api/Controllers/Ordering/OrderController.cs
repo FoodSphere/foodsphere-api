@@ -1,53 +1,71 @@
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
-
 namespace FoodSphere.SelfOrdering.Api.Controller;
 
 [Route("orders")]
 public class OrderingController(
     ILogger<OrderingController> logger,
-    BillService billService,
-    MenuService menuService
+    MenuServiceBase menuService,
+    OrderServiceBase orderService,
+    OrderingCalculator orderingCalculator
 ) : SelfOrderingControllerBase
 {
     /// <summary>
     /// list orders
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ICollection<OrderResponse>>> ListOrders()
+    public async Task<ActionResult<ICollection<OrderResponse>>> ListOrders(
+        [FromQuery] IReadOnlyCollection<OrderStatus> status,
+        [FromQuery] bool? is_deleted = false)
     {
-        var responses = await billService.QueryOrders(Member.BillId)
-            .Select(OrderResponse.Projection)
-            .ToArrayAsync();
+        var predicate = PredicateBuilder.New<Order>(e =>
+            e.BillId == MemberKey.BillId);
 
-        return responses;
+        if (is_deleted is not null)
+            predicate = predicate.And(e => e.DeleteTime != null == is_deleted.Value);
+
+        if (status.Count != 0)
+            predicate = predicate.And(e => status.Contains(e.Status));
+
+        return await orderService.ListOrders(
+            OrderResponse.Projection, predicate);
     }
 
     /// <summary>
-    /// create single order
+    /// create order
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<OrderResponse>> CreateOrder(OrderRequest body)
+    public async Task<ActionResult<OrderResponse>> CreateOrder(
+        OrderRequest body)
     {
-        var bill = billService.GetBillStub(Member.BillId);
-        var restaurantId = await billService.QuerySingleBill(Member.BillId)
-            .Select(e => e.RestaurantId)
-            .SingleOrDefaultAsync();
+        var availabilityResult = await orderingCalculator.CalculateStockAvailability(
+            body.items
+                .GroupBy(e => new MenuKey(RestaurantId, e.menu_id))
+                .ToDictionary(
+                    e => e.Key,
+                    e => (short)e.Sum(i => i.quantity)),
+            BranchKey);
 
-        var order = await billService.CreateOrder(bill);
+        if (availabilityResult.IsFailed)
+            return availabilityResult.Errors.ToActionResult();
 
-        foreach (var item in body.items)
-        {
-            var menu = menuService.GetMenuStub(restaurantId, item.menu_id);
-            await billService.CreateItem(order, menu, item.quantity, item.note);
-        }
+        var items = body.items.Select(e =>
+            new OrderItemCreateCommand(
+                new(RestaurantId, e.menu_id),
+                e.quantity,
+                e.note));
 
-        await billService.SaveChanges();
+        var orderResult = await orderService.CreateOrder(
+            OrderResponse.Projection,
+            new(MemberKey.BillId),
+            new(items, body.status));
 
-        var response = await billService.GetOrder(Member.BillId, order.Id, OrderResponse.Projection);
+        if (orderResult.IsFailed)
+            return orderResult.Errors.ToActionResult();
+
+        var (orderKey, response) = orderResult.Value;
 
         return CreatedAtAction(
             nameof(GetOrder),
-            new { order_id = order.Id },
+            new { order_id = orderKey.Id },
             response);
     }
 
@@ -55,36 +73,40 @@ public class OrderingController(
     /// add bulk order
     /// </summary>
     [HttpPatch]
-    public async Task<ActionResult<ICollection<OrderResponse>>> PatchOrders(JsonPatchDocument<IReadOnlyCollection<OrderRequest>> body)
+    public async Task<ActionResult<ICollection<OrderResponse>>> PatchOrders(
+        JsonPatchDocument<ICollection<OrderRequest>> body)
     {
-        var bill = billService.GetBillStub(Member.BillId);
-        var restaurantId = await billService.QuerySingleBill(Member.BillId)
-            .Select(e => e.RestaurantId)
-            .SingleOrDefaultAsync();
-
-        var orderIds = new List<short>();
         var requests = new List<OrderRequest>();
         body.ApplyTo(requests);
 
-        foreach (var request in requests)
-        {
-            var order = await billService.CreateOrder(bill);
+        var availabilityResult = await orderingCalculator.CalculateStockAvailability(
+            requests.SelectMany(e => e.items)
+                .GroupBy(e => new MenuKey(RestaurantId, e.menu_id))
+                .ToDictionary(
+                    e => e.Key,
+                    e => (short)e.Sum(i => i.quantity)),
+            BranchKey);
 
-            foreach (var item in request.items)
-            {
-                var menu = menuService.GetMenuStub(restaurantId, item.menu_id);
-                await billService.CreateItem(order, menu, item.quantity, item.note);
-            }
+        if (availabilityResult.IsFailed)
+            return availabilityResult.Errors.ToActionResult();
 
-            orderIds.Add(order.Id);
-        }
+        var result = await orderService.CreateBulkOrders(
+            OrderResponse.Projection,
+            new(MemberKey.BillId),
+            requests.Select(r => new OrderCreateCommand(
+                r.items.Select(e =>
+                    new OrderItemCreateCommand(
+                        new(RestaurantId, e.menu_id),
+                        e.quantity,
+                        e.note)),
+                r.status)));
 
-        await billService.SaveChanges();
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
-        var responses = await billService.QueryOrders(Member.BillId)
-            .Where(e => orderIds.Contains(e.Id))
-            .Select(OrderResponse.Projection)
-            .ToArrayAsync();
+        var responses = result.Value
+            .Select(i => i.Item2)
+            .ToArray();
 
         return responses;
     }
@@ -95,12 +117,12 @@ public class OrderingController(
     [HttpGet("{order_id}")]
     public async Task<ActionResult<OrderResponse>> GetOrder(short order_id)
     {
-        var response = await billService.GetOrder(Member.BillId, order_id, OrderResponse.Projection);
+        var response = await orderService.GetOrder(
+            OrderResponse.Projection,
+            new(MemberKey.BillId, order_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -111,16 +133,12 @@ public class OrderingController(
     [HttpPut("{order_id}/cancel")]
     public async Task<ActionResult> CancelOrder(short order_id)
     {
-        var order = billService.GetOrderStub(Member.BillId, order_id);
+        var result = await orderService.UpdateOrderStatus(
+            new(MemberKey.BillId, order_id),
+            OrderStatus.Cancelled);
 
-        order.Status = OrderStatus.Canceled;
-
-        var affected = await billService.SaveChanges();
-
-        if (affected == 0)
-        {
-            return NotFound();
-        }
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -129,80 +147,95 @@ public class OrderingController(
     /// list order's items
     /// </summary>
     [HttpGet("{order_id}/items")]
-    public async Task<ActionResult<ICollection<OrderItemResponse>>> ListOrderItems(short order_id)
+    public async Task<ActionResult<ICollection<OrderItemResponse>>> ListOrderItems(
+        short order_id)
     {
-        var responses = await billService.QueryItems(Member.BillId, order_id)
-            .Select(OrderItemResponse.Projection)
-            .ToArrayAsync();
-
-        return responses;
-    }
-
-    /// <summary>
-    /// update order's items
-    /// </summary>
-    [HttpPut("{order_id}/items")]
-    public async Task<ActionResult> UpdateOrderItems(short order_id, IReadOnlyCollection<OrderItemRequest> body)
-    {
-        await using var transaction = await billService.GetTransaction();
-
-        await billService
-            .QueryItems(Member.BillId, order_id)
-            .ExecuteDeleteAsync();
-
-        var order = billService.GetOrderStub(Member.BillId, order_id);
-        var restaurantId = await billService.QuerySingleBill(Member.BillId)
-            .Select(e => e.RestaurantId)
-            .SingleOrDefaultAsync();
-
-        foreach (var item in body)
-        {
-            var menu = menuService.GetMenuStub(restaurantId, item.menu_id);
-            await billService.CreateItem(order, menu, item.quantity, item.note);
-        }
-
-        await billService.SaveChanges();
-        await transaction.CommitAsync();
-
-        return NoContent();
+        return await orderService.ListItems(
+            OrderItemResponse.Projection, e =>
+                e.BillId == MemberKey.BillId &&
+                e.Bill.RestaurantId == RestaurantId &&
+                e.Bill.BranchId == BranchKey.Id &&
+                e.OrderId == order_id);
     }
 
     /// <summary>
     /// add item to order
     /// </summary>
     [HttpPost("{order_id}/items")]
-    public async Task<ActionResult> CreateOrderItem(short order_id, OrderItemRequest body)
+    public async Task<ActionResult> CreateOrderItem(
+        short order_id, OrderItemRequest body)
     {
-        var order = billService.GetOrderStub(Member.BillId, order_id);
-        var restaurantId = await billService.QuerySingleBill(Member.BillId)
-            .Select(e => e.RestaurantId)
-            .SingleOrDefaultAsync();
+        var availabilityResult = await orderingCalculator.CalculateStockAvailability(
+            new()
+            {
+                [new(RestaurantId, body.menu_id)] = body.quantity
+            },
+            BranchKey);
 
-        var menu = menuService.GetMenuStub(restaurantId, body.menu_id);
-        var item = await billService.CreateItem(order, menu, body.quantity, body.note);
+        if (availabilityResult.IsFailed)
+            return availabilityResult.Errors.ToActionResult();
 
-        await billService.SaveChanges();
+        var result = await orderService.CreateItem(
+            OrderItemResponse.Projection,
+            new(MemberKey.BillId, order_id),
+            new(RestaurantId, body.menu_id),
+            body.quantity,
+            body.note);
 
-        var response = await billService.GetItem(Member.BillId, order_id, body.menu_id, OrderItemResponse.Projection);
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
+
+        var (key, response) = result.Value;
 
         return CreatedAtAction(
             nameof(GetOrderItem),
-            new { order_id, item_id = item.Id },
+            new { order_id, item_id = key.Id },
             response);
+    }
+
+    /// <summary>
+    /// update order's items
+    /// </summary>
+    [HttpPut("{order_id}/items")]
+    public async Task<ActionResult> UpdateOrderItems(
+        short order_id, IReadOnlyCollection<OrderItemRequest> body)
+    {
+        var availabilityResult = await orderingCalculator.CalculateStockAvailability(
+            body.GroupBy(e => new MenuKey(RestaurantId, e.menu_id))
+                .ToDictionary(
+                    e => e.Key,
+                    e => (short)e.Sum(i => i.quantity)),
+            BranchKey);
+
+        if (availabilityResult.IsFailed)
+            return availabilityResult.Errors.ToActionResult();
+
+        var command = body.Select(e =>
+            new OrderItemCreateCommand(
+                new(RestaurantId, e.menu_id),
+                e.quantity,
+                e.note));
+
+        var result = await orderService.SetOrderItems(
+            new(MemberKey.BillId, order_id),
+            command);
+
+        return NoContent();
     }
 
     /// <summary>
     /// get specific item
     /// </summary>
     [HttpGet("{order_id}/items/{item_id}")]
-    public async Task<ActionResult<OrderItemResponse>> GetOrderItem(short order_id, short item_id)
+    public async Task<ActionResult<OrderItemResponse>> GetOrderItem(
+        short order_id, short item_id)
     {
-        var response = await billService.GetItem(Member.BillId, order_id, item_id, OrderItemResponse.Projection);
+        var response = await orderService.GetItem(
+            OrderItemResponse.Projection,
+            new(MemberKey.BillId, order_id, item_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -211,14 +244,32 @@ public class OrderingController(
     /// update specific item
     /// </summary>
     [HttpPut("{order_id}/items/{item_id}")]
-    public async Task<ActionResult<OrderItemResponse>> UpdateOrderItem(short order_id, short item_id, OrderItemUpdateRequest body)
+    public async Task<ActionResult<OrderItemResponse>> UpdateOrderItem(
+        short order_id, short item_id, OrderItemUpdateRequest body)
     {
-        var item = billService.GetItemStub(Member.BillId, order_id, item_id);
+        var item = await orderService.GetItem(
+            e => new { e.MenuId },
+            new(MemberKey.BillId, order_id, item_id));
 
-        item.Quantity = body.quantity;
-        item.Note = body.note;
+        if (item is null)
+            return NotFound();
 
-        await billService.SaveChanges();
+        var availabilityResult = await orderingCalculator.CalculateStockAvailability(
+            new()
+            {
+                [new(RestaurantId, item.MenuId)] = body.quantity
+            },
+            BranchKey);
+
+        if (availabilityResult.IsFailed)
+            return availabilityResult.Errors.ToActionResult();
+
+        var result = await orderService.UpdateItem(
+            new(MemberKey.BillId, order_id, item_id),
+            new(body.quantity, body.note));
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -229,13 +280,11 @@ public class OrderingController(
     [HttpDelete("{order_id}/items/{item_id}")]
     public async Task<ActionResult> DeleteOrderItem(short order_id, short item_id)
     {
-        var affected = await billService.QuerySingleItem(Member.BillId, order_id, item_id)
-            .ExecuteDeleteAsync();
+        var result = await orderService.DeleteItem(
+            new(MemberKey.BillId, order_id, item_id));
 
-        if (affected == 0)
-        {
-            return NotFound();
-        }
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }

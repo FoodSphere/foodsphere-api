@@ -10,7 +10,7 @@ public class UpdateMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(f
         var (owner, _) = await builder.SeedMasterUser();
         var restaurant = await builder.SeedRestaurant(owner);
         var menu = await builder.SeedMenu(restaurant);
-        var tag = await builder.SeedTag(restaurant);
+        var tag = await builder.SeedTag(restaurant, TagType.Default);
 
         await builder.Commit();
         await Authenticate(owner);

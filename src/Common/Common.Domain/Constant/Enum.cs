@@ -2,10 +2,18 @@ namespace FoodSphere.Common.Constant;
 
 public enum BillStatus
 {
-    Pending,
-    Processing,
+    Open,
+    Paid, // or we should calculate by payment status?
     Completed,
-    Canceled,
+    Cancelled,
+}
+
+public enum PaymentStatus
+{
+    Pending,
+    Succeeded,
+    Failed,
+    Refunded,
 }
 
 public enum OrderStatus
@@ -13,44 +21,39 @@ public enum OrderStatus
     Draft,
     Pending,
     Cooking,
-    Completed,
-    Canceled,
+    Served,
+    Cancelled,
 }
 
-public enum StaffStatus
+public enum WorkerStatus
 {
-    Pending,
-    Cooking,
-    Done,
-    Cancelled,
+
 }
 
 public enum TableStatus
 {
-    Open,
-    Closed,
+    Ready,
+    Disabled,
     Occupied,
     Reserved,
-    Archived
 }
 
 public enum MenuStatus
 {
-    Active,
     Inactive,
-    Archived
+    Active,
 }
 
 public enum IngredientStatus
 {
-    Active,
     Inactive,
-    Archived
+    Active,
 }
 
-public enum StockStatus
+public enum ServiceRequestStatus
 {
-    Active,
-    Inactive,
-    OutOfStock
+    Pending,
+    Acknowledged,
+    Done,
+    Cancelled,
 }

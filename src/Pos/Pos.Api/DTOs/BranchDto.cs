@@ -1,6 +1,6 @@
 namespace FoodSphere.Pos.Api.DTO;
 
-public class BranchRequest
+public record BranchRequest
 {
     public ContactDto? contact { get; set; }
 
@@ -20,14 +20,15 @@ public class BranchRequest
     public TimeOnly? closing_time { get; set; }
 }
 
-public class BranchResponse //: IDTO<Branch, BranchResponse>
+public record BranchResponse //: IDTO<Branch, BranchResponse>
 {
-    public int id { get; set; }
+    public required int id { get; set; }
 
     public DateTime create_time { get; set; }
-    public DateTime update_time { get; set; }
+    public DateTime? update_time { get; set; }
+    public DateTime? delete_time { get; set; }
 
-    public Guid restaurant_id { get; set; }
+    public required Guid restaurant_id { get; set; }
 
     public ContactDto? contact { get; set; }
 
@@ -46,14 +47,13 @@ public class BranchResponse //: IDTO<Branch, BranchResponse>
     /// <example>22:00</example>
     public TimeOnly? closing_time { get; set; }
 
-    public static readonly Func<Branch, BranchResponse> Project = Projection.Compile();
-
-    public static Expression<Func<Branch, BranchResponse>> Projection =>
-        model => new BranchResponse
+    public static readonly Expression<Func<Branch, BranchResponse>> Projection =
+        model => new()
         {
             id = model.Id,
             create_time = model.CreateTime,
             update_time = model.UpdateTime,
+            delete_time = model.DeleteTime,
             restaurant_id = model.RestaurantId,
             contact = model.Contact == null ? null : ContactDto.Projection.Invoke(model.Contact),
             name = model.Name,
@@ -62,4 +62,6 @@ public class BranchResponse //: IDTO<Branch, BranchResponse>
             opening_time = model.OpeningTime,
             closing_time = model.ClosingTime,
         };
+
+    public static readonly Func<Branch, BranchResponse> Project = Projection.Compile();
 }

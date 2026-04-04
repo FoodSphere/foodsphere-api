@@ -10,9 +10,11 @@ var selfOrderingApi = builder.AddProject<Projects.FoodSphere_SelfOrdering_Api>("
 if (builder.Environment.IsDevelopment())
 {
     // var redis = builder.AddRedis("redis");
+    var rabbitmq = builder.AddRabbitMQ("rabbitmq")
+        .WithManagementPlugin();
 
     var pgServer = builder.AddPostgres("postgres")
-        // .WithPgAdmin() // slower?
+        .WithPgAdmin() // slower?
         .WithPgWeb();
 
     // https://aspire.dev/id/integrations/databases/postgres/postgres-client/#properties-of-the-postgresql-resources
@@ -27,43 +29,47 @@ if (builder.Environment.IsDevelopment())
 
     // resourceApi
     //     .WithReference(pgDb)
+    //     .WaitForCompletion(pgMigrator)
     //     .WithEndpoint("http", endpoint => {
     //         endpoint.Port = 0;
     //     })
     //     .WithEndpoint("https", endpoint => {
     //         endpoint.Port = 0;
-    //     })
-    //     .WaitForCompletion(pgMigrator);
+    //     });
 
     posApi
         .WithReference(pgDb)
+        .WaitForCompletion(pgMigrator)
+        .WithReference(rabbitmq)
+        .WaitFor(rabbitmq)
         .WithEndpoint("http", endpoint => {
             endpoint.Port = 0;
         })
         .WithEndpoint("https", endpoint => {
             endpoint.Port = 0;
-        })
-        .WaitForCompletion(pgMigrator);
+        });
 
     selfOrderingApi
         .WithReference(pgDb)
+        .WaitForCompletion(pgMigrator)
+        .WithReference(rabbitmq)
+        .WaitFor(rabbitmq)
         .WithEndpoint("http", endpoint => {
             endpoint.Port = 0;
         })
         .WithEndpoint("https", endpoint => {
             endpoint.Port = 0;
-        })
-        .WaitForCompletion(pgMigrator);
+        });
 
     // consumerApi
     //     .WithReference(pgDb)
+    //     .WaitForCompletion(pgMigrator)
     //     .WithEndpoint("http", endpoint => {
     //         endpoint.Port = 0;
     //     })
     //     .WithEndpoint("https", endpoint => {
     //         endpoint.Port = 0;
-    //     })
-    //     .WaitForCompletion(pgMigrator);
+    //     });
 }
 else if (builder.Environment.IsProduction())
 {

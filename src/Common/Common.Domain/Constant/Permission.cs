@@ -41,7 +41,22 @@ public static class PERMISSION
     });
 
     // Lazy<T> delays the creation of an object of type T until the first time it is accessed
-    public static Permission[] GetAll() => _allPermissions.Value.ToArray();
+    public static IReadOnlyCollection<Permission> GetAll() => _allPermissions.Value;
+
+    // for UI only
+    public static class Page
+    {
+        public static readonly Permission ORDER = new()
+        {
+            Id = 1,
+            Name = "page.order",
+        };
+        public static readonly Permission TABLE = new()
+        {
+            Id = 2,
+            Name = "page.table",
+        };
+    }
 
     public static class Restaurant
     {
@@ -119,13 +134,13 @@ public static class PERMISSION
         public static readonly Permission READ = new()
         {
             Id = 5000,
-            Name = "stock.read",
+            Name = "stock-transaction.read",
         };
 
-        public static readonly Permission UPDATE = new()
+        public static readonly Permission CREATE = new()
         {
             Id = 5010,
-            Name = "stock.update",
+            Name = "stock-transaction.create",
         };
     }
 

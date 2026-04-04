@@ -4,23 +4,22 @@ namespace FoodSphere.Pos.Api.Controller;
 public class SingleInfoController(
     ILogger<SingleInfoController> logger,
     // RestaurantService restaurantService,
-    BranchService branchService
+    BranchServiceBase branchService
 ) : PosControllerBase
 {
     /// <summary>
     /// get restaurant
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<SingleRestaurantResponse>> GetRestaurant(Guid restaurant_id)
+    public async Task<ActionResult<SingleRestaurantResponse>> GetRestaurant(
+        Guid restaurant_id)
     {
         var response = await branchService.GetBranch(
-            restaurant_id, 1,
-            SingleRestaurantResponse.Projection);
+            SingleRestaurantResponse.Projection,
+            new(restaurant_id, 1));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }

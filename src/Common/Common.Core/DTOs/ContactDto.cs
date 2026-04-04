@@ -1,6 +1,6 @@
 namespace FoodSphere.Common.DTO;
 
-public class ContactDto
+public record ContactDto
 {
     /// <example>บิ๊กบัง</example>
     public string? name { get; set; }
@@ -11,23 +11,26 @@ public class ContactDto
     /// <example>0812345678</example>
     public string? phone { get; set; }
 
-    public Contact ToModel()
-    {
-        return new Contact
-        {
-            Name = name,
-            Email = email,
-            Phone = phone,
-        };
-    }
-
-    public static readonly Func<Contact, ContactDto> Project = Projection.Compile();
-
-    public static Expression<Func<Contact, ContactDto>> Projection =>
-        model => new ContactDto
+    public static readonly Expression<Func<Contact, ContactDto>> Projection =
+        model => new()
         {
             name = model.Name,
             email = model.Email,
             phone = model.Phone,
         };
+
+    public static readonly Func<Contact, ContactDto> Project = Projection.Compile();
+
+    public static implicit operator Contact(ContactDto? contact)
+    {
+        if (contact is null)
+            return new();
+
+        return new()
+        {
+            Name = contact.name,
+            Email = contact.email,
+            Phone = contact.phone,
+        };
+    }
 }

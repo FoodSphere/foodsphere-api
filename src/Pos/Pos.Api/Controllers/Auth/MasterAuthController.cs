@@ -331,7 +331,9 @@ public class MasterAuthController(
     {
         return new()
         {
-            email = await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."),
+            email = await userManager.GetEmailAsync(user)
+                ?? throw new NotSupportedException("Users must have an email."),
+
             is_email_confirmed = await userManager.IsEmailConfirmedAsync(user),
             is_two_factor_enabled = await userManager.GetTwoFactorEnabledAsync(user),
         };

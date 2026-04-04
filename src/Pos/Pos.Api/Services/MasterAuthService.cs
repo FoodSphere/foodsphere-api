@@ -6,11 +6,12 @@ using Microsoft.IdentityModel.Tokens;
 namespace FoodSphere.Pos.Api.Service;
 
 public class MasterAuthService(
-    UserManager<MasterUser> userManager,
     IOptions<EnvDomainApi> envDomainApi,
     IOptions<EnvDomainMaster> envDomainMaster,
-    IOptions<EnvDomainPos> envDomainPos
-) {
+    IOptions<EnvDomainPos> envDomainPos,
+    UserManager<MasterUser> userManager,
+    AuthorizeHelperService authService)
+{
     readonly EnvDomainApi envDomainApi = envDomainApi.Value;
     readonly EnvDomainMaster envDomainMaster = envDomainMaster.Value;
     readonly EnvDomainPos envDomainPos = envDomainPos.Value;
@@ -22,23 +23,15 @@ public class MasterAuthService(
             new(FoodSphereClaimType.Identity.SecurityStampClaimType, user.SecurityStamp ?? string.Empty),
         ];
 
-        var roles = await userManager.GetRolesAsync(user);
-
-        claims.AddRange(
-            roles.Select(role => new Claim(FoodSphereClaimType.Identity.RoleClaimType, role))
-        );
-
-        return new ClaimsIdentity(claims);
+        return new(claims);
     }
 
     async Task<Dictionary<string, object>> GetClaims(MasterUser user)
     {
-        var claims = new Dictionary<string, object>
+        return new()
         {
             [FoodSphereClaimType.UserTypeClaimType] =  UserType.Master.ToString(),
         };
-
-        return claims;
     }
 
     async Task<SecurityTokenDescriptor> GetTokenDescriptor(MasterUser user)
@@ -46,14 +39,13 @@ public class MasterAuthService(
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Issuer = envDomainApi.hostname,
-            Audience = envDomainMaster.hostname,
             Subject = await GetSubject(user),
             Claims = await GetClaims(user),
             Expires = DateTime.UtcNow.AddMinutes(300),
             SigningCredentials = envDomainMaster.GetSigningCredentials(),
         };
 
-        // tokenDescriptor.Audiences.Add(envDomainMaster.hostname);
+        tokenDescriptor.Audiences.Add(envDomainMaster.hostname);
         tokenDescriptor.Audiences.Add(envDomainPos.hostname);
 
         return tokenDescriptor;

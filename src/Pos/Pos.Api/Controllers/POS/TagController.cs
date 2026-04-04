@@ -3,48 +3,48 @@ namespace FoodSphere.Pos.Api.Controller;
 [Route("restaurants/{restaurant_id}/tags")]
 public class TagController(
     ILogger<TagController> logger,
-    RestaurantService restaurantService,
-    TagService tagService
+    TagServiceBase tagService
 ) : PosControllerBase
 {
     /// <summary>
     /// list tags
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ICollection<TagResponse>>> ListTags(Guid restaurant_id)
+    public async Task<ActionResult<ICollection<TagResponse>>> ListTags(
+        Guid restaurant_id,
+        [FromQuery] IReadOnlyCollection<string> type)
     {
-        var responses = await tagService.QueryTags()
-            .Where(e =>
-                e.RestaurantId == restaurant_id)
-            .Select(TagResponse.Projection)
-            .ToArrayAsync();
+        Expression<Func<Tag, bool>> predicate = e =>
+            e.RestaurantId == restaurant_id;
 
-        return responses;
+        if (type.Count > 0)
+            predicate = predicate.And(e => type.Contains(e.Type));
+
+        return await tagService.ListTags(
+            TagResponse.Projection, predicate);
     }
 
     /// <summary>
     /// create tag
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<TagResponse>> CreateTag(Guid restaurant_id, TagRequest body)
+    public async Task<ActionResult<TagResponse>> CreateTag(
+        Guid restaurant_id, TagRequest body)
     {
-        var restaurant = restaurantService.GetRestaurantStub(restaurant_id);
-
         var tag = await tagService.CreateTag(
-            restaurant: restaurant,
-            name: body.name
-        );
+            TagResponse.Projection, new(
+                new(restaurant_id),
+                body.name,
+                body.type));
 
-        await tagService.SaveChanges();
+        if (tag is null)
+            return NotFound();
 
-        var response = await tagService.GetTag(
-            restaurant_id, tag.Id,
-            TagResponse.Projection
-        );
+        var (tagKey, response) = tag.Value;
 
         return CreatedAtAction(
             nameof(GetTag),
-            new { restaurant_id, tag_id = tag.Id },
+            new { restaurant_id, tag_id = tagKey.Id },
             response);
     }
 
@@ -52,14 +52,15 @@ public class TagController(
     /// get tag
     /// </summary>
     [HttpGet("{tag_id}")]
-    public async Task<ActionResult<TagResponse>> GetTag(Guid restaurant_id, short tag_id)
+    public async Task<ActionResult<TagResponse>> GetTag(
+        Guid restaurant_id, short tag_id)
     {
-        var response = await tagService.GetTag(restaurant_id, tag_id, TagResponse.Projection);
+        var response = await tagService.GetTag(
+            TagResponse.Projection,
+            new(restaurant_id, tag_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -69,20 +70,17 @@ public class TagController(
     /// update tag
     /// </summary>
     [HttpPut("{tag_id}")]
-    public async Task<ActionResult<TagResponse>> UpdateTag(Guid restaurant_id, short tag_id, TagRequest body)
+    public async Task<ActionResult> UpdateTag(
+        Guid restaurant_id, short tag_id, TagRequest body)
     {
-        var tag = tagService.GetTagStub(restaurant_id, tag_id);
+        var result = await tagService.UpdateTag(
+            new(restaurant_id, tag_id), new(
+                body.name));
 
-        tag.Name = body.name;
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
-        var affected = await tagService.SaveChanges();
-
-        if (affected == 0)
-        {
-            return NotFound();
-        }
-
-        return TagResponse.Project(tag);
+        return NoContent();
     }
 
     /// <summary>
@@ -91,15 +89,11 @@ public class TagController(
     [HttpDelete("{tag_id}")]
     public async Task<ActionResult> DeleteTag(Guid restaurant_id, short tag_id)
     {
-        var tag = await tagService.GetTag(restaurant_id, tag_id);
+        var result = await tagService.DeleteTag(
+            new(restaurant_id, tag_id));
 
-        if (tag is null)
-        {
-            return NotFound();
-        }
-
-        await tagService.DeleteTag(tag);
-        await tagService.SaveChanges();
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }

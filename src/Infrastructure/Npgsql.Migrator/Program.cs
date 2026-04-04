@@ -1,8 +1,11 @@
 using Azure.Identity;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Microsoft.Extensions.Options;
 using FoodSphere.Common.Configuration;
-using FoodSphere.Worker.Migration;
+using FoodSphere.Common.Options;
+using FoodSphere.Infrastructure.Persistence;
 using FoodSphere.Infrastructure.Npgsql;
+using FoodSphere.Worker.Migration;
 
 var builder = Host.CreateApplicationBuilder(args);
 

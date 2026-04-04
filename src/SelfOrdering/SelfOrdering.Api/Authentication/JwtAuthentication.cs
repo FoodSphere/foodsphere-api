@@ -35,6 +35,17 @@ public static class JwtAuthentication
             };
             options.Events = new JwtBearerEvents
             {
+                // signalR client can't send token in header, so we allow it in query string for hub endpoints
+                OnMessageReceived = async context =>
+                {
+                    var accessToken = context.Request.Query["access_token"].FirstOrDefault();
+                    var path = context.HttpContext.Request.Path.Value ?? "";
+
+                    if (!string.IsNullOrEmpty(accessToken) && path.Contains("/hubs/"))
+                    {
+                        context.Token = accessToken;
+                    }
+                },
                 OnTokenValidated = OnTokenValidated,
                 OnAuthenticationFailed = OnAuthenticationFailed,
             };
@@ -59,11 +70,20 @@ public static class JwtAuthentication
             return;
         }
 
-        var billService = sp.GetRequiredService<BillService>();
+        var billService = sp.GetRequiredService<BillServiceBase>();
 
-        var member = billService.GetMemberStub(billId, memberId);
+        var branchKey = await billService.GetBill(
+            e => new BranchKey(e.RestaurantId, e.BranchId),
+            new(billId));
 
-        context.HttpContext.Items[nameof(BillMember)] = member;
+        if (branchKey is null)
+        {
+            context.Fail("bill not found");
+            return;
+        }
+
+        context.HttpContext.Items[nameof(BranchKey)] = branchKey;
+        context.HttpContext.Items[nameof(BillMemberKey)] = new BillMemberKey(billId, memberId);
     }
 
     static async Task OnAuthenticationFailed(AuthenticationFailedContext context)

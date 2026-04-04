@@ -72,12 +72,12 @@ if (builder.Environment.IsProduction())
 builder.Services.AddAuthorization(AuthorizationConfiguration.Configure());
 
 builder.Services.AddScoped<ConsumerAuthService>();
-builder.Services.AddScoped<BillService>();
-builder.Services.AddScoped<BranchService>();
-builder.Services.AddScoped<MenuService>();
-builder.Services.AddScoped<PaymentService>();
-builder.Services.AddScoped<RestaurantService>();
-builder.Services.AddScoped<StaffService>();
+builder.Services.AddScoped<BillServiceBase>();
+builder.Services.AddScoped<BranchServiceBase>();
+builder.Services.AddScoped<MenuServiceBase>();
+// builder.Services.AddScoped<PaymentServiceBase>();
+builder.Services.AddScoped<RestaurantServiceBase>();
+builder.Services.AddScoped<WorkerServiceBase>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(JsonConfiguration.Configure());

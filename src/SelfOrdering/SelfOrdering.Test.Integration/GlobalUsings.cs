@@ -1,0 +1,11 @@
+global using System.Net;
+global using System.Net.Http.Json;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
+global using Xunit;
+global using FluentAssertions;
+global using FoodSphere.Common.Entity;
+global using FoodSphere.Common.Constant;
+global using FoodSphere.Common.DTO;
+global using FoodSphere.Common.Test;
+global using FoodSphere.SelfOrdering.Api.DTO;

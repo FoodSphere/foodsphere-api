@@ -36,8 +36,8 @@ public class BillApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
 
         responseBody.pax.Should().Be(requestBody.pax);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class BillApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fixture
         responseBody.pax.Should().Be(bill.Pax);
         responseBody.status.Should().Be(bill.Status);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 }

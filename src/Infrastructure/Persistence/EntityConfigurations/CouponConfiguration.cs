@@ -4,7 +4,10 @@ public class DiscountConfiguration : IEntityTypeConfiguration<Coupon>
 {
     public void Configure(EntityTypeBuilder<Coupon> builder)
     {
-        builder.HasKey(e => new { e.RestaurantId, e.Code });
+        builder.HasKey(e => new { e.RestaurantId, e.Id });
+
+        builder.HasIndex(e => e.Code)
+            .IsUnique();
 
         builder.Property(e => e.PercentageDiscount)
             .HasColumnType("numeric(7,4)");

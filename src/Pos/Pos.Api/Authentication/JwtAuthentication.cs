@@ -31,10 +31,7 @@ public static class JwtAuthentication
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidIssuer = envDomainApi.hostname,
-                ValidAudiences = [
-                    // envDomainMaster.hostname,
-                    envDomainPos.hostname
-                ],
+                ValidAudience = envDomainPos.hostname,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKeys = [
                     envDomainMaster.GetSecurityKey(),
@@ -43,6 +40,17 @@ public static class JwtAuthentication
             };
             options.Events = new JwtBearerEvents
             {
+                // signalR client can't send token in header, so we allow it in query string for hub endpoints
+                OnMessageReceived = async context =>
+                {
+                    var accessToken = context.Request.Query["access_token"].FirstOrDefault();
+                    var path = context.HttpContext.Request.Path.Value ?? "";
+
+                    if (!string.IsNullOrEmpty(accessToken) && path.Contains("/hubs/"))
+                    {
+                        context.Token = accessToken;
+                    }
+                },
                 OnTokenValidated = OnTokenValidated,
                 OnAuthenticationFailed = OnAuthenticationFailed,
             };
@@ -85,12 +93,12 @@ public static class JwtAuthentication
             return;
         }
 
-        context.HttpContext.Items[nameof(MasterUser)] = user;
+        context.HttpContext.Items[nameof(MasterUserKey)] = (MasterUserKey)user;
         context.HttpContext.Items[nameof(UserType)] = UserType.Master;
         logger.LogInformation("master's token passed");
     }
 
-    static async Task ValidateStaff(TokenValidatedContext context)
+    static async Task ValidateWorker(TokenValidatedContext context)
     {
         var principal = context.Principal!;
         var sp = context.HttpContext.RequestServices;
@@ -108,23 +116,23 @@ public static class JwtAuthentication
             return;
         }
 
-        var staffService = sp.GetRequiredService<StaffService>();
+        var workerService = sp.GetRequiredService<WorkerServiceBase>();
 
-        var staff = await staffService.GetStaff(
-            Guid.Parse(restaurantId),
-            short.Parse(branchId),
-            short.Parse(userId)
-        );
+        var worker = await workerService.GetWorker(
+            e => e, new(
+                Guid.Parse(restaurantId),
+                short.Parse(branchId),
+                short.Parse(userId)));
 
-        if (staff is null)
+        if (worker is null)
         {
-            context.Fail("staff not found");
+            context.Fail("worker not found");
             return;
         }
 
-        context.HttpContext.Items[nameof(StaffUser)] = staff;
-        context.HttpContext.Items[nameof(UserType)] = UserType.Staff;
-        logger.LogInformation("staff's token passed");
+        context.HttpContext.Items[nameof(WorkerUserKey)] = (WorkerUserKey)worker;
+        context.HttpContext.Items[nameof(UserType)] = UserType.Worker;
+        logger.LogInformation("worker's token passed");
     }
 
     static async Task OnTokenValidated(TokenValidatedContext context)
@@ -146,17 +154,17 @@ public static class JwtAuthentication
         var envDomainMaster = sp.GetRequiredService<IOptions<EnvDomainMaster>>().Value;
         var envDomainPos = sp.GetRequiredService<IOptions<EnvDomainPos>>().Value;
 
-        var signing = (SymmetricSecurityKey)context.SecurityToken.SigningKey;
+        var usedSigning = (SymmetricSecurityKey)context.SecurityToken.SigningKey;
         var masterKey = envDomainMaster.GetSecurityKey().Key;
         var posKey = envDomainPos.GetSecurityKey().Key;
 
-        if (userType is UserType.Master && signing.Key.SequenceEqual(masterKey))
+        if (userType is UserType.Master && usedSigning.Key.SequenceEqual(masterKey))
         {
             await ValidateMaster(context);
         }
-        else if (userType is UserType.Staff && signing.Key.SequenceEqual(posKey))
+        else if (userType is UserType.Worker && usedSigning.Key.SequenceEqual(posKey))
         {
-            await ValidateStaff(context);
+            await ValidateWorker(context);
         }
         else
         {
@@ -172,6 +180,6 @@ public static class JwtAuthentication
         var logger = sp.GetRequiredService<ILoggerFactory>()
             .CreateLogger(nameof(JwtAuthentication));
 
-        logger.LogWarning("master/staff's token failed: {msg}", context.Exception.Message);
+        logger.LogWarning("master/worker's token failed: {msg}", context.Exception.Message);
     }
 }

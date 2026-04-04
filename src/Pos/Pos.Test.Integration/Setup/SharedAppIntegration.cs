@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
+using Testcontainers.RabbitMq;
 using FoodSphere.Infrastructure.Persistence;
 using FoodSphere.Infrastructure.Npgsql;
 using FoodSphere.Pos.Api.Service;
@@ -16,9 +17,12 @@ namespace FoodSphere.Pos.Test.Integration;
 // https://github.com/TDMR87/IntegrationTestsInDotnet
 public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18-alpine")
+    readonly PostgreSqlContainer _default = new PostgreSqlBuilder("postgres:18-alpine")
         // .WithAutoRemove(true)
         // .WithCleanUp(true)
+        .Build();
+
+    readonly RabbitMqContainer _rabbitmq = new RabbitMqBuilder("rabbitmq:4-alpine")
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -28,10 +32,15 @@ public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
         // # ERROR: builder.ConfigureAppConfiguration();
         // in minimal hosting
         // HostApplicationBuilder.Build()
-        // -> Transfers state from ConfigurationManager to ConfigurationRoot
-        // -> Disposes ConfigurationManager
+        // -> Transfers state from ConfigurationStaff to ConfigurationRoot
+        // -> Disposes ConfigurationStaff
         Environment.SetEnvironmentVariable("ConnectionStrings__default",
-            _dbContainer.GetConnectionString() + ";Include Error Detail=true");
+            _default.GetConnectionString() + ";Include Error Detail=true");
+
+        Console.WriteLine("ConnectionString" + _default.GetConnectionString());
+
+        Environment.SetEnvironmentVariable("ConnectionStrings__rabbitmq",
+            _rabbitmq.GetConnectionString());
 
         builder.ConfigureTestServices(services =>
         {
@@ -41,7 +50,8 @@ public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
     async ValueTask IAsyncLifetime.InitializeAsync()
     {
-        await _dbContainer.StartAsync(TestContext.Current.CancellationToken);
+        await _default.StartAsync(TestContext.Current.CancellationToken);
+        await _rabbitmq.StartAsync(TestContext.Current.CancellationToken);
 
         using var scope = Services.CreateScope();
 
@@ -55,7 +65,8 @@ public class SharedAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
     public new async Task DisposeAsync()
     {
         await base.DisposeAsync();
-        await _dbContainer.DisposeAsync();
+        await _default.DisposeAsync();
+        await _rabbitmq.DisposeAsync();
     }
 }
 
@@ -79,10 +90,10 @@ public abstract class SharedAppTestsBase(SharedAppFixture Factory)
         _client.DefaultRequestHeaders.Authorization = new("Bearer", token);
     }
 
-    protected async Task Authenticate(StaffUser user)
+    protected async Task Authenticate(WorkerUser user)
     {
         using var scope = CreateScope();
-        var authService = scope.ServiceProvider.GetRequiredService<StaffAuthService>();
+        var authService = scope.ServiceProvider.GetRequiredService<WorkerAuthService>();
 
         var token = await authService.GenerateToken(user);
 

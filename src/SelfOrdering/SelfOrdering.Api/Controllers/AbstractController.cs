@@ -2,23 +2,36 @@ using System.Security.Claims;
 
 namespace FoodSphere.SelfOrdering.Api.Controller;
 
-[SelfOrderingAuthorize]
+[OrderingAuthorize]
 public abstract class SelfOrderingControllerBase : FoodSphereControllerBase
 {
-    protected BillMember Member
+    protected BillMemberKey MemberKey
     {
         get
         {
-            var obj = HttpContext.Items[nameof(Common.Entity.BillMember)];
+            var obj = HttpContext.Items[nameof(BillMemberKey)];
 
-            if (obj is not BillMember member)
-            {
+            if (obj is not BillMemberKey key)
                 throw new InvalidOperationException();
-            }
 
-            return member;
+            return key;
         }
     }
+
+    protected BranchKey BranchKey
+    {
+        get
+        {
+            var obj = HttpContext.Items[nameof(Common.Entity.BranchKey)];
+
+            if (obj is not BranchKey key)
+                throw new InvalidOperationException();
+
+            return key;
+        }
+    }
+
+    protected Guid RestaurantId => BranchKey.RestaurantId;
 }
 
 [Route("current")]
@@ -27,7 +40,7 @@ public class CurrentController : FoodSphereControllerBase
     /// <summary>
     /// inspect claims in token
     /// </summary>
-    [SelfOrderingAuthorize]
+    [OrderingAuthorize]
     [HttpGet("claims")]
     public ActionResult<string> GetClaims()
     {

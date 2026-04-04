@@ -14,6 +14,11 @@ public class EnvConnectionStrings : IEnvOptions
 
     [Required]
     public required string @default { get; init; }
+
+    // this will make others service required rabbitmq
+    // should I refactor rabbitmq to new class/section?
+    [Required]
+    public required string rabbitmq { get; init; }
 }
 
 public class EnvGoogle : IEnvOptions

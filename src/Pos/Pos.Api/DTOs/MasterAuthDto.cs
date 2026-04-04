@@ -1,6 +1,6 @@
 namespace FoodSphere.Pos.Api.DTO;
 
-public class MasterRegisterRequest
+public record MasterRegisterRequest
 {
     /// <example>swagger@foodsphere.com</example>
     public required string email { get; init; }
@@ -9,7 +9,7 @@ public class MasterRegisterRequest
     public required string password { get; init; }
 }
 
-public class MasterTokenRequest
+public record MasterTokenRequest
 {
     /// <example>swagger@foodsphere.com</example>
     public required string email { get; init; }
@@ -20,36 +20,36 @@ public class MasterTokenRequest
     public string? two_factor_code { get; init; }
 }
 
-public class MasterTokenResponse
+public record MasterTokenResponse
 {
     public required string access_token { get; init; }
 
     // public required string refresh_token { get; init; }
 }
 
-public class RefreshTokenRequest
+public record RefreshTokenRequest
 {
     public required string refresh_token { get; init; }
 }
 
-public class RefreshTokenResponse
+public record RefreshTokenResponse
 {
     public required string access_token { get; init; }
 }
 
-public class SendEmailRequest
+public record SendEmailRequest
 {
     public required string email { get; init; }
 }
 
-public class ResetPasswordRequest
+public record ResetPasswordRequest
 {
     public required string email { get; init; }
     public required string reset_code { get; init; }
     public required string new_password { get; init; }
 }
 
-public class InfoRequest
+public record InfoRequest
 {
     public string? new_email { get; init; }
     public string? new_password { get; init; }
@@ -57,14 +57,14 @@ public class InfoRequest
     public bool? enable_two_factor { get; init; }
 }
 
-public class InfoResponse
+public record InfoResponse
 {
     public required string email { get; init; }
     public required bool is_email_confirmed { get; init; }
     public required bool is_two_factor_enabled { get; init; }
 }
 
-public sealed class ForgotPasswordRequest
+public record ForgotPasswordRequest
 {
     public required string email { get; init; }
 }

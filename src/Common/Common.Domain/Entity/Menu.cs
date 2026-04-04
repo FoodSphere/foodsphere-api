@@ -1,13 +1,31 @@
 namespace FoodSphere.Common.Entity;
 
-public class Menu : EntityBase<short>
+public interface IMenuKey
 {
-    public Guid RestaurantId { get; set; }
-    public virtual Restaurant Restaurant { get; set; } = null!;
+    public Guid RestaurantId { get; }
+    public short Id { get; }
+}
 
-    public virtual List<MenuIngredient> MenuIngredients { get; } = [];
-    public virtual List<MenuTag> MenuTags { get; } = [];
-    public virtual List<MenuComponent> Components { get; } = [];
+public record MenuKey(Guid RestaurantId, short Id) : IMenuKey, IEntityKey
+{
+    public static implicit operator MenuKey(Menu model) => new(model.RestaurantId, model.Id);
+    public static implicit operator object[](MenuKey key) => [key.RestaurantId, key.Id];
+}
+
+public class Menu : IMenuKey, IUpdatableEntityModel, ISoftDeleteEntityModel
+{
+    public required Guid RestaurantId { get; init; }
+    public required short Id { get; init; }
+
+    public DateTime CreateTime { get; set; }
+    public DateTime? UpdateTime { get; set; }
+    public DateTime? DeleteTime { get; set; }
+
+    public virtual Restaurant Restaurant { get; init; } = null!;
+
+    public virtual ICollection<MenuIngredient> Ingredients { get; } = [];
+    public virtual ICollection<TagMenu> Tags { get; } = [];
+    public virtual ICollection<MenuComponent> Components { get; } = [];
 
     public required string Name { get; set; }
     public string? DisplayName { get; set; }
@@ -15,30 +33,6 @@ public class Menu : EntityBase<short>
     public string? ImageUrl { get; set; }
 
     // may separate for each branch?
-    public int Price { get; set; }
+    public required int Price { get; set; }
     public MenuStatus Status { get; set; }
-}
-
-public class MenuComponent : TrackableEntityBase
-{
-    public Guid RestaurantId { get; set; }
-    public virtual Restaurant Restaurant { get; set; } = null!;
-
-    public short ParentMenuId { get; set; }
-    public virtual Menu ParentMenu { get; set; } = null!;
-
-    public short ChildMenuId { get; set; }
-    public virtual Menu ChildMenu { get; set; } = null!;
-
-    public short Quantity { get; set; }
-}
-
-public class MenuTag : TrackableEntityBase
-{
-    public Guid RestaurantId { get; set; }
-    public short MenuId { get; set; }
-    public virtual Menu Menu { get; set; } = null!;
-
-    public short TagId { get; set; }
-    public virtual Tag Tag { get; set; } = null!;
 }

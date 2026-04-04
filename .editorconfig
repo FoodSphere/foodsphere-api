@@ -19,4 +19,4 @@ dotnet_diagnostic.ASPIRECOMPUTE003.severity = suggestion
 dotnet_diagnostic.CS9113.severity = suggestion
 
 # VSTHRD200: Use Async suffix for async methods
-dotnet_diagnostic.VSTHRD200.severity = suggestion
+dotnet_diagnostic.VSTHRD200.severity = none

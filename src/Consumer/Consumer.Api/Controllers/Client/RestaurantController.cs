@@ -3,7 +3,7 @@ namespace FoodSphere.Consumer.Api.Controller;
 [Route("restaurants")]
 public class RestaurantController(
     ILogger<RestaurantController> logger,
-    RestaurantService restaurantService
+    RestaurantServiceBase restaurantService
 ) : FoodSphereControllerBase
 {
 

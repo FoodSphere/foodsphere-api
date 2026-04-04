@@ -4,7 +4,7 @@ namespace FoodSphere.Pos.Api.Controller;
 public class IngredientController(
     ILogger<IngredientController> logger,
     AccessControlService accessControl,
-    IngredientService ingredientService,
+    IngredientServiceBase ingredientService,
     IngredientImageService imageService
 ) : PosControllerBase
 {
@@ -12,63 +12,60 @@ public class IngredientController(
     /// list ingredients
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ICollection<IngredientResponse>>> ListIngredients(Guid restaurant_id)
+    public async Task<ActionResult<ICollection<IngredientResponse>>> ListIngredients(
+        Guid restaurant_id,
+        [FromQuery] bool? is_deleted = false)
     {
-        var hasPermission = await accessControl.Validate(
-            User, restaurant_id,
-            PERMISSION.Ingredient.READ
-        );
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.READ);
 
-        if (!hasPermission)
-        {
-            return Forbid();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var responses = await ingredientService
-            .IngredientQuery(restaurant_id)
-            .Select(IngredientResponse.Projection)
-            .ToArrayAsync();
+        Expression<Func<Ingredient, bool>> predicate = e =>
+            e.RestaurantId == restaurant_id;
 
-        return responses;
+        if (is_deleted is not null)
+            predicate = predicate.And(e =>
+                e.DeleteTime != null == is_deleted.Value);
+
+        return await ingredientService.ListIngredients(
+            IngredientResponse.Projection, predicate);
     }
 
     /// <summary>
     /// create ingredient
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<IngredientResponse>> CreateIngredient(Guid restaurant_id, IngredientRequest body)
+    public async Task<ActionResult<IngredientResponse>> CreateIngredient(
+        Guid restaurant_id, IngredientRequest body)
     {
-        var hasPermission = await accessControl.Validate(
-            User, restaurant_id,
-            PERMISSION.Ingredient.CREATE
-        );
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.CREATE);
 
-        if (!hasPermission)
-        {
-            return Forbid();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var ingredient = await ingredientService.CreateIngredient(
-            restaurantId: restaurant_id,
-            name: body.name,
-            unit: body.unit,
-            description: body.description
-        );
+        var tagKeys = body.tags.Select(e =>
+            new TagKey(restaurant_id, e.tag_id));
 
-        foreach (var tag in body.tags)
-        {
-            await ingredientService.AssignTag(ingredient, tag.tag_id);
-        }
+        var createResult = await ingredientService.CreateIngredient(
+            IngredientResponse.Projection, new(
+                RestaurantKey: new(restaurant_id),
+                Name: body.name,
+                Tags: tagKeys,
+                Unit: body.unit,
+                Description: body.description,
+                Status: body.status));
 
-        await ingredientService.SaveChanges();
+        if (createResult.IsFailed)
+            return createResult.Errors.ToActionResult();
 
-        var response = await ingredientService.GetIngredient(
-            restaurant_id, ingredient.Id,
-            IngredientResponse.Projection);
+        var (key, response) = createResult.Value;
 
         return CreatedAtAction(
             nameof(GetIngredient),
-            new { restaurant_id, ingredient_id = ingredient.Id },
+            new { restaurant_id, ingredient_id = key.Id },
             response);
     }
 
@@ -76,26 +73,21 @@ public class IngredientController(
     /// get ingredient
     /// </summary>
     [HttpGet("{ingredient_id}")]
-    public async Task<ActionResult<IngredientResponse>> GetIngredient(Guid restaurant_id, short ingredient_id)
+    public async Task<ActionResult<IngredientResponse>> GetIngredient(
+        Guid restaurant_id, short ingredient_id)
     {
-        var hasPermission = await accessControl.Validate(
-            User, restaurant_id,
-            PERMISSION.Ingredient.READ
-        );
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.READ);
 
-        if (!hasPermission)
-        {
-            return Forbid();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
         var response = await ingredientService.GetIngredient(
-            restaurant_id, ingredient_id,
-            IngredientResponse.Projection);
+            IngredientResponse.Projection,
+            new(restaurant_id, ingredient_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -104,39 +96,28 @@ public class IngredientController(
     /// update ingredient
     /// </summary>
     [HttpPut("{ingredient_id}")]
-    public async Task<ActionResult> UpdateIngredient(Guid restaurant_id, short ingredient_id, IngredientRequest body)
+    public async Task<ActionResult> UpdateIngredient(
+        Guid restaurant_id, short ingredient_id, IngredientRequest body)
     {
-        var hasPermission = await accessControl.Validate(
-            User, restaurant_id,
-            PERMISSION.Ingredient.UPDATE
-        );
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.UPDATE);
 
-        if (!hasPermission)
-        {
-            return Forbid();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var ingredient = await ingredientService.GetIngredient(restaurant_id, ingredient_id);
+        var tagKeys = body.tags.Select(e =>
+            new TagKey(restaurant_id, e.tag_id));
 
-        if (ingredient is null)
-        {
-            return NotFound();
-        }
+        var result = await ingredientService.UpdateIngredient(
+            new(restaurant_id, ingredient_id), new(
+                Name: body.name,
+                Tags: tagKeys,
+                Unit: body.unit,
+                Description: body.description,
+                Status: body.status));
 
-        ingredient.Name = body.name;
-        ingredient.Unit = body.unit;
-        ingredient.Description = body.description;
-
-        await ingredientService
-            .IngredientTagQuery(restaurant_id, ingredient_id)
-            .ExecuteDeleteAsync();
-
-        foreach (var tag in body.tags)
-        {
-            await ingredientService.AssignTag(ingredient, tag.tag_id);
-        }
-
-        await ingredientService.SaveChanges();
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -145,16 +126,20 @@ public class IngredientController(
     /// delete ingredient
     /// </summary>
     [HttpDelete("{ingredient_id}")]
-    public async Task<ActionResult> DeleteIngredient(Guid restaurant_id, short ingredient_id)
+    public async Task<ActionResult> DeleteIngredient(
+        Guid restaurant_id, short ingredient_id)
     {
-        var affected = await ingredientService
-            .IngredientQuery(restaurant_id, ingredient_id)
-            .ExecuteDeleteAsync();
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.UPDATE);
 
-        if (affected == 0)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var result = await ingredientService.DeleteIngredient(
+            new(restaurant_id, ingredient_id));
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -167,26 +152,21 @@ public class IngredientController(
         Guid restaurant_id, short ingredient_id,
         IFormFile file)
     {
-        var ingredient = await ingredientService.GetIngredient(restaurant_id, ingredient_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.UPDATE);
 
-        if (ingredient is null)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        string? url;
+        ResultObject<string> uploadResult;
 
-        using var stream = file.OpenReadStream();
-        {
-            url = await imageService.UploadImage(ingredient, stream, file.ContentType);
-        }
+        using (var stream = file.OpenReadStream())
+            uploadResult = await imageService.UploadImage(
+                new(restaurant_id, ingredient_id),
+                stream, file.ContentType);
 
-        if (url is null)
-        {
-            return BadRequest("failed to upload image");
-        }
-
-        await ingredientService.SaveChanges();
+        if (!uploadResult.TryGetValue(out var url))
+            return uploadResult.Errors.ToActionResult();
 
         return new UploadImageResponse
         {
@@ -198,16 +178,20 @@ public class IngredientController(
     /// generate ingredient image's upload url
     /// </summary>
     [HttpPost("{ingredient_id}/image/upload-url")]
-    public async Task<ActionResult<PresignUrlResponse>> GenerateImageUploadUrl(Guid restaurant_id, short ingredient_id)
+    public async Task<ActionResult<PresignUrlResponse>> GenerateImageUploadUrl(
+        Guid restaurant_id, short ingredient_id)
     {
-        var ingredient = await ingredientService.GetIngredient(restaurant_id, ingredient_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.UPDATE);
 
-        if (ingredient is null)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var url = await imageService.GetImageUploadUrl(ingredient);
+        var result = await imageService.GetImageUploadUrl(
+            new(restaurant_id, ingredient_id));
+
+        if (!result.TryGetValue(out var url))
+            return result.Errors.ToActionResult();
 
         return new PresignUrlResponse
         {
@@ -219,14 +203,19 @@ public class IngredientController(
     /// list ingredient's tags
     /// </summary>
     [HttpGet("{ingredient_id}/tags")]
-    public async Task<ActionResult<ICollection<TagDto>>> ListTags(Guid restaurant_id, short ingredient_id)
+    public async Task<ActionResult<ICollection<TagDto>>> ListTags(
+        Guid restaurant_id, short ingredient_id)
     {
-        var responses = await ingredientService
-            .IngredientTagQuery(restaurant_id, ingredient_id)
-            .Select(TagDto.IngredientTagProjection)
-            .ToArrayAsync();
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.READ);
 
-        return responses;
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        return await ingredientService.ListTags(
+            TagDto.IngredientTagProjection, e =>
+                e.RestaurantId == restaurant_id &&
+                e.IngredientId == ingredient_id);
     }
 
     /// <summary>
@@ -237,23 +226,21 @@ public class IngredientController(
         Guid restaurant_id, short ingredient_id,
         IReadOnlyCollection<short> tag_ids)
     {
-        var ingredient = await ingredientService.GetIngredient(restaurant_id, ingredient_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.UPDATE);
 
-        if (ingredient is null)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        await ingredientService
-            .IngredientTagQuery(restaurant_id, ingredient_id)
-            .ExecuteDeleteAsync();
+        var tagKeys = tag_ids.Select(id =>
+            new TagKey(restaurant_id, id));
 
-        foreach (var id in tag_ids)
-        {
-            await ingredientService.AssignTag(ingredient, id);
-        }
+        var result = await ingredientService.SetTags(
+            new(restaurant_id, ingredient_id),
+            tagKeys);
 
-        await ingredientService.SaveChanges();
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -262,16 +249,21 @@ public class IngredientController(
     /// get specific tag
     /// </summary>
     [HttpGet("{ingredient_id}/tags/{tag_id}")]
-    public async Task<ActionResult<TagDto>> GetTagItem(Guid restaurant_id, short ingredient_id, short tag_id)
+    public async Task<ActionResult<TagDto>> GetTagItem(
+        Guid restaurant_id, short ingredient_id, short tag_id)
     {
-        var response = await ingredientService.GetIngredientTag(
-            restaurant_id, ingredient_id, tag_id,
-            TagDto.IngredientTagProjection);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.READ);
+
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var response = await ingredientService.GetTagItem(
+            TagDto.IngredientTagProjection,
+            new(restaurant_id, ingredient_id, tag_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -280,50 +272,52 @@ public class IngredientController(
     /// upsert specific tag
     /// </summary>
     [HttpPut("{ingredient_id}/tags/{tag_id}")]
-    public async Task<ActionResult<TagDto>> UpsertTagItem(Guid restaurant_id, short ingredient_id, short tag_id)
+    public async Task<ActionResult<TagDto>> UpsertTagItem(
+        Guid restaurant_id, short ingredient_id, short tag_id)
     {
-        var ingredientTag = await ingredientService.GetIngredientTag(restaurant_id, ingredient_id, tag_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.UPDATE);
 
-        if (ingredientTag is null)
-        {
-            var ingredient = await ingredientService.GetIngredient(restaurant_id, ingredient_id);
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-            if (ingredient is null)
-            {
-                return NotFound();
-            }
+        var result = await ingredientService.AssignTag(
+            TagDto.IngredientTagProjection,
+            new(restaurant_id, ingredient_id),
+            new(restaurant_id, tag_id));
 
-            ingredientTag = await ingredientService.AssignTag(ingredient, tag_id);
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
-            await ingredientService.SaveChanges();
+        if (result.Value is null)
+            return NoContent();
 
-            var response = await ingredientService.GetIngredientTag(
-                restaurant_id, ingredient_id, tag_id,
-                TagDto.IngredientTagProjection);
+        var (key, response) = result.Value.Value;
 
-            return CreatedAtAction(
-                nameof(GetTagItem),
-                new { restaurant_id, ingredient_id, tag_id },
-                response);
-        }
-
-        return NoContent();
+        return CreatedAtAction(
+            nameof(GetTagItem),
+            new { restaurant_id, ingredient_id, tag_id },
+            response);
     }
 
     /// <summary>
     /// remove specific tag
     /// </summary>
     [HttpDelete("{ingredient_id}/tags/{tag_id}")]
-    public async Task<ActionResult> DeleteTagItem(Guid restaurant_id, short ingredient_id, short tag_id)
+    public async Task<ActionResult> DeleteTagItem(
+        Guid restaurant_id, short ingredient_id, short tag_id)
     {
-        var affected = await ingredientService
-            .IngredientTagQuery(restaurant_id, ingredient_id, tag_id)
-            .ExecuteDeleteAsync();
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.UPDATE);
 
-        if (affected == 0)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var result = await ingredientService.DeleteTagItem(
+            new(restaurant_id, ingredient_id, tag_id));
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }

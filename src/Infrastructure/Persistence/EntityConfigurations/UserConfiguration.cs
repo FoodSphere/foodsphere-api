@@ -7,34 +7,34 @@ public class MasterConfiguration : IEntityTypeConfiguration<MasterUser>
     }
 }
 
-public class StaffConfiguration : IEntityTypeConfiguration<StaffUser>
+public class WorkerConfiguration : IEntityTypeConfiguration<WorkerUser>
 {
-    public void Configure(EntityTypeBuilder<StaffUser> builder)
+    public void Configure(EntityTypeBuilder<WorkerUser> builder)
     {
         builder.HasKey(e => new { e.RestaurantId, e.BranchId, e.Id });
 
         builder.HasOne(e => e.Branch)
-            .WithMany(e => e.Staffs)
+            .WithMany(e => e.Workers)
             .HasForeignKey(e => new { e.RestaurantId, e.BranchId })
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
 
-public class StaffRoleConfiguration : IEntityTypeConfiguration<StaffRole>
+public class WorkerRoleConfiguration : IEntityTypeConfiguration<WorkerRole>
 {
-    public void Configure(EntityTypeBuilder<StaffRole> builder)
+    public void Configure(EntityTypeBuilder<WorkerRole> builder)
     {
-        builder.HasKey(e => new { e.RestaurantId, e.BranchId, e.StaffId, e.RoleId });
+        builder.HasKey(e => new { e.RestaurantId, e.BranchId, e.WorkerId, e.RoleId });
 
-        builder.HasOne(e => e.Staff)
+        builder.HasOne(e => e.Worker)
             .WithMany(e => e.Roles)
-            .HasForeignKey(e => new { e.RestaurantId, e.BranchId, e.StaffId })
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(e => new { e.RestaurantId, e.BranchId, e.WorkerId })
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.Role)
             .WithMany()
             .HasForeignKey(e => new { e.RestaurantId, e.RoleId })
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 
@@ -43,5 +43,11 @@ public class ConsumerConfiguration : IEntityTypeConfiguration<ConsumerUser>
     public void Configure(EntityTypeBuilder<ConsumerUser> builder)
     {
         builder.HasKey(e => e.Id);
+
+        builder.HasIndex(e => e.Email)
+            .IsUnique();
+
+        builder.HasIndex(e => e.UserName)
+            .IsUnique();
     }
 }

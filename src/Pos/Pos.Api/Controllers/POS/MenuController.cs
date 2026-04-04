@@ -4,7 +4,7 @@ namespace FoodSphere.Pos.Api.Controller;
 public class MenuController(
     ILogger<MenuController> logger,
     AccessControlService accessControl,
-    MenuService menuService,
+    MenuServiceBase menuService,
     MenuImageService imageService
 ) : PosControllerBase
 {
@@ -12,59 +12,70 @@ public class MenuController(
     /// list menus
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<ICollection<MenuResponse>>> ListMenus(Guid restaurant_id)
+    public async Task<ActionResult<ICollection<MenuResponse>>> ListMenus(
+        Guid restaurant_id,
+        [FromQuery] IReadOnlyCollection<MenuStatus> status,
+        [FromQuery] bool? has_components = null,
+        [FromQuery] bool? is_deleted = false)
     {
-        var responses = await menuService.QueryMenus()
-            .Where(e => e.RestaurantId == restaurant_id)
-            .Select(MenuResponse.Projection)
-            .ToArrayAsync();
+        Expression<Func<Menu, bool>> predicate = e =>
+            e.RestaurantId == restaurant_id;
 
-        return responses;
+        if (status.Count > 0)
+            predicate = predicate.And(e => status.Contains(e.Status));
+
+        if (has_components is not null)
+            predicate = predicate.And(e => e.Components.Any() == has_components.Value);
+
+        if (is_deleted is not null)
+            predicate = predicate.And(e => e.DeleteTime != null == is_deleted.Value);
+
+        return await menuService.ListMenus(
+            MenuResponse.Projection, predicate);
     }
 
     /// <summary>
     /// create menu
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<MenuResponse>> CreateMenu(Guid restaurant_id, MenuRequest body)
+    public async Task<ActionResult<MenuResponse>> CreateMenu(
+        Guid restaurant_id, MenuRequest body)
     {
-        var hasPermission = await accessControl.Validate(
-            User, restaurant_id,
-            PERMISSION.Menu.CREATE
-        );
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.CREATE);
 
-        if (!hasPermission)
-        {
-            return Forbid();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var menu = await menuService.CreateMenu(
-            restaurantId: restaurant_id,
-            name: body.name,
-            price: body.price,
-            displayName: body.display_name,
-            description: body.description
-        );
+        var tagKeys = body.tags.Select(e =>
+            new TagKey(restaurant_id, e.tag_id));
 
-        foreach (var item in body.ingredients)
-        {
-            await menuService.AssignIngredient(menu, item.ingredient_id, item.amount);
-        }
+        var ingredients = body.ingredients.Select(e =>
+            (new IngredientKey(restaurant_id, e.ingredient_id), e.amount));
 
-        foreach (var tag in body.tags)
-        {
-            await menuService.CreateMenuTag(menu, tag.tag_id);
-        }
+        var components = body.components.Select(e =>
+            (new MenuKey(restaurant_id, e.menu_id), e.quantity));
 
-        await menuService.SaveChanges();
+        var createResult = await menuService.CreateMenu(
+            MenuResponse.Projection, new(
+                RestaurantKey: new(restaurant_id),
+                Name: body.name,
+                Price: body.price,
+                Tags: tagKeys,
+                Ingredients: ingredients,
+                Components: components,
+                DisplayName: body.display_name,
+                Description: body.description,
+                Status: body.status));
 
-        var response = await menuService.GetMenu(
-            restaurant_id, menu.Id,
-            MenuResponse.Projection);
+        if (createResult.IsFailed)
+            return createResult.Errors.ToActionResult();
+
+        var (key, response) = createResult.Value;
 
         return CreatedAtAction(
             nameof(GetMenu),
-            new { restaurant_id, menu_id = menu.Id },
+            new { restaurant_id, menu_id = key.Id },
             response);
     }
 
@@ -72,16 +83,15 @@ public class MenuController(
     /// get menu
     /// </summary>
     [HttpGet("{menu_id}")]
-    public async Task<ActionResult<MenuResponse>> GetMenu(Guid restaurant_id, short menu_id)
+    public async Task<ActionResult<MenuResponse>> GetMenu(
+        Guid restaurant_id, short menu_id)
     {
         var response = await menuService.GetMenu(
-            restaurant_id, menu_id,
-            MenuResponse.Projection);
+            MenuResponse.Projection,
+            new(restaurant_id, menu_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -90,47 +100,37 @@ public class MenuController(
     /// update menu
     /// </summary>
     [HttpPut("{menu_id}")]
-    public async Task<ActionResult> UpdateMenu(Guid restaurant_id, short menu_id, MenuRequest body)
+    public async Task<ActionResult> UpdateMenu(
+        Guid restaurant_id, short menu_id, MenuRequest body)
     {
-        var hasPermission = await accessControl.Validate(
-            User, restaurant_id,
-            PERMISSION.Menu.UPDATE
-        );
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (!hasPermission)
-        {
-            return Forbid();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var tagKeys = body.tags.Select(e =>
+            new TagKey(restaurant_id, e.tag_id));
 
-        if (menu is null)
-        {
-            return NotFound();
-        }
+        var ingredients = body.ingredients.Select(e =>
+            (new IngredientKey(restaurant_id, e.ingredient_id), e.amount));
 
-        menu.Name = body.name;
-        menu.Price = body.price;
-        menu.DisplayName = body.display_name;
-        menu.Description = body.description;
+        var components = body.components.Select(e =>
+            (new MenuKey(restaurant_id, e.menu_id), e.quantity));
 
-        await menuService.QueryMenuIngredients(restaurant_id, menu_id)
-            .ExecuteDeleteAsync();
+        var result = await menuService.UpdateMenu(
+            new(restaurant_id, menu_id), new(
+                Name: body.name,
+                Price: body.price,
+                Tags: tagKeys,
+                Ingredients: ingredients,
+                Components: components,
+                DisplayName: body.display_name,
+                Description: body.description,
+                Status: body.status));
 
-        await menuService.QueryMenuTags(restaurant_id, menu_id)
-            .ExecuteDeleteAsync();
-
-        foreach (var item in body.ingredients)
-        {
-            await menuService.AssignIngredient(menu, item.ingredient_id, item.amount);
-        }
-
-        foreach (var tag in body.tags)
-        {
-            await menuService.CreateMenuTag(menu, tag.tag_id);
-        }
-
-        await menuService.SaveChanges();
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -139,16 +139,20 @@ public class MenuController(
     /// delete menu
     /// </summary>
     [HttpDelete("{menu_id}")]
-    public async Task<ActionResult> DeleteMenu(Guid restaurant_id, short menu_id)
+    public async Task<ActionResult> DeleteMenu(
+        Guid restaurant_id, short menu_id)
     {
-        var affected = await menuService
-            .QuerySingleMenu(restaurant_id, menu_id)
-            .ExecuteDeleteAsync();
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (affected == 0)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var result = await menuService.DeleteMenu(
+            new(restaurant_id, menu_id));
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -157,28 +161,24 @@ public class MenuController(
     /// upload menu image
     /// </summary>
     [HttpPost("{menu_id}/image")]
-    public async Task<ActionResult<UploadImageResponse>> UploadImage(Guid restaurant_id, short menu_id, IFormFile file)
+    public async Task<ActionResult<UploadImageResponse>> UploadImage(
+        Guid restaurant_id, short menu_id, IFormFile file)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (menu is null)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        string? url;
+        ResultObject<string> uploadResult;
 
-        using var stream = file.OpenReadStream();
-        {
-            url = await imageService.UploadImage(menu, stream, file.ContentType);
-        }
+        using (var stream = file.OpenReadStream())
+            uploadResult = await imageService.UploadImage(
+                new(restaurant_id, menu_id),
+                stream, file.ContentType);
 
-        if (url is null)
-        {
-            return BadRequest("failed to upload image");
-        }
-
-        await menuService.SaveChanges();
+        if (!uploadResult.TryGetValue(out var url))
+            return uploadResult.Errors.ToActionResult();
 
         return new UploadImageResponse
         {
@@ -190,16 +190,20 @@ public class MenuController(
     /// generate menu image's upload url
     /// </summary>
     [HttpPost("{menu_id}/image/upload-url")]
-    public async Task<ActionResult<PresignUrlResponse>> GenerateImageUploadUrl(Guid restaurant_id, short menu_id)
+    public async Task<ActionResult<PresignUrlResponse>> GenerateImageUploadUrl(
+        Guid restaurant_id, short menu_id)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (menu is null)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var url = await imageService.GetImageUploadUrl(menu);
+        var result = await imageService.GetImageUploadUrl(
+            new(restaurant_id, menu_id));
+
+        if (!result.TryGetValue(out var url))
+            return result.Errors.ToActionResult();
 
         return new PresignUrlResponse
         {
@@ -211,14 +215,13 @@ public class MenuController(
     /// list menu's ingredients
     /// </summary>
     [HttpGet("{menu_id}/ingredients")]
-    public async Task<ActionResult<ICollection<IngredientItemDto>>> ListIngredients(Guid restaurant_id, short menu_id)
+    public async Task<ActionResult<ICollection<IngredientItemDto>>> ListIngredients(
+        Guid restaurant_id, short menu_id)
     {
-        var responses = await menuService
-            .QueryMenuIngredients(restaurant_id, menu_id)
-            .Select(IngredientItemDto.Projection)
-            .ToArrayAsync();
-
-        return responses;
+        return await menuService.ListMenuIngredients(
+            IngredientItemDto.Projection, e =>
+                e.RestaurantId == restaurant_id &&
+                e.MenuId == menu_id);
     }
 
     /// <summary>
@@ -229,23 +232,21 @@ public class MenuController(
         Guid restaurant_id, short menu_id,
         IReadOnlyCollection<IngredientItemDto> body)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (menu is null)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        await menuService
-            .QueryMenuIngredients(restaurant_id, menu_id)
-            .ExecuteDeleteAsync();
+        var ingredients = body.Select(e =>
+            (new IngredientKey(restaurant_id, e.ingredient_id), e.amount));
 
-        foreach (var item in body)
-        {
-            await menuService.AssignIngredient(menu, item.ingredient_id, item.amount);
-        }
+        var result = await menuService.SetIngredients(
+            new(restaurant_id, menu_id),
+            ingredients);
 
-        await menuService.SaveChanges();
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -258,13 +259,11 @@ public class MenuController(
         Guid restaurant_id, short menu_id, short ingredient_id)
     {
         var response = await menuService.GetMenuIngredient(
-            restaurant_id, menu_id, ingredient_id,
-            IngredientItemDto.Projection);
+            IngredientItemDto.Projection,
+            new(restaurant_id, menu_id, ingredient_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -274,57 +273,53 @@ public class MenuController(
     /// </summary>
     [HttpPut("{menu_id}/ingredients/{ingredient_id}")]
     public async Task<ActionResult<IngredientItemDto>> UpsertIngredientItem(
-        Guid restaurant_id,
-        short menu_id,
-        short ingredient_id,
+        Guid restaurant_id, short menu_id, short ingredient_id,
         IngredientItemRequest body)
     {
-        var menuIngredient = await menuService.GetMenuIngredient(restaurant_id, menu_id, ingredient_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (menuIngredient is null)
-        {
-            var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-            if (menu is null)
-            {
-                return NotFound();
-            }
+        var result = await menuService.SetMenuIngredient(
+            IngredientItemDto.Projection,
+            new(restaurant_id, menu_id),
+            new(restaurant_id, ingredient_id),
+            body.amount);
 
-            menuIngredient = await menuService.AssignIngredient(menu, ingredient_id, body.amount);
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
-            await menuService.SaveChanges();
+        if (result.Value is null)
+            return NoContent();
 
-            var response = await menuService.GetMenuIngredient(
-                restaurant_id, menu_id, ingredient_id,
-                IngredientItemDto.Projection);
+        var (_, response) = result.Value.Value;
 
-            return CreatedAtAction(
-                nameof(GetIngredientItem),
-                new { restaurant_id, menu_id, ingredient_id },
-                response);
-        }
-
-        menuIngredient.Amount = body.amount;
-
-        await menuService.SaveChanges();
-
-        return NoContent();
+        return CreatedAtAction(
+            nameof(GetIngredientItem),
+            new { restaurant_id, menu_id, ingredient_id },
+            response);
     }
 
     /// <summary>
     /// remove specific ingredient
     /// </summary>
     [HttpDelete("{menu_id}/ingredients/{ingredient_id}")]
-    public async Task<ActionResult> DeleteIngredientItem(Guid restaurant_id, short menu_id, short ingredient_id)
+    public async Task<ActionResult> DeleteIngredientItem(
+        Guid restaurant_id, short menu_id, short ingredient_id)
     {
-        var affected = await menuService
-            .QuerySingleMenuIngredient(restaurant_id, menu_id, ingredient_id)
-            .ExecuteDeleteAsync();
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (affected == 0)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var result = await menuService.DeleteMenuIngredient(
+            new(restaurant_id, menu_id, ingredient_id));
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -333,39 +328,37 @@ public class MenuController(
     /// list menu's tags
     /// </summary>
     [HttpGet("{menu_id}/tags")]
-    public async Task<ActionResult<ICollection<TagDto>>> ListTags(Guid restaurant_id, short menu_id)
+    public async Task<ActionResult<ICollection<TagDto>>> ListTags(
+        Guid restaurant_id, short menu_id)
     {
-        var responses = await menuService
-            .QueryMenuTags(restaurant_id, menu_id)
-            .Select(TagDto.MenuTagProjection)
-            .ToArrayAsync();
-
-        return responses;
+        return await menuService.ListTags(
+            TagDto.MenuTagProjection, e =>
+                e.RestaurantId == restaurant_id &&
+                e.MenuId == menu_id);
     }
 
     /// <summary>
     /// update menu's tags
     /// </summary>
     [HttpPut("{menu_id}/tags")]
-    public async Task<ActionResult> UpdateTags(Guid restaurant_id, short menu_id, IReadOnlyCollection<short> tag_ids)
+    public async Task<ActionResult> UpdateTags(
+        Guid restaurant_id, short menu_id, IReadOnlyCollection<short> tag_ids)
     {
-        var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (menu is null)
-        {
-            return NotFound();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        await menuService
-            .QueryMenuTags(restaurant_id, menu_id)
-            .ExecuteDeleteAsync();
+        var tagKeys = tag_ids.Select(id =>
+            new TagKey(restaurant_id, id));
 
-        foreach (var id in tag_ids)
-        {
-            await menuService.CreateMenuTag(menu, id);
-        }
+        var result = await menuService.SetTags(
+            new(restaurant_id, menu_id),
+            tagKeys);
 
-        await menuService.SaveChanges();
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -374,16 +367,15 @@ public class MenuController(
     /// get specific tag
     /// </summary>
     [HttpGet("{menu_id}/tags/{tag_id}")]
-    public async Task<ActionResult<TagDto>> GetTagItem(Guid restaurant_id, short menu_id, short tag_id)
+    public async Task<ActionResult<TagDto>> GetTagItem(
+        Guid restaurant_id, short menu_id, short tag_id)
     {
-        var response = await menuService.GetMenuTag(
-            restaurant_id, menu_id, tag_id,
-            TagDto.MenuTagProjection);
+        var response = await menuService.GetTagItem(
+            TagDto.MenuTagProjection,
+            new(restaurant_id, menu_id, tag_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -392,50 +384,165 @@ public class MenuController(
     /// upsert specific tag
     /// </summary>
     [HttpPut("{menu_id}/tags/{tag_id}")]
-    public async Task<ActionResult<TagDto>> UpsertTagItem(Guid restaurant_id, short menu_id, short tag_id)
+    public async Task<ActionResult<TagDto>> UpsertTagItem(
+        Guid restaurant_id, short menu_id, short tag_id)
     {
-        var menuTag = await menuService.GetMenuTag(restaurant_id, menu_id, tag_id);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (menuTag is null)
-        {
-            var menu = await menuService.GetMenu(restaurant_id, menu_id);
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-            if (menu is null)
-            {
-                return NotFound();
-            }
+        var result = await menuService.AssignTag(
+            TagDto.MenuTagProjection,
+            new(restaurant_id, menu_id),
+            new(restaurant_id, tag_id));
 
-            menuTag = await menuService.CreateMenuTag(menu, tag_id);
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
-            await menuService.SaveChanges();
+        if (result.Value is null)
+            return NoContent();
 
-            var response = await menuService.GetMenuTag(
-                restaurant_id, menu_id, tag_id,
-                TagDto.MenuTagProjection);
+        var (key, response) = result.Value.Value;
 
-            return CreatedAtAction(
-                nameof(GetTagItem),
-                new { restaurant_id, menu_id, tag_id },
-                response);
-        }
-
-        return NoContent();
+        return CreatedAtAction(
+            nameof(GetTagItem),
+            new { restaurant_id, menu_id, tag_id },
+            response);
     }
 
     /// <summary>
     /// remove specific tag
     /// </summary>
     [HttpDelete("{menu_id}/tags/{tag_id}")]
-    public async Task<ActionResult> DeleteTagItem(Guid restaurant_id, short menu_id, short tag_id)
+    public async Task<ActionResult> DeleteTagItem(
+        Guid restaurant_id, short menu_id, short tag_id)
     {
-        var affected = await menuService
-            .QuerySingleMenuTag(restaurant_id, menu_id, tag_id)
-            .ExecuteDeleteAsync();
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
 
-        if (affected == 0)
-        {
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var result = await menuService.DeleteTagItem(
+            new(restaurant_id, menu_id, tag_id));
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// list menu's components
+    /// </summary>
+    [HttpGet("{menu_id}/components")]
+    public async Task<ActionResult<ICollection<MenuComponentItemResponse>>> ListComponents(
+        Guid restaurant_id, short menu_id)
+    {
+        return await menuService.ListMenuComponents(
+            MenuComponentItemResponse.Projection, e =>
+                e.RestaurantId == restaurant_id &&
+                e.ParentMenuId == menu_id);
+    }
+
+    /// <summary>
+    /// update menu's components
+    /// </summary>
+    [HttpPut("{menu_id}/components")]
+    public async Task<ActionResult> UpdateComponents(
+        Guid restaurant_id, short menu_id,
+        IReadOnlyCollection<MenuComponentItemResponse> body)
+    {
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
+
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var components = body.Select(e =>
+            (new MenuKey(restaurant_id, e.menu_id), e.quantity));
+
+        var result = await menuService.SetComponents(
+            new(restaurant_id, menu_id),
+            components);
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// get specific component
+    /// </summary>
+    [HttpGet("{menu_id}/components/{child_id}")]
+    public async Task<ActionResult<MenuComponentItemResponse>> GetComponentItem(
+        Guid restaurant_id, short menu_id, short child_id)
+    {
+        var response = await menuService.GetMenuComponent(
+            MenuComponentItemResponse.Projection,
+            new(restaurant_id, menu_id, child_id));
+
+        if (response is null)
             return NotFound();
-        }
+
+        return response;
+    }
+
+    /// <summary>
+    /// upsert specific component
+    /// </summary>
+    [HttpPut("{menu_id}/components/{child_id}")]
+    public async Task<ActionResult<IngredientItemDto>> UpsertComponentItem(
+        Guid restaurant_id, short menu_id, short child_id,
+        MenuComponentItemResponse body)
+    {
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
+
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var result = await menuService.SetMenuComponent(
+            MenuComponentItemResponse.Projection,
+            new(restaurant_id, menu_id),
+            new(restaurant_id, child_id),
+            body.quantity);
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
+
+        if (result.Value is null)
+            return NoContent();
+
+        var (_, response) = result.Value.Value;
+
+        return CreatedAtAction(
+            nameof(GetComponentItem),
+            new { restaurant_id, menu_id, child_id },
+            response);
+    }
+
+    /// <summary>
+    /// remove specific component
+    /// </summary>
+    [HttpDelete("{menu_id}/components/{child_id}")]
+    public async Task<ActionResult> DeleteComponentItem(
+        Guid restaurant_id, short menu_id, short child_id)
+    {
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Menu.UPDATE);
+
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var result = await menuService.DeleteMenuComponent(
+            new(restaurant_id, menu_id, child_id));
+
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }

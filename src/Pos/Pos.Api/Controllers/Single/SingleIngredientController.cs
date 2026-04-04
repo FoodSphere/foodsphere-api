@@ -4,35 +4,35 @@ namespace FoodSphere.Pos.Api.Controller;
 public class SingleIngredientController(
     ILogger<SingleIngredientController> logger,
     AccessControlService accessControl,
-    IngredientService ingredientService,
-    BranchService branchService
+    PersistenceService persistenceService,
+    IngredientServiceBase ingredientService,
+    StockServiceBase stockService
 ) : PosControllerBase
 {
     /// <summary>
     /// list ingredients
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<SingleIngredientResponse[]>> ListIngredients(Guid restaurant_id)
+    public async Task<ActionResult<ICollection<SingleIngredientResponse>>> ListIngredients(
+        Guid restaurant_id,
+        [FromQuery] bool? is_deleted = false)
     {
-        var hasPermission = await accessControl.Validate(
-            User, restaurant_id,
-            PERMISSION.Ingredient.READ
-        );
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.READ, PERMISSION.Stock.READ);
 
-        if (!hasPermission)
-        {
-            return Forbid();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var responses = await branchService
-            .QueryStocks()
-            .Where(e =>
-                e.RestaurantId == restaurant_id &&
-                e.BranchId == 1)
-            .Select(SingleIngredientResponse.Projection)
-            .ToArrayAsync();
+        Expression<Func<StockTransaction, bool>> predicate = e =>
+            e.RestaurantId == restaurant_id &&
+            e.BranchId == 1;
 
-        return responses;
+        if (is_deleted is not null)
+            predicate = predicate.And(e =>
+                e.Ingredient.DeleteTime != null == is_deleted.Value);
+
+        return await stockService.ListLatestTransactionOfIngredients(
+            SingleIngredientResponse.Projection, predicate);
     }
 
     /// <summary>
@@ -42,46 +42,48 @@ public class SingleIngredientController(
     public async Task<ActionResult<SingleIngredientResponse>> CreateIngredient(
         Guid restaurant_id, SingleIngredientRequest body)
     {
-        var hasPermission = await accessControl.Validate(
-            User, restaurant_id,
-            PERMISSION.Ingredient.CREATE
-        );
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.CREATE, PERMISSION.Stock.CREATE);
 
-        if (!hasPermission)
-        {
-            return Forbid();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var branch = await branchService.GetBranch(restaurant_id, 1);
+        var tagKeys = body.tags.Select(e =>
+            new TagKey(restaurant_id, e.tag_id));
 
-        if (branch is null)
-        {
-            return NotFound();
-        }
+        await using var transaction = await persistenceService.BeginTransaction();
 
-        var ingredient = await ingredientService.CreateIngredient(
-            restaurantId: restaurant_id,
-            name: body.name,
-            unit: body.unit,
-            description: body.description
-        );
+        var ingredientResult = await ingredientService.CreateIngredient(
+            e => true, new(
+                RestaurantKey: new(restaurant_id),
+                Name: body.name,
+                Tags: tagKeys,
+                Unit: body.unit,
+                Description: body.description,
+                Status: body.status));
 
-        foreach (var tag in body.tags)
-        {
-            await ingredientService.AssignTag(ingredient, tag.tag_id);
-        }
+        if (ingredientResult.IsFailed)
+            return ingredientResult.Errors.ToActionResult();
 
-        var stock = await branchService.SetStock(branch, ingredient.Id, body.stock);
+        var (ingredientKey, _) = ingredientResult.Value;
 
-        await branchService.SaveChanges();
+        var stockResult = await stockService.CreateTransaction(
+            SingleIngredientResponse.Projection, new(
+                new(restaurant_id, 1),
+                ingredientKey,
+                body.stock,
+                "initial stock"));
 
-        var response = await branchService.GetStock(
-            restaurant_id, 1, ingredient.Id,
-            SingleIngredientResponse.Projection);
+        if (stockResult.IsFailed)
+            return stockResult.Errors.ToActionResult();
+
+        await transaction.CommitAsync();
+
+        var (_, response) = stockResult.Value;
 
         return CreatedAtAction(
             nameof(GetIngredient),
-            new { restaurant_id, ingredient_id = ingredient.Id },
+            new { restaurant_id, ingredient_id = ingredientKey.Id },
             response);
     }
 
@@ -89,16 +91,21 @@ public class SingleIngredientController(
     /// get ingredient
     /// </summary>
     [HttpGet("{ingredient_id}")]
-    public async Task<ActionResult<SingleIngredientResponse>> GetIngredient(Guid restaurant_id, short ingredient_id)
+    public async Task<ActionResult<SingleIngredientResponse>> GetIngredient(
+        Guid restaurant_id, short ingredient_id)
     {
-        var response = await branchService.GetStock(
-            restaurant_id, 1, ingredient_id,
-            SingleIngredientResponse.Projection);
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.READ, PERMISSION.Stock.READ);
+
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
+
+        var response = await stockService.GetIngredientLatestTransaction(
+            SingleIngredientResponse.Projection,
+            new(restaurant_id, 1), new(restaurant_id, ingredient_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -108,41 +115,43 @@ public class SingleIngredientController(
     /// </summary>
     [HttpPut("{ingredient_id}")]
     public async Task<ActionResult> UpdateIngredient(
-        Guid restaurant_id, short ingredient_id,
-        SingleIngredientRequest body)
+        Guid restaurant_id, short ingredient_id, SingleIngredientRequest body)
     {
-        var hasPermission = await accessControl.Validate(
-            User, restaurant_id,
-            PERMISSION.Ingredient.UPDATE
-        );
+        var authorizeResult = await accessControl.Authorize(HttpContext,
+            PERMISSION.Ingredient.UPDATE, PERMISSION.Stock.CREATE);
 
-        if (!hasPermission)
-        {
-            return Forbid();
-        }
+        if (authorizeResult.IsFailed)
+            return authorizeResult.Errors.ToActionResult();
 
-        var stock = await branchService.GetStock(restaurant_id, 1, ingredient_id);
+        var tagKeys = body.tags.Select(e =>
+            new TagKey(restaurant_id, e.tag_id));
 
-        if (stock is null)
-        {
-            return NotFound();
-        }
+        await using var transaction = await persistenceService.BeginTransaction();
 
-        stock.Ingredient.Name = body.name;
-        stock.Ingredient.Description = body.description;
-        stock.Ingredient.Unit = body.unit;
-        stock.Amount = body.stock;
+        var ingredientKey = new IngredientKey(restaurant_id, ingredient_id);
 
-        await ingredientService
-            .IngredientTagQuery(restaurant_id, ingredient_id)
-            .ExecuteDeleteAsync();
+        var ingredientResult = await ingredientService.UpdateIngredient(
+            ingredientKey, new(
+                Name: body.name,
+                Tags: tagKeys,
+                Unit: body.unit,
+                Description: body.description,
+                Status: body.status));
 
-        foreach (var tag in body.tags)
-        {
-            await ingredientService.AssignTag(stock.Ingredient, tag.tag_id);
-        }
+        if (ingredientResult.IsFailed)
+            return ingredientResult.Errors.ToActionResult();
 
-        await branchService.SaveChanges();
+        var stockResult = await stockService.RebalanceTransaction(
+            SingleIngredientResponse.Projection, new(
+                new(restaurant_id, 1),
+                ingredientKey,
+                body.stock,
+                "rebalance via ingredient's stock update"));
+
+        if (stockResult.IsFailed)
+            return stockResult.Errors.ToActionResult();
+
+        await transaction.CommitAsync();
 
         return NoContent();
     }

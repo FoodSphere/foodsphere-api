@@ -178,7 +178,7 @@ public class StatefulMagicLinkService(FoodSphereDbContext context) : IMagicLinkS
 
     public async Task<MagicLinkResult<TPayload>> Validate<TPayload>(string orderingString) where TPayload : class
     {
-        var entity = await context.Set<TPayload>().FindAsync(orderingString);
+        var entity = await context.FindAsync<TPayload>(orderingString);
 
         if (entity is null)
         {

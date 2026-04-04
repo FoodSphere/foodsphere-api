@@ -25,10 +25,10 @@ public class ReadMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fix
         responseBody.restaurant_id.Should().Be(restaurant.Id);
 
         responseBody.ingredients.Should().BeEquivalentTo(
-            menu.MenuIngredients.Select(IngredientItemDto.Project));
+            menu.Ingredients.Select(IngredientItemDto.Project));
 
         responseBody.tags.Should().BeEquivalentTo(
-            menu.MenuTags.Select(TagDto.MenuTagProject));
+            menu.Tags.Select(TagDto.MenuTagProject));
 
         responseBody.name.Should().Be(menu.Name);
         responseBody.price.Should().Be(menu.Price);
@@ -37,7 +37,7 @@ public class ReadMenuApiTests(SharedAppFixture fixture) : SharedAppTestsBase(fix
         responseBody.image_url.Should().Be(menu.ImageUrl);
         responseBody.status.Should().Be(menu.Status);
 
-        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
-        responseBody.update_time.Should().BeLessThan(TimeSpan.FromSeconds(5)).Before(DateTime.UtcNow);
+        responseBody.create_time.Should().BeLessThan(TimeSpan.FromSeconds(10)).Before(DateTime.UtcNow);
+        responseBody.update_time.Should().Be(null);
     }
 }

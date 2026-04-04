@@ -7,8 +7,8 @@ public enum UserType
 {
     Admin,
     Master,
+    Worker,
     Consumer,
-    Staff,
 }
 
 public static class FoodSphereClaimType
@@ -18,6 +18,7 @@ public static class FoodSphereClaimType
     public const string BillMemberClaimType = "bill_member_id";
     public const string RestaurantClaimType = "restaurant_id";
     public const string BranchClaimType = "branch_id";
+    public const string PermissionsClaimType = "permissions";
 
     public static readonly ClaimsIdentityOptions Identity = new()
     {

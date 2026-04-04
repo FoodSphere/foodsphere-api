@@ -17,7 +17,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -32,6 +32,9 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .HasColumnType("smallint");
 
                     b.Property<Guid?>("ConsumerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ConsumerUserId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreateTime")
@@ -52,12 +55,14 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<short>("TableId")
                         .HasColumnType("smallint");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ConsumerId");
+
+                    b.HasIndex("ConsumerUserId");
 
                     b.HasIndex("RestaurantId", "BranchId", "IssuerId");
 
@@ -83,12 +88,15 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("BillId", "Id");
 
                     b.HasIndex("ConsumerId");
+
+                    b.HasIndex("BillId", "ConsumerId")
+                        .IsUnique();
 
                     b.ToTable("BillMember");
                 });
@@ -107,10 +115,10 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<TimeOnly?>("ClosingTime")
                         .HasColumnType("time without time zone");
 
-                    b.Property<Guid?>("ContactId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeleteTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DisplayName")
@@ -123,17 +131,15 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<TimeOnly?>("OpeningTime")
                         .HasColumnType("time without time zone");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "Id");
 
-                    b.HasIndex("ContactId");
-
                     b.ToTable("Branch");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManager", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchStaff", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -147,17 +153,24 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "BranchId", "MasterId");
 
                     b.HasIndex("MasterId");
 
-                    b.ToTable("BranchManager");
+                    b.ToTable("BranchStaff");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManagerRole", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchStaffRole", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -165,7 +178,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<short>("BranchId")
                         .HasColumnType("smallint");
 
-                    b.Property<string>("ManagerId")
+                    b.Property<string>("MasterId")
                         .HasColumnType("text");
 
                     b.Property<short>("RoleId")
@@ -174,14 +187,14 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("RestaurantId", "BranchId", "ManagerId", "RoleId");
+                    b.HasKey("RestaurantId", "BranchId", "MasterId", "RoleId");
 
                     b.HasIndex("RestaurantId", "RoleId");
 
-                    b.ToTable("BranchManagerRole");
+                    b.ToTable("BranchStaffRole");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.ConsumerUser", b =>
@@ -193,55 +206,39 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Phone")
+                    b.Property<string>("PhoneNumber")
                         .HasColumnType("text");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
                     b.ToTable("ConsumerUser");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.Contact", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Contact");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Coupon", b =>
@@ -249,31 +246,41 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Code")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("EndDateTime")
+                    b.Property<DateTime?>("DeleteTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("FixedDiscount")
+                    b.Property<DateTime?>("EndDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("FixedDiscount")
                         .HasColumnType("integer");
 
-                    b.Property<int>("MaxUsage")
+                    b.Property<int?>("MaxUsage")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("PercentageDiscount")
+                    b.Property<decimal?>("PercentageDiscount")
                         .HasColumnType("numeric(7,4)");
 
                     b.Property<DateTime>("StartDateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("RestaurantId", "Code");
+                    b.HasKey("RestaurantId", "Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
 
                     b.ToTable("Coupon");
                 });
@@ -287,6 +294,9 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .HasColumnType("smallint");
 
                     b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeleteTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -305,36 +315,12 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<string>("Unit")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "Id");
 
                     b.ToTable("Ingredient");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.IngredientTag", b =>
-                {
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<short>("IngredientId")
-                        .HasColumnType("smallint");
-
-                    b.Property<short>("TagId")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("RestaurantId", "IngredientId", "TagId");
-
-                    b.HasIndex("RestaurantId", "TagId");
-
-                    b.ToTable("IngredientTag");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.MasterUser", b =>
@@ -412,6 +398,9 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -431,7 +420,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "Id");
@@ -456,7 +445,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<short>("Quantity")
                         .HasColumnType("smallint");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "ParentMenuId", "ChildMenuId");
@@ -483,7 +472,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "MenuId", "IngredientId");
@@ -491,30 +480,6 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.HasIndex("RestaurantId", "IngredientId");
 
                     b.ToTable("MenuIngredient");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.MenuTag", b =>
-                {
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<short>("MenuId")
-                        .HasColumnType("smallint");
-
-                    b.Property<short>("TagId")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("RestaurantId", "MenuId", "TagId");
-
-                    b.HasIndex("RestaurantId", "TagId");
-
-                    b.ToTable("MenuTag");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Order", b =>
@@ -534,6 +499,9 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<short?>("IssuerId")
                         .HasColumnType("smallint");
 
@@ -543,7 +511,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("BillId", "Id");
@@ -569,8 +537,15 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<short>("MenuId")
                         .HasColumnType("smallint");
+
+                    b.Property<string>("NameSnapshot")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Note")
                         .HasColumnType("text");
@@ -584,7 +559,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("BillId", "OrderId", "Id");
@@ -592,6 +567,71 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.HasIndex("RestaurantId", "MenuId");
 
                     b.ToTable("OrderItem");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.OrderingPortal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BillId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<short?>("MaxUsage")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime?>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<short>("UsageCount")
+                        .HasColumnType("smallint");
+
+                    b.Property<TimeSpan?>("ValidDuration")
+                        .HasColumnType("interval");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillId");
+
+                    b.ToTable("OrderingPortal");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.Payment", b =>
+                {
+                    b.Property<Guid>("BillId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("BillId", "Id");
+
+                    b.ToTable("Payment");
+
+                    b.HasDiscriminator<string>("PaymentMethod").HasValue("Payment");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Permission", b =>
@@ -602,6 +642,12 @@ namespace FoodSphere.Npgsql.Helper.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -609,119 +655,159 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Permission");
 
                     b.HasData(
                         new
                         {
+                            Id = 1,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "page.order"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "page.table"
+                        },
+                        new
+                        {
                             Id = 2000,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "ingredient.create"
                         },
                         new
                         {
                             Id = 2010,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "ingredient.read"
                         },
                         new
                         {
                             Id = 2020,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "ingredient.update"
                         },
                         new
                         {
                             Id = 3000,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "menu.create"
                         },
                         new
                         {
                             Id = 3010,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "menu.update"
                         },
                         new
                         {
                             Id = 5000,
-                            Name = "stock.read"
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "stock-transaction.read"
                         },
                         new
                         {
                             Id = 5010,
-                            Name = "stock.update"
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "stock-transaction.create"
                         },
                         new
                         {
                             Id = 6000,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "table.create"
                         },
                         new
                         {
                             Id = 6010,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "table.update"
                         },
                         new
                         {
                             Id = 7000,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "order.create"
                         },
                         new
                         {
                             Id = 7010,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "order.get"
                         },
                         new
                         {
                             Id = 7020,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "order.list"
                         },
                         new
                         {
                             Id = 7030,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "order.update"
                         },
                         new
                         {
                             Id = 8000,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "dashboard.read"
                         },
                         new
                         {
                             Id = 9000,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "role.create"
                         },
                         new
                         {
                             Id = 9010,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "role.read"
                         },
                         new
                         {
                             Id = 9020,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "role.update"
                         },
                         new
                         {
                             Id = 9030,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "role.delete"
                         },
                         new
                         {
                             Id = 1000,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "restaurant.setting.read"
                         },
                         new
                         {
                             Id = 1010,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "restaurant.setting.update"
                         },
                         new
                         {
                             Id = 4000,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "branch.setting.read"
                         },
                         new
                         {
                             Id = 4010,
+                            CreateTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "branch.setting.update"
                         });
                 });
@@ -734,7 +820,11 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<short>("BranchId")
                         .HasColumnType("smallint");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid?>("ConsumerId")
@@ -746,7 +836,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<short?>("Pax")
                         .HasColumnType("smallint");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "BranchId", "Id");
@@ -762,13 +852,16 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ContactId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("DisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -779,19 +872,20 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<string>("StripeAccountId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ContactId");
 
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Restaurant");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManager", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantStaff", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
@@ -802,22 +896,29 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "MasterId");
 
                     b.HasIndex("MasterId");
 
-                    b.ToTable("RestaurantManager");
+                    b.ToTable("RestaurantStaff");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManagerRole", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantStaffRole", b =>
                 {
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ManagerId")
+                    b.Property<string>("MasterId")
                         .HasColumnType("text");
 
                     b.Property<short>("RoleId")
@@ -826,14 +927,14 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("RestaurantId", "ManagerId", "RoleId");
+                    b.HasKey("RestaurantId", "MasterId", "RoleId");
 
                     b.HasIndex("RestaurantId", "RoleId");
 
-                    b.ToTable("RestaurantManagerRole");
+                    b.ToTable("RestaurantStaffRole");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Role", b =>
@@ -854,10 +955,13 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "Id");
+
+                    b.HasIndex("RestaurantId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Role");
                 });
@@ -876,7 +980,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "RoleId", "PermissionId");
@@ -886,161 +990,74 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.ToTable("RolePermission");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.SelfOrderingPortal", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.ServiceRequest", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("BillId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<short?>("MaxUsage")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<short>("UsageCount")
-                        .HasColumnType("smallint");
-
-                    b.Property<TimeSpan?>("ValidDuration")
-                        .HasColumnType("interval");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BillId");
-
-                    b.ToTable("SelfOrderingPortal");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.StaffPortal", b =>
-                {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<short>("BranchId")
-                        .HasColumnType("smallint");
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<short?>("MaxUsage")
-                        .HasColumnType("smallint");
-
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<short>("StaffId")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<short>("UsageCount")
-                        .HasColumnType("smallint");
-
-                    b.Property<TimeSpan?>("ValidDuration")
-                        .HasColumnType("interval");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RestaurantId", "BranchId", "StaffId");
-
-                    b.ToTable("StaffPortal");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.StaffRole", b =>
-                {
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<short>("BranchId")
-                        .HasColumnType("smallint");
-
-                    b.Property<short>("StaffId")
-                        .HasColumnType("smallint");
-
-                    b.Property<short>("RoleId")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("RestaurantId", "BranchId", "StaffId", "RoleId");
-
-                    b.HasIndex("RestaurantId", "RoleId");
-
-                    b.ToTable("StaffRole");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.StaffUser", b =>
-                {
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<short>("BranchId")
-                        .HasColumnType("smallint");
-
-                    b.Property<short>("Id")
-                        .HasColumnType("smallint");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Position")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("RestaurantId", "BranchId", "Id");
-
-                    b.ToTable("StaffUser");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.Stock", b =>
-                {
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<short>("BranchId")
-                        .HasColumnType("smallint");
-
-                    b.Property<short>("IngredientId")
-                        .HasColumnType("smallint");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric(10,4)");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("RestaurantId", "BranchId", "IngredientId");
+                    b.HasKey("BillId", "Id");
+
+                    b.ToTable("ServiceRequest");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.StockTransaction", b =>
+                {
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("BranchId")
+                        .HasColumnType("smallint");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric(10,4)");
+
+                    b.Property<decimal>("BalanceAfter")
+                        .HasColumnType("numeric(10,4)");
+
+                    b.Property<Guid?>("BillId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<short>("IngredientId")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<short?>("OrderId")
+                        .HasColumnType("smallint");
+
+                    b.Property<short?>("OrderItemId")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("RestaurantId", "BranchId", "Id");
 
                     b.HasIndex("RestaurantId", "IngredientId");
 
-                    b.ToTable("Stock");
+                    b.HasIndex("BillId", "OrderId", "OrderItemId");
+
+                    b.ToTable("StockTransaction");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Table", b =>
@@ -1057,13 +1074,16 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "BranchId", "Id");
@@ -1086,12 +1106,334 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("RestaurantId", "Id");
 
+                    b.HasIndex("RestaurantId", "Name")
+                        .IsUnique();
+
                     b.ToTable("Tag");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.TagIngredient", b =>
+                {
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("IngredientId")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("TagId")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RestaurantId", "IngredientId", "TagId");
+
+                    b.HasIndex("RestaurantId", "TagId");
+
+                    b.ToTable("TagIngredient");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.TagMenu", b =>
+                {
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("MenuId")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("TagId")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RestaurantId", "MenuId", "TagId");
+
+                    b.HasIndex("RestaurantId", "TagId");
+
+                    b.ToTable("TagMenu");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.WorkerPortal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("BranchId")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<short?>("MaxUsage")
+                        .HasColumnType("smallint");
+
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<short>("UsageCount")
+                        .HasColumnType("smallint");
+
+                    b.Property<TimeSpan?>("ValidDuration")
+                        .HasColumnType("interval");
+
+                    b.Property<short>("WorkerId")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RestaurantId", "BranchId", "WorkerId");
+
+                    b.ToTable("WorkerPortal");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.WorkerRole", b =>
+                {
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("BranchId")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("WorkerId")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("RoleId")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RestaurantId", "BranchId", "WorkerId", "RoleId");
+
+                    b.HasIndex("RestaurantId", "RoleId");
+
+                    b.ToTable("WorkerRole");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.WorkerUser", b =>
+                {
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("BranchId")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeleteTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Position")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("RestaurantId", "BranchId", "Id");
+
+                    b.ToTable("WorkerUser");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("Consumed")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ConsumerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("Delivered")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpirationTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("LastSequenceNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("LockId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ReceiveCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Received")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Delivered");
+
+                    b.ToTable("InboxState");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
+                {
+                    b.Property<long>("SequenceNumber")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("SequenceNumber"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("ConversationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CorrelationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DestinationAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("EnqueueTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpirationTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FaultAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Headers")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("InboxConsumerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("InboxMessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("InitiatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("OutboxId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Properties")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ResponseAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime>("SentTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SourceAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("SequenceNumber");
+
+                    b.HasIndex("EnqueueTime");
+
+                    b.HasIndex("ExpirationTime");
+
+                    b.HasIndex("OutboxId", "SequenceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("InboxMessageId", "InboxConsumerId", "SequenceNumber")
+                        .IsUnique();
+
+                    b.ToTable("OutboxMessage");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxState", b =>
+                {
+                    b.Property<Guid>("OutboxId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("Delivered")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("LastSequenceNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("LockId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("OutboxId");
+
+                    b.HasIndex("Created");
+
+                    b.ToTable("OutboxState");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -1226,13 +1568,36 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("FoodSphere.Common.Entity.CashPayment", b =>
+                {
+                    b.HasBaseType("FoodSphere.Common.Entity.Payment");
+
+                    b.HasDiscriminator().HasValue("cash");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.StripePayment", b =>
+                {
+                    b.HasBaseType("FoodSphere.Common.Entity.Payment");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue("stripe");
+                });
+
             modelBuilder.Entity("FoodSphere.Common.Entity.Bill", b =>
                 {
                     b.HasOne("FoodSphere.Common.Entity.ConsumerUser", "Consumer")
-                        .WithMany("Bills")
-                        .HasForeignKey("ConsumerId");
+                        .WithMany()
+                        .HasForeignKey("ConsumerId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("FoodSphere.Common.Entity.StaffUser", null)
+                    b.HasOne("FoodSphere.Common.Entity.ConsumerUser", null)
+                        .WithMany("Bills")
+                        .HasForeignKey("ConsumerUserId");
+
+                    b.HasOne("FoodSphere.Common.Entity.WorkerUser", "Issuer")
                         .WithMany()
                         .HasForeignKey("RestaurantId", "BranchId", "IssuerId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1245,6 +1610,8 @@ namespace FoodSphere.Npgsql.Helper.Migrations
 
                     b.Navigation("Consumer");
 
+                    b.Navigation("Issuer");
+
                     b.Navigation("Table");
                 });
 
@@ -1253,12 +1620,13 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.HasOne("FoodSphere.Common.Entity.Bill", "Bill")
                         .WithMany("Members")
                         .HasForeignKey("BillId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("FoodSphere.Common.Entity.ConsumerUser", "Consumer")
                         .WithMany()
-                        .HasForeignKey("ConsumerId");
+                        .HasForeignKey("ConsumerId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Bill");
 
@@ -1267,22 +1635,44 @@ namespace FoodSphere.Npgsql.Helper.Migrations
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Branch", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entity.Contact", "Contact")
-                        .WithMany()
-                        .HasForeignKey("ContactId");
-
                     b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
                         .WithMany("Branches")
                         .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Contact");
+                    b.OwnsOne("FoodSphere.Common.Entity.Contact", "Contact", b1 =>
+                        {
+                            b1.Property<Guid>("BranchRestaurantId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<short>("BranchId")
+                                .HasColumnType("smallint");
+
+                            b1.Property<string>("Email")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Phone")
+                                .HasColumnType("text");
+
+                            b1.HasKey("BranchRestaurantId", "BranchId");
+
+                            b1.ToTable("Branch");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BranchRestaurantId", "BranchId");
+                        });
+
+                    b.Navigation("Contact")
+                        .IsRequired();
 
                     b.Navigation("Restaurant");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManager", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchStaff", b =>
                 {
                     b.HasOne("FoodSphere.Common.Entity.MasterUser", "Master")
                         .WithMany("ManagedBranches")
@@ -1291,7 +1681,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .IsRequired();
 
                     b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
-                        .WithMany("BranchManagers")
+                        .WithMany("BranchStaffs")
                         .HasForeignKey("RestaurantId", "BranchId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1301,7 +1691,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Navigation("Master");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManagerRole", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchStaffRole", b =>
                 {
                     b.HasOne("FoodSphere.Common.Entity.Role", "Role")
                         .WithMany()
@@ -1309,45 +1699,26 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FoodSphere.Common.Entity.BranchManager", "Manager")
+                    b.HasOne("FoodSphere.Common.Entity.BranchStaff", "Staff")
                         .WithMany("Roles")
-                        .HasForeignKey("RestaurantId", "BranchId", "ManagerId")
+                        .HasForeignKey("RestaurantId", "BranchId", "MasterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Manager");
-
                     b.Navigation("Role");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Ingredient", b =>
                 {
                     b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
-                        .WithMany("Ingredient")
+                        .WithMany("Ingredients")
                         .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Restaurant");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.IngredientTag", b =>
-                {
-                    b.HasOne("FoodSphere.Common.Entity.Ingredient", "Ingredient")
-                        .WithMany("IngredientTags")
-                        .HasForeignKey("RestaurantId", "IngredientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FoodSphere.Common.Entity.Tag", "Tag")
-                        .WithMany("IngredientTags")
-                        .HasForeignKey("RestaurantId", "TagId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Ingredient");
-
-                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Menu", b =>
@@ -1355,7 +1726,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
                         .WithMany("Menus")
                         .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Restaurant");
@@ -1366,7 +1737,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
                         .WithMany()
                         .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("FoodSphere.Common.Entity.Menu", "ChildMenu")
@@ -1397,7 +1768,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .IsRequired();
 
                     b.HasOne("FoodSphere.Common.Entity.Menu", "Menu")
-                        .WithMany("MenuIngredients")
+                        .WithMany("Ingredients")
                         .HasForeignKey("RestaurantId", "MenuId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1407,31 +1778,12 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Navigation("Menu");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.MenuTag", b =>
-                {
-                    b.HasOne("FoodSphere.Common.Entity.Menu", "Menu")
-                        .WithMany("MenuTags")
-                        .HasForeignKey("RestaurantId", "MenuId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FoodSphere.Common.Entity.Tag", "Tag")
-                        .WithMany("MenuTags")
-                        .HasForeignKey("RestaurantId", "TagId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Menu");
-
-                    b.Navigation("Tag");
-                });
-
             modelBuilder.Entity("FoodSphere.Common.Entity.Order", b =>
                 {
                     b.HasOne("FoodSphere.Common.Entity.Bill", "Bill")
                         .WithMany("Orders")
                         .HasForeignKey("BillId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("FoodSphere.Common.Entity.BillMember", "BillMember")
@@ -1439,7 +1791,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .HasForeignKey("BillId", "BillMemberId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("FoodSphere.Common.Entity.StaffUser", null)
+                    b.HasOne("FoodSphere.Common.Entity.WorkerUser", "Issuer")
                         .WithMany()
                         .HasForeignKey("RestaurantId", "BranchId", "IssuerId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1447,10 +1799,18 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Navigation("Bill");
 
                     b.Navigation("BillMember");
+
+                    b.Navigation("Issuer");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.OrderItem", b =>
                 {
+                    b.HasOne("FoodSphere.Common.Entity.Bill", "Bill")
+                        .WithMany()
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("FoodSphere.Common.Entity.Order", "Order")
                         .WithMany("Items")
                         .HasForeignKey("BillId", "OrderId")
@@ -1463,16 +1823,41 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Bill");
+
                     b.Navigation("Menu");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.OrderingPortal", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.Bill", "Bill")
+                        .WithMany("Portals")
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bill");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.Payment", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.Bill", "Bill")
+                        .WithMany("Payments")
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Bill");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Queuing", b =>
                 {
                     b.HasOne("FoodSphere.Common.Entity.ConsumerUser", "Consumer")
                         .WithMany()
-                        .HasForeignKey("ConsumerId");
+                        .HasForeignKey("ConsumerId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
                         .WithMany("Queuings")
@@ -1487,24 +1872,41 @@ namespace FoodSphere.Npgsql.Helper.Migrations
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Restaurant", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entity.Contact", "Contact")
-                        .WithMany()
-                        .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("FoodSphere.Common.Entity.MasterUser", "Owner")
                         .WithMany("OwnedRestaurants")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Contact");
+                    b.OwnsOne("FoodSphere.Common.Entity.Contact", "Contact", b1 =>
+                        {
+                            b1.Property<Guid>("RestaurantId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Email")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Phone")
+                                .HasColumnType("text");
+
+                            b1.HasKey("RestaurantId");
+
+                            b1.ToTable("Restaurant");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RestaurantId");
+                        });
+
+                    b.Navigation("Contact")
+                        .IsRequired();
 
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManager", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantStaff", b =>
                 {
                     b.HasOne("FoodSphere.Common.Entity.MasterUser", "Master")
                         .WithMany("ManagedRestaurants")
@@ -1513,7 +1915,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .IsRequired();
 
                     b.HasOne("FoodSphere.Common.Entity.Restaurant", "Restaurant")
-                        .WithMany("Managers")
+                        .WithMany("Staffs")
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1523,11 +1925,11 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Navigation("Restaurant");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManagerRole", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantStaffRole", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entity.RestaurantManager", "Manager")
+                    b.HasOne("FoodSphere.Common.Entity.RestaurantStaff", "Staff")
                         .WithMany("Roles")
-                        .HasForeignKey("RestaurantId", "ManagerId")
+                        .HasForeignKey("RestaurantId", "MasterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1537,9 +1939,9 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Manager");
-
                     b.Navigation("Role");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Role", b =>
@@ -1558,7 +1960,7 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.HasOne("FoodSphere.Common.Entity.Permission", "Permission")
                         .WithMany()
                         .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("FoodSphere.Common.Entity.Role", "Role")
@@ -1572,10 +1974,10 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.SelfOrderingPortal", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.ServiceRequest", b =>
                 {
                     b.HasOne("FoodSphere.Common.Entity.Bill", "Bill")
-                        .WithMany("Portals")
+                        .WithMany()
                         .HasForeignKey("BillId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1583,50 +1985,9 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Navigation("Bill");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.StaffPortal", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.StockTransaction", b =>
                 {
-                    b.HasOne("FoodSphere.Common.Entity.StaffUser", "StaffUser")
-                        .WithMany()
-                        .HasForeignKey("RestaurantId", "BranchId", "StaffId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("StaffUser");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.StaffRole", b =>
-                {
-                    b.HasOne("FoodSphere.Common.Entity.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RestaurantId", "RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FoodSphere.Common.Entity.StaffUser", "Staff")
-                        .WithMany("Roles")
-                        .HasForeignKey("RestaurantId", "BranchId", "StaffId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("Staff");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.StaffUser", b =>
-                {
-                    b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
-                        .WithMany("Staffs")
-                        .HasForeignKey("RestaurantId", "BranchId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Branch");
-                });
-
-            modelBuilder.Entity("FoodSphere.Common.Entity.Stock", b =>
-                {
-                    b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
+                    b.HasOne("FoodSphere.Common.Entity.Branch", null)
                         .WithMany("IngredientStocks")
                         .HasForeignKey("RestaurantId", "BranchId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1638,9 +1999,14 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Branch");
+                    b.HasOne("FoodSphere.Common.Entity.OrderItem", "OrderItem")
+                        .WithMany()
+                        .HasForeignKey("BillId", "OrderId", "OrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Ingredient");
+
+                    b.Navigation("OrderItem");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Table", b =>
@@ -1661,6 +2027,97 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                         .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.TagIngredient", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.Ingredient", "Ingredient")
+                        .WithMany("Tags")
+                        .HasForeignKey("RestaurantId", "IngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FoodSphere.Common.Entity.Tag", "Tag")
+                        .WithMany("TagIngredients")
+                        .HasForeignKey("RestaurantId", "TagId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Ingredient");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.TagMenu", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.Menu", "Menu")
+                        .WithMany("Tags")
+                        .HasForeignKey("RestaurantId", "MenuId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FoodSphere.Common.Entity.Tag", "Tag")
+                        .WithMany("TagMenus")
+                        .HasForeignKey("RestaurantId", "TagId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Menu");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.WorkerPortal", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.WorkerUser", "WorkerUser")
+                        .WithMany()
+                        .HasForeignKey("RestaurantId", "BranchId", "WorkerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WorkerUser");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.WorkerRole", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RestaurantId", "RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FoodSphere.Common.Entity.WorkerUser", "Worker")
+                        .WithMany("Roles")
+                        .HasForeignKey("RestaurantId", "BranchId", "WorkerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("Worker");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.WorkerUser", b =>
+                {
+                    b.HasOne("FoodSphere.Common.Entity.Branch", "Branch")
+                        .WithMany("Workers")
+                        .HasForeignKey("RestaurantId", "BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
+                {
+                    b.HasOne("MassTransit.EntityFrameworkCoreIntegration.OutboxState", null)
+                        .WithMany()
+                        .HasForeignKey("OutboxId");
+
+                    b.HasOne("MassTransit.EntityFrameworkCoreIntegration.InboxState", null)
+                        .WithMany()
+                        .HasForeignKey("InboxMessageId", "InboxConsumerId")
+                        .HasPrincipalKey("MessageId", "ConsumerId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1720,6 +2177,8 @@ namespace FoodSphere.Npgsql.Helper.Migrations
 
                     b.Navigation("Orders");
 
+                    b.Navigation("Payments");
+
                     b.Navigation("Portals");
                 });
 
@@ -1730,18 +2189,18 @@ namespace FoodSphere.Npgsql.Helper.Migrations
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Branch", b =>
                 {
-                    b.Navigation("BranchManagers");
+                    b.Navigation("BranchStaffs");
 
                     b.Navigation("IngredientStocks");
 
                     b.Navigation("Queuings");
 
-                    b.Navigation("Staffs");
-
                     b.Navigation("Tables");
+
+                    b.Navigation("Workers");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.BranchManager", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.BranchStaff", b =>
                 {
                     b.Navigation("Roles");
                 });
@@ -1753,9 +2212,9 @@ namespace FoodSphere.Npgsql.Helper.Migrations
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Ingredient", b =>
                 {
-                    b.Navigation("IngredientTags");
-
                     b.Navigation("MenuIngredients");
+
+                    b.Navigation("Tags");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.MasterUser", b =>
@@ -1771,9 +2230,9 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                 {
                     b.Navigation("Components");
 
-                    b.Navigation("MenuIngredients");
+                    b.Navigation("Ingredients");
 
-                    b.Navigation("MenuTags");
+                    b.Navigation("Tags");
                 });
 
             modelBuilder.Entity("FoodSphere.Common.Entity.Order", b =>
@@ -1785,16 +2244,16 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                 {
                     b.Navigation("Branches");
 
-                    b.Navigation("Ingredient");
-
-                    b.Navigation("Managers");
+                    b.Navigation("Ingredients");
 
                     b.Navigation("Menus");
+
+                    b.Navigation("Staffs");
 
                     b.Navigation("Tags");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantManager", b =>
+            modelBuilder.Entity("FoodSphere.Common.Entity.RestaurantStaff", b =>
                 {
                     b.Navigation("Roles");
                 });
@@ -1804,16 +2263,16 @@ namespace FoodSphere.Npgsql.Helper.Migrations
                     b.Navigation("Permissions");
                 });
 
-            modelBuilder.Entity("FoodSphere.Common.Entity.StaffUser", b =>
-                {
-                    b.Navigation("Roles");
-                });
-
             modelBuilder.Entity("FoodSphere.Common.Entity.Tag", b =>
                 {
-                    b.Navigation("IngredientTags");
+                    b.Navigation("TagIngredients");
 
-                    b.Navigation("MenuTags");
+                    b.Navigation("TagMenus");
+                });
+
+            modelBuilder.Entity("FoodSphere.Common.Entity.WorkerUser", b =>
+                {
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }

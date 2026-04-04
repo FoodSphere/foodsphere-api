@@ -2,69 +2,77 @@ namespace FoodSphere.SelfOrdering.Api.Controller;
 
 public class InfoController(
     ILogger<InfoController> logger,
-    BillService billService,
-    RestaurantService restaurantService,
-    BranchService branchService,
-    MenuService menuService
+    BranchServiceBase branchService,
+    MenuServiceBase menuService,
+    TagServiceBase tagService
 ) : SelfOrderingControllerBase
 {
     [HttpGet("restaurant")]
     public async Task<ActionResult<RestaurantBranchResponse>> GetRestaurant()
     {
-        var query = await billService.QuerySingleBill(Member.BillId)
-            .Select(e => new { e.RestaurantId, e.BranchId })
-            .SingleOrDefaultAsync();
-
-        if (query is null)
-        {
-            return NotFound();
-        }
-
         var response = await branchService.GetBranch(
-            query.RestaurantId, query.BranchId,
-            RestaurantBranchResponse.Projection);
+            RestaurantBranchResponse.Projection, BranchKey);
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
 
-    [HttpGet("menus")]
-    public async Task<ActionResult<ICollection<MenuResponse>>> ListMenus()
+    /// <summary>
+    /// list tags
+    /// </summary>
+    [HttpGet("tags")]
+    public async Task<ActionResult<ICollection<TagDto>>> ListTags(
+        [FromQuery] IReadOnlyCollection<string> type)
     {
-        var restaurantId = await billService.QuerySingleBill(Member.BillId)
-            .Select(e => e.RestaurantId)
-            .SingleOrDefaultAsync();
+        Expression<Func<Tag, bool>> predicate = e =>
+            e.RestaurantId == RestaurantId;
 
-        var responses = await menuService.QueryMenus()
-            .Where(e => e.RestaurantId == restaurantId)
-            .Select(MenuResponse.Projection)
-            .ToArrayAsync();
+        if (type.Count > 0)
+            predicate = predicate.And(e => type.Contains(e.Type));
 
-        if (responses is null)
-        {
-            return NotFound();
-        }
+        return await tagService.ListTags(
+            TagDto.Projection, predicate);
+    }
 
-        return responses;
+    [HttpGet("menus")]
+    public async Task<ActionResult<ICollection<MenuResponse>>> ListMenus(
+        [FromQuery] bool? has_components,
+        [FromQuery] bool? stock_availability = true,
+        [FromQuery] MenuStatus? status = MenuStatus.Active)
+    {
+        Expression<Func<Menu, bool>> predicate = e =>
+            e.RestaurantId == RestaurantId &&
+            e.DeleteTime == null;
+
+        if (has_components is not null)
+            predicate = predicate.And(e => e.Components.Any() == has_components.Value);
+
+        if (stock_availability is not null)
+            predicate = predicate.And(menu =>
+                menu.Ingredients.All(e =>
+                    e.Ingredient.Status == IngredientStatus.Active) == stock_availability.Value &&
+                menu.Components.All(e =>
+                    e.ChildMenu.Ingredients.All(e =>
+                        e.Ingredient.Status == IngredientStatus.Active) == stock_availability.Value));
+
+        if (status is not null)
+            predicate = predicate.And(e => e.Status == status.Value);
+
+        return await menuService.ListMenus(
+            MenuResponse.Projection, predicate);;
     }
 
     [HttpGet("menus/{menu_id}")]
     public async Task<ActionResult<MenuResponse>> GetMenu(short menu_id)
     {
-        var restaurantId = await billService.QuerySingleBill(Member.BillId)
-            .Select(e => e.RestaurantId)
-            .SingleOrDefaultAsync();
-
-        var response = await menuService.GetMenu(restaurantId, menu_id, MenuResponse.Projection);
+        var response = await menuService.GetMenu(
+            MenuResponse.Projection,
+            new(RestaurantId, menu_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }

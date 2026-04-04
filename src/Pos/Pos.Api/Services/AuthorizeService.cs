@@ -1,72 +1,82 @@
 using System.Security.Claims;
-using FoodSphere.Infrastructure.Persistence;
 
 namespace FoodSphere.Pos.Api.Service;
 
-public class AccessControlService(
-    FoodSphereDbContext context,
-    IAuthorizationService authorizationService
-) : ServiceBase(context)
+public class AuthorizeService(
+    ILogger<RestaurantPermissionHandler> logger,
+    AuthorizeHelperService helperService
+) : ServiceBase
 {
-    public async Task<bool> Validate(
-        ClaimsPrincipal user,
-        Guid restaurantId,
-        params Permission[] permissions
-    ) {
-        var result = await authorizationService.AuthorizeAsync(user,
-            new RestaurantKeys(restaurantId),
-            new PermissionRequirement(permissions));
-
-        return result.Succeeded;
-    }
-
-    public async Task<bool> Validate(
-        ClaimsPrincipal user,
-        Guid restaurantId,
-        short branchId,
-        params Permission[] permissions
-    ) {
-        var result = await authorizationService.AuthorizeAsync(user,
-            new BranchKeys(restaurantId, branchId),
-            new PermissionRequirement(permissions));
-
-        return result.Succeeded;
-    }
-
-    public async Task<bool> Validate(HttpContext httpContext, params Permission[] permissions)
+    public async Task<ResultObject<Permission[]>> GetMissingPermissions(
+        ClaimsPrincipal user, RestaurantKey restaurantKey,
+        params Permission[] permissions)
     {
-        var restaurant_id = httpContext.GetRouteValue("restaurant_id") as string;
-        var branch_id = httpContext.GetRouteValue("branch_id") as string;
-        var bill_id = httpContext.GetRouteValue("bill_id") as string;
-        object resource;
+        if (user.Identity?.IsAuthenticated != true)
+            return ResultObject.Fail(ResultError.Authentication);
 
-        if (bill_id is not null)
+        var userTypeClaim = user.FindFirstValue(FoodSphereClaimType.UserTypeClaimType);
+        if (!Enum.TryParse<UserType>(userTypeClaim, out var userType))
+            return ResultObject.Fail(ResultError.Authentication);
+
+        if (userType is UserType.Master)
+            return await HandleMaster(user, restaurantKey, permissions);
+
+        else if (userType is UserType.Worker)
+            return await HandleWorker(user, restaurantKey, permissions);
+
+        return ResultObject.Fail(ResultError.Forbidden);
+    }
+
+    async Task<ResultObject<Permission[]>> HandleMaster(
+        ClaimsPrincipal user, RestaurantKey restaurantKey,
+        params Permission[] permissions)
+    {
+        var userId = user.FindFirstValue(FoodSphereClaimType.Identity.UserIdClaimType)!;
+
+        if (await helperService.IsRestaurantOwner(
+            new(restaurantKey.Id), new(userId)))
         {
-            Guid.TryParse(bill_id, out var billId);
-            resource = new BillKeys(billId);
+            return ResultObject.Success(Array.Empty<Permission>());
         }
-        else if (restaurant_id is not null)
-        {
-            Guid.TryParse(restaurant_id, out var restaurantId);
 
-            if (branch_id is not null)
+        if (permissions.Length == 0)
+        {
+            if (await helperService.IsRestaurantStaff(
+                new(restaurantKey.Id), new(userId)))
             {
-                short.TryParse(branch_id, out var branchId);
-                resource = new BranchKeys(restaurantId, branchId);
-            }
-            else
-            {
-                resource = new RestaurantKeys(restaurantId);
+                return ResultObject.Success(Array.Empty<Permission>());
             }
         }
         else
         {
-            return true;
+            var missing = await helperService.GetMissingRestaurantStaffPermissions(
+                new(restaurantKey.Id, userId), permissions);
+
+            return ResultObject.Success(missing);
         }
 
-        var result = await authorizationService.AuthorizeAsync(
-            httpContext.User, resource, new PermissionRequirement(permissions));
+        return ResultObject.Fail(ResultError.Forbidden);
+    }
 
-        return result.Succeeded;
+    async Task<ResultObject<Permission[]>> HandleWorker(
+        ClaimsPrincipal user, RestaurantKey restaurantKey,
+        params Permission[] permissions)
+    {
+        var _restaurantId = user.FindFirstValue(FoodSphereClaimType.RestaurantClaimType);
+        var _branchId = user.FindFirstValue(FoodSphereClaimType.BranchClaimType);
+        var _userId = user.FindFirstValue(FoodSphereClaimType.Identity.UserIdClaimType);
+
+        if (!(Guid.TryParse(_restaurantId, out var restaurantId)
+            && short.TryParse(_branchId, out var branchId)
+            && short.TryParse(_userId, out var workerId)))
+            return ResultObject.Fail(ResultError.Authentication);
+
+        if (restaurantId != restaurantKey.Id) //|| branchId != resource.Id)
+            return ResultObject.Fail(ResultError.Forbidden);
+
+        var missing = await helperService.GetMissingWorkerPermissions(
+            new(restaurantId, branchId, workerId), permissions);
+
+        return ResultObject.Success(missing);
     }
 }

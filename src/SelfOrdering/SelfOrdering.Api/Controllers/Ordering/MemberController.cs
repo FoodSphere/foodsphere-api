@@ -2,8 +2,9 @@ namespace FoodSphere.SelfOrdering.Api.Controller;
 
 public class MemberController(
     ILogger<MemberController> logger,
-    BillService billService,
-    ConsumerAuthService consumerAuthService
+    MemberServiceBase memberService,
+    ConsumerAuthService consumerAuthService,
+    ConsumerServiceBase consumerService
 ) : SelfOrderingControllerBase
 {
     /// <summary>
@@ -12,25 +13,26 @@ public class MemberController(
     [HttpGet("members")]
     public async Task<ActionResult<ICollection<BillMemberResponse>>> ListMembers()
     {
-        var responses = await billService.QueryMembers(Member.BillId)
-            .Select(BillMemberResponse.Projection)
-            .ToArrayAsync();
+        Expression<Func<BillMember, bool>> predicate = e =>
+            e.BillId == MemberKey.BillId;
 
-        return responses;
+        return await memberService.ListMembers(
+            BillMemberResponse.Projection, predicate);
     }
 
     /// <summary>
     /// get member
     /// </summary>
     [HttpGet("members/{member_id}")]
-    public async Task<ActionResult<BillMemberResponse>> GetMember(short member_id)
+    public async Task<ActionResult<BillMemberResponse>> GetMember(
+        short member_id)
     {
-        var response = await billService.GetMember(Member.BillId, member_id, BillMemberResponse.Projection);
+        var response = await memberService.GetMember(
+            BillMemberResponse.Projection,
+            new(MemberKey.BillId, member_id));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -41,12 +43,11 @@ public class MemberController(
     [HttpGet("current/member")]
     public async Task<ActionResult<BillMemberResponse>> GetCurrentMember()
     {
-        var response = await billService.GetMember(Member.BillId, Member.Id, BillMemberResponse.Projection);
+        var response = await memberService.GetMember(
+            BillMemberResponse.Projection, MemberKey);
 
         if (response is null)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            return NotFound();
 
         return response;
     }
@@ -57,9 +58,11 @@ public class MemberController(
     [HttpPut("current/member")]
     public async Task<ActionResult> UpdateCurrentMember(BillMemberRequest body)
     {
-        Member.Name = body.name;
+        var result = await memberService.UpdateMember(
+            MemberKey, new(body.name));
 
-        await billService.SaveChanges();
+        if (result.IsFailed)
+            return result.Errors.ToActionResult();
 
         return NoContent();
     }
@@ -70,18 +73,18 @@ public class MemberController(
     [HttpGet("current/member/consumer")]
     public async Task<ActionResult<ConsumerResponse>> GetCurrentConsumer()
     {
-        var response = await billService.QueryMembers()
-            .Where(e =>
-                e.BillId == Member.BillId &&
-                e.Id == Member.Id &&
-                e.ConsumerId != null)
-            .Select(e => ConsumerResponse.Projection.Invoke(e.Consumer!))
-            .SingleOrDefaultAsync();
+        var member = await memberService.GetMember(
+            e => new { e.ConsumerId }, MemberKey);
+
+        if (member?.ConsumerId is not Guid consumerId)
+            return NotFound();
+
+        var response = await consumerService.GetConsumer(
+            ConsumerResponse.Projection,
+            new(consumerId));
 
         if (response is null)
-        {
             return NotFound();
-        }
 
         return response;
     }
@@ -95,15 +98,14 @@ public class MemberController(
         var claims = await consumerAuthService.ValidateToken(body.token);
 
         if (claims is null ||
-            !claims.TryGetValue(FoodSphereClaimType.Identity.UserIdClaimType, out var consumerIdClaim) ||
-            !Guid.TryParse((string)consumerIdClaim, out var consumerId))
+            !claims.TryGetValue(FoodSphereClaimType.Identity.UserIdClaimType, out var idClaim) ||
+            !Guid.TryParse((string)idClaim, out var consumerId))
         {
             return BadRequest("invalid claim");
         }
 
-        Member.ConsumerId = consumerId;
-
-        await billService.SaveChanges();
+        await memberService.SetConsumer(
+            MemberKey, new(consumerId));
 
         return NoContent();
     }

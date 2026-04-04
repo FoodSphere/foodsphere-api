@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using FoodSphere.Infrastructure.Persistence;
 
 namespace FoodSphere.Worker.Migration;
 
@@ -12,7 +14,7 @@ public class NpgsqlMigrationWorker(
     public const string ActivitySourceName = "Migrations";
     static readonly ActivitySource activitySource = new(ActivitySourceName);
 
-    protected override async Task ExecuteAsync(CancellationToken ct)
+    protected override async Task ExecuteAsync(CancellationToken ct = default)
     {
         using var activity = activitySource.StartActivity(
             "Migrating database",
@@ -46,18 +48,19 @@ public class NpgsqlMigrationWorker(
         hostApplicationLifetime.StopApplication();
     }
 
-    static async Task SeedData(FoodSphereDbContext dbContext, CancellationToken ct)
-    {
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+    // static async Task SeedData(FoodSphereDbContext dbContext, CancellationToken ct = default)
+    // {
+    //     await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
 
-        var p1 = new Permission()
-        {
-            Name = "Menu.Read",
-        };
+    //     var p1 = new Permission()
+    //     {
 
-        dbContext.Set<Permission>().Add(p1);
-        await dbContext.SaveChangesAsync(ct);
+    //         Name = "Menu.Read",
+    //     };
 
-        await transaction.CommitAsync(ct);
-    }
+    //     dbContext.Set<Permission>().Add(p1);
+    //     await dbContext.SaveChangesAsync(ct);
+
+    //     await transaction.CommitAsync(ct);
+    // }
 }

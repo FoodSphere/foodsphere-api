@@ -1,11 +1,11 @@
 namespace FoodSphere.Pos.Api.DTO;
 
-public class UploadImageResponse
+public record UploadImageResponse
 {
     public required string image_url { get; set; }
 }
 
-public class PresignUrlResponse
+public record PresignUrlResponse
 {
     public required string url { get; set; }
 }

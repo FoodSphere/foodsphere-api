@@ -11,9 +11,14 @@ public class BillConfiguration : IEntityTypeConfiguration<Bill>
             .HasForeignKey(e => new { e.RestaurantId, e.BranchId, e.TableId })
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<StaffUser>()
+        builder.HasOne(e => e.Issuer)
             .WithMany()
             .HasForeignKey(e => new { e.RestaurantId, e.BranchId, e.IssuerId })
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.Consumer)
+            .WithMany()
+            .HasForeignKey(e => new { e.ConsumerId })
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
@@ -23,6 +28,20 @@ public class BillMemberConfiguration : IEntityTypeConfiguration<BillMember>
     public void Configure(EntityTypeBuilder<BillMember> builder)
     {
         builder.HasKey(e => new { e.BillId, e.Id });
+
+        builder.HasOne(e => e.Bill)
+            .WithMany(e => e.Members)
+            .HasForeignKey(e => new { e.BillId })
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.Consumer)
+            .WithMany()
+            .HasForeignKey(e => new { e.ConsumerId })
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // will Null considered unique?
+        builder.HasIndex(e => new { e.BillId, e.ConsumerId })
+            .IsUnique();
     }
 }
 
@@ -32,7 +51,12 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
     {
         builder.HasKey(e => new { e.BillId, e.Id });
 
-        builder.HasOne<StaffUser>()
+        builder.HasOne(e => e.Bill)
+            .WithMany(e => e.Orders)
+            .HasForeignKey(e => new { e.BillId })
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.Issuer)
             .WithMany()
             .HasForeignKey(e => new { e.RestaurantId, e.BranchId, e.IssuerId })
             .OnDelete(DeleteBehavior.Restrict);
@@ -49,6 +73,11 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
     public void Configure(EntityTypeBuilder<OrderItem> builder)
     {
         builder.HasKey(e => new { e.BillId, e.OrderId, e.Id });
+
+        builder.HasOne(e => e.Bill)
+            .WithMany()
+            .HasForeignKey(e => new { e.BillId })
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(e => e.Order)
             .WithMany(e => e.Items)

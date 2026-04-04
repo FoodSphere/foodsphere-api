@@ -3,9 +3,9 @@ using FoodSphere.SelfOrdering.Api.Configuration;
 
 namespace FoodSphere.SelfOrdering.Api.Authorization
 {
-    public class SelfOrderingAuthorizeAttribute : AuthorizeAttribute
+    public class OrderingAuthorizeAttribute : AuthorizeAttribute
     {
-        public SelfOrderingAuthorizeAttribute()
+        public OrderingAuthorizeAttribute()
         {
             Policy = AuthorizationConfiguration.OrderingPolicy;
         }
